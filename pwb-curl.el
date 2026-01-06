@@ -14,3 +14,12 @@
 		    "-d" payload)
       (goto-char (point-min))
       (json-parse-buffer :object-type 'plist))))
+
+(defun pwb-buffer-string ()
+  (interactive)
+  (buffer-substring-no-properties (point-min) (point-max)))
+
+(defun pwb-launch ()
+  (interactive)
+  (let ((prompt (pwb-buffer-string)))
+    (message "%s" (pwb-curl prompt))))

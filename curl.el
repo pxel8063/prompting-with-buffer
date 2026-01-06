@@ -6,7 +6,4 @@
 	(application-json "content-type: application/json")
 	(payload
 	 (json-serialize '(:model "claude-haiku-4-5" :max_tokens 1000 :system "" :messages [(:role "user" :content "hello")]))))
-    (call-process "curl" nil "bar" nil host "-s" "-H" api-key "-H" anthropic-version "-H" application-json "-d" payload)
-    
-   ))
-  
+    (call-process "curl" nil "bar" nil host "-s" "-H" api-key "-H" anthropic-version "-H" application-json "-d" payload)))

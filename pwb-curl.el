@@ -1,6 +1,7 @@
 ;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; -*-
 
 (defun pwb-curl (payload)
+  "Invoke curl with PAYLOAD."
   (interactive)
   (let ((host "https://api.anthropic.com/v1/messages")
 	(api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
@@ -16,15 +17,18 @@
       (json-parse-buffer :object-type 'plist))))
 
 (defun pwb-buffer-string ()
+  "Parse the current buffer, if narrowed, the narrowed part, "
   (interactive)
   (buffer-substring-no-properties (point-min) (point-max)))
 
 (defun pwb-launch ()
+  "Send a prompt based on the current buffer to api."
   (interactive)
   (let ((prompt (pwb-buffer-string)))
     (princ (pwb-curl (pwb-build-json prompt)))))
 
 (defun pwb-build-json (input)
+  "Make a json string based on INPUT."
   (json-serialize (list :model "claude-haiku-4-5"
 			:max_tokens 1000
 			:system ""
@@ -34,6 +38,7 @@
   (plist-get (aref (plist-get response :content) 0) :text))
 
 (defun pwb-render-response (string)
+  "Create `*Anthropic*' buffer and insert STRING in this buffer."
   (get-buffer-create "*Anthropic*")
   (set-buffer "*Anthropic*")
   (insert string))

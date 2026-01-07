@@ -43,7 +43,8 @@
   "Create `*Anthropic*' buffer and insert STRING and newline in this buffer."
   (get-buffer-create "*Anthropic*")
   (set-buffer "*Anthropic*")
+  (set-mark)
   (insert string)
-  (newline))
+  (newline 2))
 
 (provide 'pwb-curl)

@@ -40,9 +40,10 @@
   (plist-get (aref (plist-get response :content) 0) :text))
 
 (defun pwb-render-response (string)
-  "Create `*Anthropic*' buffer and insert STRING in this buffer."
+  "Create `*Anthropic*' buffer and insert STRING and newline in this buffer."
   (get-buffer-create "*Anthropic*")
   (set-buffer "*Anthropic*")
-  (insert string))
+  (insert string)
+  (newline))
 
 (provide 'pwb-curl)

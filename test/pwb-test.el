@@ -33,6 +33,23 @@
 		  '(:model "claude-haiku-4-5-20251001" :id "msg_01F1rvRpZWutMkCnaUYFjLai" :type "message" :role "assistant" :content [(:type "text" :text "Hello! How can I help you today?")] :stop_reason "end_turn" :stop_sequence :null :usage (:input_tokens 9 :cache_creation_input_tokens 0 :cache_read_input_tokens 0 :cache_creation (:ephemeral_5m_input_tokens 0 :ephemeral_1h_input_tokens 0) :output_tokens 12 :service_tier "standard"))
 		  )
 		 "Hello! How can I help you today?")))
+(ert-deftest pwb-success-or-error ()
+  "Test response. Return nil if error."
+  (should (equal nil (pwb-test-response
+		      '(:type "error"
+			      :error
+			      (:type "invalid_request_error"
+				     :message "Input does not match the expected shape.")
+			      :request_id "req_011CWsDcj4HTJuWosWP8djPz"))))
+  (should (equal t (pwb-test-response
+		    '(:model "claude-haiku-4-5-20251001"
+			     :id "msg_01F1rvRpZWutMkCnaUYFjLai"
+			     :type "message"
+			     :role "assistant"
+			     :content [(:type "text" :text "Hello! How can I help you today?")]
+			     :stop_reason "end_turn"
+			     :stop_sequence :null
+			     :usage (:input_tokens 9 :cache_creation_input_tokens 0 :cache_read_input_tokens 0 :cache_creation (:ephemeral_5m_input_tokens 0 :ephemeral_1h_input_tokens 0) :output_tokens 12 :service_tier "standard"))))))
 
 (provide 'pwb-test)
 ;;; mylisp-test.el ends here

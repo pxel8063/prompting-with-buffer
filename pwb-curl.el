@@ -47,4 +47,9 @@
   (insert string)
   (newline 2))
 
+(defun pwb-test-response (response)
+  (pcase (plist-get response :type)
+    ("error" nil)
+    ("message" t)))
+
 (provide 'pwb-curl)

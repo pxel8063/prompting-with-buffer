@@ -30,4 +30,9 @@
 			:system ""
 			:messages (vector (list :role "user" :content input)))))
 
+(defun pwb-render-response (string)
+  (get-buffer-create "*Anthropic*")
+  (set-buffer "*Anthropic*")
+  (insert string))
+
 (provide 'pwb-curl)

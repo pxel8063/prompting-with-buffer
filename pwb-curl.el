@@ -30,6 +30,9 @@
 			:system ""
 			:messages (vector (list :role "user" :content input)))))
 
+(defun pwb-get-content-text (response)
+  (plist-get (aref (plist-get response :content) 0) :text))
+
 (defun pwb-render-response (string)
   (get-buffer-create "*Anthropic*")
   (set-buffer "*Anthropic*")

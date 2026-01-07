@@ -1,16 +1,11 @@
 ;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; -*-
 
-(defun pwb-curl ()
+(defun pwb-curl (payload)
   (interactive)
   (let ((host "https://api.anthropic.com/v1/messages")
 	(api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
 	(anthropic-version "anthropic-version: 2023-06-01")
-	(application-json "content-type: application/json")
-	(payload
-	 (json-serialize (list :model "claude-haiku-4-5"
-			       :max_tokens 1000
-			       :system ""
-			       :messages [(:role "user" :content "hello")]))))
+	(application-json "content-type: application/json"))
     (with-temp-buffer
       (call-process "curl" nil t nil host "-s"
 		    "-H" api-key
@@ -27,7 +22,7 @@
 (defun pwb-launch ()
   (interactive)
   (let ((prompt (pwb-buffer-string)))
-    (message "%s" (pwb-curl prompt))))
+    (princ (pwb-curl (pwb-build-json prompt)))))
 
 (defun pwb-build-json (input)
   (json-serialize (list :model "claude-haiku-4-5"

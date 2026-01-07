@@ -6,17 +6,15 @@
 
 EMACSQ = $(EMACS) -Q
 
-all: mylisp.elc
+all: pwb-curl.elc
 
 %.elc: %.el
 	@$(info Compiling file $<)
 	@$(EMACSQ) --batch -f batch-byte-compile $<
 
-test:
-	@$(EMACSQ) -l mylisp.el -l test/mylisp-test.el -batch -f ert-run-tests-batch-and-exit
+test: pwb-curl.el test/pwb-test.el
+	@$(EMACSQ) -l pwb-curl.el -l test/pwb-test.el -batch -f ert-run-tests-batch-and-exit
 
 .PHONY: clean
 clean:
-	$(RM) mylisp.elc
-
-.PHONY: test
+	$(RM) pwb-curl.elc

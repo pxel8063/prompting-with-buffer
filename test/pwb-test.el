@@ -16,11 +16,11 @@
 ;; along with this program.  If not, see http://www.gnu.org/licenses.
 
 ;;; Code:
-(require 'mylisp)
+(require 'pwb-curl)
 (require 'ert)
 
 (ert-deftest addition-test ()
   (should (= 1 1)))
 
-(provide 'mylisp-test)
+(provide 'pwb-test)
 ;;; mylisp-test.el ends here

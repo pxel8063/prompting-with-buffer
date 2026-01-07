@@ -1,3 +1,5 @@
+;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; -*-
+
 (defun pwb-curl ()
   (interactive)
   (let ((host "https://api.anthropic.com/v1/messages")
@@ -26,3 +28,4 @@
   (interactive)
   (let ((prompt (pwb-buffer-string)))
     (message "%s" (pwb-curl prompt))))
+(provide 'pwb-curl)

@@ -12,7 +12,8 @@ all: pwb-curl.elc
 	@$(info Compiling file $<)
 	@$(EMACSQ) --batch -f batch-byte-compile $<
 
-test: pwb-curl.el test/pwb-test.el
+.PHONY: test
+test:
 	@$(EMACSQ) -l pwb-curl.el -l test/pwb-test.el -batch -f ert-run-tests-batch-and-exit
 
 .PHONY: clean

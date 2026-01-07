@@ -22,5 +22,12 @@
 (ert-deftest addition-test ()
   (should (= 1 1)))
 
+(ert-deftest pwb-json-string-build-test ()
+  (should (equal (json-serialize (list :model "claude-haiku-4-5"
+				       :max_tokens 1000
+				       :system ""
+				       :messages [(:role "user" :content "hello")]))
+		 (pwb-build-json "hello"))))
+
 (provide 'pwb-test)
 ;;; mylisp-test.el ends here

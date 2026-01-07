@@ -28,4 +28,11 @@
   (interactive)
   (let ((prompt (pwb-buffer-string)))
     (message "%s" (pwb-curl prompt))))
+
+(defun pwb-build-json (input)
+  (json-serialize (list :model "claude-haiku-4-5"
+			:max_tokens 1000
+			:system ""
+			:messages (vector (list :role "user" :content input)))))
+
 (provide 'pwb-curl)

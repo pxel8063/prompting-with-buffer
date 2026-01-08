@@ -24,10 +24,12 @@
 (defun pwb-launch ()
   "Send a prompt based on the current buffer to api."
   (interactive)
-  (let ((prompt (pwb-buffer-string)))
+  (let* ((prompt (pwb-buffer-string))
+	 (response (pwb-curl (pwb-build-json prompt))))
     (pwb-render-response
-     (pwb-get-content-text
-      (pwb-curl (pwb-build-json prompt))))))
+     (if (pwb-test-response response)
+	 (pwb-get-content-text response)
+       (format "%S" response)))))
 
 (defun pwb-build-json (input)
   "Make a json string based on INPUT."

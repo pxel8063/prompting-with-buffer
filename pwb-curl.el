@@ -55,6 +55,9 @@
     ("message" t)))
 
 (defun pwb-buffer-to-list-of-list ()
-  (json-parse-buffer :object-type 'plist))
+  (if (= (point) (point-max))
+      nil
+    (cons (json-parse-buffer :object-type 'plist)
+	  (pwb-buffer-to-list-of-list))))
 
 (provide 'pwb-curl)

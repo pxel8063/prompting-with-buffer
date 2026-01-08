@@ -54,4 +54,7 @@
     ("error" nil)
     ("message" t)))
 
+(defun pwb-buffer-to-list-of-list ()
+  (json-parse-buffer :object-type 'plist))
+
 (provide 'pwb-curl)

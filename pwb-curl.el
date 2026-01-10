@@ -38,7 +38,8 @@
   (json-serialize (list :model "claude-haiku-4-5"
 			:max_tokens 1000
 			:system ""
-			:messages (vector (list :role "user" :content input)))))
+			:messages (vconcat (messages-conversation *messages*)
+					   (vector (list :role "user" :content "hello"))))))
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))

@@ -1,5 +1,7 @@
 ;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
   (interactive)
@@ -37,6 +39,11 @@
 			:max_tokens 1000
 			:system ""
 			:messages (vector (list :role "user" :content input)))))
+
+(cl-defstruct messages conversation)
+(defvar *messages* (make-messages))
+(defun pwb-make-messages ()
+  (setf (messages-conversation *messages*) (vector (list :role "user" :content "Hello"))))
 
 (defun pwb-get-content-text (response)
   (plist-get (aref (plist-get response :content) 0) :text))

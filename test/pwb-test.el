@@ -35,11 +35,18 @@
 		 "Hello! How can I help you today?")))
 
 (ert-deftest pwb-vector-messages-test ()
-  "Proper message vector can be built?"
-  (should (equal (vector (list :role "user" :content "Hello"))
-		 (progn (pwb-make-messages)
+  "Proper message vector can be built? Test pwd-add-conversation"
+  (should (equal (vconcat (vector (list :role "user" :content "Hello"))
+			  (vector (list :role "assistant" :content "May I help you?")))
+		 (progn (pwb-clear-messages)
+			(pwd-add-conversation "Hi" "May I help you?")
 			(messages-conversation *messages*)))))
 
+(ert-deftest pwb-message-vector-clear-test ()
+  "Make sure that *message* hold the empty `messages'."
+  (should (equal (progn (pwb-message-vector-clear)
+			*messages*)
+		 #s(messages nil))))
 
 (ert-deftest pwb-success-or-error ()
   "Test response. Return nil if error."
@@ -185,4 +192,3 @@
 
 (provide 'pwb-test)
 ;;; mylisp-test.el ends here
-

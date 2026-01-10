@@ -45,6 +45,14 @@
 (defun pwb-make-messages ()
   (setf (messages-conversation *messages*) (vector (list :role "user" :content "Hello"))))
 
+(defun pwb-message-vector-clear ()
+  (setf *messages* (make-messages)))
+
+(defun pwb-add-conversation (u-content a-content)
+  (let ((history (messages-conversation *messages*)))
+    (setf (messages-conversation *messages*) (vconcat history
+						      (vector (list :role "user" :content u-content))
+						      (vector (list :role "assistant" :content a-content))))))
 (defun pwb-get-content-text (response)
   (plist-get (aref (plist-get response :content) 0) :text))
 

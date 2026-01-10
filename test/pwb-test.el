@@ -72,8 +72,7 @@
      (should (equal (pwb-buffer-to-list-of-list)
 		    '((:type "message" :role "assistant")
 		      (:stop_reason "end_turn" :stop_sequence :null)))))))
-(provide 'pwb-test)
-;;; mylisp-test.el ends here
+
 (setq pwb-test-response-str "{
   \"model\": \"claude-haiku-4-5-20251001\",
   \"id\": \"msg_01SAFhgzYRjdc9oTKMkygSHG\",
@@ -175,3 +174,7 @@
     \"service_tier\": \"standard\"
   }
 }")
+
+(provide 'pwb-test)
+;;; mylisp-test.el ends here
+

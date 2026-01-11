@@ -80,6 +80,11 @@
   (interactive)
   (setq *system-prompt* (pwb-buffer-string)))
 
+(defun pwb-clear-system-prompt ()
+  "Clear system prompt."
+  (interactive)
+  (setq *system-prompt* ""))
+
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))
 

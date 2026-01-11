@@ -27,7 +27,12 @@
   "Send a prompt based on the current buffer to api."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-	 (response (pwb-curl (pwb-build-json prompt))))
+         (api (make-pwb-claude-api
+               :model pwb-claude-model
+               :max-tokens pwb-claude-max-tokens
+               :system ""))
+         (plst (pwb-build-plist api prompt))
+	 (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
 	 (let ((response-text (pwb-get-content-text response)))
@@ -90,7 +95,7 @@
   "Create `*Anthropic*' buffer and insert STRING and newline in this buffer."
   (get-buffer-create "*Anthropic*")
   (set-buffer "*Anthropic*")
-  (set-mark)
+  (set-mark (point))
   (insert string)
   (newline 2))
 

@@ -11,10 +11,10 @@
 	(application-json "content-type: application/json"))
     (with-temp-buffer
       (call-process "curl" nil t nil host "-s"
-		    "-H" api-key
-		    "-H" anthropic-version
-		    "-H" application-json
-		    "-d" payload)
+                    "-H" api-key
+                    "-H" anthropic-version
+                    "-H" application-json
+                    "-d" payload)
       (goto-char (point-min))
       (json-parse-buffer :object-type 'plist))))
 

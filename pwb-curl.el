@@ -30,7 +30,7 @@
          (api (make-pwb-claude-api
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
-               :system ""))
+               :system *system-prompt*))
          (plst (pwb-build-plist api prompt))
 	 (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
@@ -74,6 +74,11 @@
         :system  (pwb-claude-api-system api)
         :messages (vconcat (messages-conversation *messages*)
 					   (vector (list :role "user" :content input)))))
+(defvar *system-prompt* "")
+
+(defun pwb-set-system-prompt ()
+  (interactive)
+  (setq *system-prompt* (pwb-buffer-string)))
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))

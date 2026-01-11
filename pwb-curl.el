@@ -31,22 +31,14 @@
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system *system-prompt*))
-         (plst (pwb-build-plist api prompt))
+         (plst (pwb-build-plist api *messages* prompt))
 	 (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
 	 (let ((response-text (pwb-get-content-text response)))
-	   (pwb-add-conversation prompt response-text)
+	   (setq *messages* (pwb-add-conversation *messages* prompt response-text))
 	   response-text)
        (format "%S" response)))))
-
-(defun pwb-build-json (input)
-  "Make a json string based on INPUT."
-  (json-serialize (list :model "claude-haiku-4-5"
-			:max_tokens 1000
-			:system ""
-			:messages (vconcat (messages-conversation *messages*)
-					   (vector (list :role "user" :content input))))))
 
 (cl-defstruct pwb-claude-api model max-tokens system)
 
@@ -68,12 +60,12 @@
   :group 'pwb
   :type 'natnum)
 
-(defun pwb-build-plist (api input)
+(defun pwb-build-plist (api messages input)
   "Return the plist of api and input."
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
-        :messages (vconcat (messages-conversation *messages*)
+        :messages (vconcat (messages-conversation messages)
                            (vector (list :role "user" :content input)))))
 
 (defvar *system-prompt* "" "The string of system prompt.")
@@ -95,12 +87,13 @@
   "Clear the conversation history."
   (setf *messages* (make-messages)))
 
-(defun pwb-add-conversation (u-content a-content)
+(defun pwb-add-conversation (messages u-content a-content)
   "Add conversation history."
-  (let ((history (messages-conversation *messages*)))
-    (setf (messages-conversation *messages*) (vconcat history
-						      (vector (list :role "user" :content u-content))
-						      (vector (list :role "assistant" :content a-content))))))
+  (let ((history (messages-conversation messages)))
+    (vconcat history
+             (vector (list :role "user" :content u-content))
+             (vector (list :role "assistant" :content a-content)))))
+
 (defun pwb-get-content-text (response)
   (plist-get (aref (plist-get response :content) 0) :text))
 

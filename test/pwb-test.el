@@ -23,34 +23,13 @@
   "Test api plist."
   (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
 				  :max-tokens 1000
-				  :system "")))
-    (pwb-message-vector-clear)
+				  :system ""))
+	(messages (make-messages)))
     (should (equal (list :model "claude-haiku-4-5"
 			 :max_tokens 1000
 			 :system ""
 			 :messages [(:role "user" :content "hello")])
-		   (pwb-build-plist api "hello")))))
-
-(ert-deftest pwb-json-string-build-test ()
-  "Test pwb-build-json can build a right list"
-  (let ((*messages* (make-messages))
-	(should (equal (json-serialize (list :model "claude-haiku-4-5"
-					     :max_tokens 1000
-					     :system ""
-					     :messages [(:role "user" :content "hello")]))
-		       (pwb-build-json "hello"))))))
-
-(ert-deftest pwb-json-string-build-conversation-test ()
-  "Test pwb-build-json can build a right list"
-  (pwb-message-vector-clear)
-  (pwb-add-conversation "How" "May I help you?")
-  (should (equal (json-serialize (list :model "claude-haiku-4-5"
-				       :max_tokens 1000
-				       :system ""
-				       :messages [(:role "user" :content "How")
-						  (:role "assistant" :content "May I help you?")
-						  (:role "user" :content "hello")]))
-		 (pwb-build-json "hello"))))
+		   (pwb-build-plist api messages "hello")))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test pwb-get-content-text can get a text properly."
@@ -61,11 +40,10 @@
 
 (ert-deftest pwb-vector-messages-test ()
   "Proper message vector can be built? Test pwd-add-conversation"
-  (should (equal (vconcat (vector (list :role "user" :content "Hi"))
-			  (vector (list :role "assistant" :content "May I help you?")))
-		 (progn (pwb-message-vector-clear)
-			(pwb-add-conversation "Hi" "May I help you?")
-			(messages-conversation *messages*)))))
+  (let ((messages (make-messages)))
+    (should (equal (vconcat (vector (list :role "user" :content "Hi"))
+			    (vector (list :role "assistant" :content "May I help you?")))
+		   (pwb-add-conversation messages "Hi" "May I help you?")))))
 
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that *message* hold the empty `messages'."

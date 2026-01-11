@@ -1,4 +1,4 @@
-;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; -*-
+;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; indent-tabs-mode: nil; -*-
 
 (require 'cl-lib)
 

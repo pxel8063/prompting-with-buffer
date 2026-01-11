@@ -73,7 +73,8 @@
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
         :messages (vconcat (messages-conversation *messages*)
-					   (vector (list :role "user" :content input)))))
+                           (vector (list :role "user" :content input)))))
+
 (defvar *system-prompt* "")
 
 (defun pwb-set-system-prompt ()

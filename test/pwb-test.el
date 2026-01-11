@@ -30,14 +30,15 @@
 
 (ert-deftest pwb-json-string-build-conversation-test ()
   "Test pwb-build-json can build a right list"
+  (pwb-message-vector-clear)
   (pwb-add-conversation "How" "May I help you?")
   (should (equal (json-serialize (list :model "claude-haiku-4-5"
 				       :max_tokens 1000
-					     :system ""
-					     :messages [(:role "user" :content "How")
-							(:role "assistant" :content "May I help you?")
-							(:role "user" :content "hello")]))
-		       (pwb-build-json "hello"))))
+				       :system ""
+				       :messages [(:role "user" :content "How")
+						  (:role "assistant" :content "May I help you?")
+						  (:role "user" :content "hello")]))
+		 (pwb-build-json "hello"))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test pwb-get-content-text can get a text properly."
@@ -48,10 +49,10 @@
 
 (ert-deftest pwb-vector-messages-test ()
   "Proper message vector can be built? Test pwd-add-conversation"
-  (should (equal (vconcat (vector (list :role "user" :content "Hello"))
+  (should (equal (vconcat (vector (list :role "user" :content "Hi"))
 			  (vector (list :role "assistant" :content "May I help you?")))
-		 (progn (pwb-clear-messages)
-			(pwd-add-conversation "Hi" "May I help you?")
+		 (progn (pwb-message-vector-clear)
+			(pwb-add-conversation "Hi" "May I help you?")
 			(messages-conversation *messages*)))))
 
 (ert-deftest pwb-message-vector-clear-test ()

@@ -30,7 +30,9 @@
 	 (response (pwb-curl (pwb-build-json prompt))))
     (pwb-render-response
      (if (pwb-test-response response)
-	 (pwb-get-content-text response)
+	 (let ((response-text (pwb-get-content-text response)))
+	   (pwb-add-conversation prompt response-text)
+	   response-text)
        (format "%S" response)))))
 
 (defun pwb-build-json (input)
@@ -39,7 +41,7 @@
 			:max_tokens 1000
 			:system ""
 			:messages (vconcat (messages-conversation *messages*)
-					   (vector (list :role "user" :content "hello"))))))
+					   (vector (list :role "user" :content input))))))
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))

@@ -77,6 +77,7 @@
 (defvar *system-prompt* "")
 
 (defun pwb-set-system-prompt ()
+  "Set system prompt string to the current buffer."
   (interactive)
   (setq *system-prompt* (pwb-buffer-string)))
 

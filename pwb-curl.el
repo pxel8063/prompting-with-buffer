@@ -47,17 +47,21 @@
 
 ;; (defvar *claude-api* (make-pwb-claude-api
 ;;                       :model pwb-claude-model
-;;                       :max_tokens pwb-claude-max-token
+;;                       :max-tokens pwb-claude-max-tokens
 ;;                       :system ""))
 
 (defgroup pwb nil
   "Custom variables of pwb.")
 
-(defvar pwb-claude-model "claude-haiku-4-5"
-  "String to specify claude model.")
+(defcustom pwb-claude-model "claude-haiku-4-5"
+  "String to specify claude model."
+  :group 'pwb
+  :type 'string)
 
-(defcustom pwb-claude-max-token 1024
-  "The number of max_tokens.")
+(defcustom pwb-claude-max-tokens 1024
+  "The number of max_tokens."
+  :group 'pwb
+  :type 'natnum)
 
 (defun pwb-build-plist (api input)
   (list :model (pwb-claude-api-model api)

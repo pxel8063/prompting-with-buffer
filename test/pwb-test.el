@@ -19,6 +19,18 @@
 (require 'pwb-curl)
 (require 'ert)
 
+(ert-deftest pwb-build-plist-test ()
+  "Test api plist."
+  (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
+				  :max-tokens 1000
+				  :system "")))
+    (pwb-message-vector-clear)
+    (should (equal (list :model "claude-haiku-4-5"
+			 :max_tokens 1000
+			 :system ""
+			 :messages [(:role "user" :content "hello")])
+		   (pwb-build-plist api "hello")))))
+
 (ert-deftest pwb-json-string-build-test ()
   "Test pwb-build-json can build a right list"
   (let ((*messages* (make-messages))

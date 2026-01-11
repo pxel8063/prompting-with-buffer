@@ -43,26 +43,28 @@
 			:messages (vconcat (messages-conversation *messages*)
 					   (vector (list :role "user" :content input))))))
 
-(cl-defstruct pwb-claude-api model max_tokens system)
+(cl-defstruct pwb-claude-api model max-tokens system)
 
-(defvar *claude-api* (make-pwb-claude-api
-                      :model pwb-claude-model
-                      :max_tokens pwb-claude-max-token
-                      :system ""))
+;; (defvar *claude-api* (make-pwb-claude-api
+;;                       :model pwb-claude-model
+;;                       :max_tokens pwb-claude-max-token
+;;                       :system ""))
 
 (defgroup pwb nil
   "Custom variables of pwb.")
 
-(defcustom pwb-claude-model "claude-haiku-4-5"
-  "String to specify claude model."
-  :group 'pwb
-  :type 'string)
+(defvar pwb-claude-model "claude-haiku-4-5"
+  "String to specify claude model.")
 
 (defcustom pwb-claude-max-token 1024
-  "The number of max_tokens."
-  :group 'pwb
-  :type 'natnum)
+  "The number of max_tokens.")
 
+(defun pwb-build-plist (api input)
+  (list :model (pwb-claude-api-model api)
+        :max_tokens  (pwb-claude-api-max-tokens api)
+        :system  (pwb-claude-api-system api)
+        :messages (vconcat (messages-conversation *messages*)
+					   (vector (list :role "user" :content input)))))
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))

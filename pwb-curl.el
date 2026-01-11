@@ -69,13 +69,14 @@
   :type 'natnum)
 
 (defun pwb-build-plist (api input)
+  "Return the plist of api and input."
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
         :messages (vconcat (messages-conversation *messages*)
                            (vector (list :role "user" :content input)))))
 
-(defvar *system-prompt* "")
+(defvar *system-prompt* "" "The string of system prompt.")
 
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
@@ -88,12 +89,14 @@
   (setq *system-prompt* ""))
 
 (cl-defstruct messages conversation)
-(defvar *messages* (make-messages))
+(defvar *messages* (make-messages) "Holding conversation history.")
 
 (defun pwb-message-vector-clear ()
+  "Clear the conversation history."
   (setf *messages* (make-messages)))
 
 (defun pwb-add-conversation (u-content a-content)
+  "Add conversation history."
   (let ((history (messages-conversation *messages*)))
     (setf (messages-conversation *messages*) (vconcat history
 						      (vector (list :role "user" :content u-content))
@@ -110,6 +113,7 @@
   (newline 2))
 
 (defun pwb-test-response (response)
+  "Test whether the response is error or not."
   (pcase (plist-get response :type)
     ("error" nil)
     ("message" t)))

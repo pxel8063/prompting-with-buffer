@@ -82,8 +82,6 @@
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages))
-(defun pwb-make-messages ()
-  (setf (messages-conversation *messages*) (vector (list :role "user" :content "Hello"))))
 
 (defun pwb-message-vector-clear ()
   (setf *messages* (make-messages)))

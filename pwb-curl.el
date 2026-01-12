@@ -87,6 +87,11 @@
   "Clear the conversation history."
   (setf *messages* (make-messages)))
 
+(defun pwb-clear-messages ()
+  "Clear the conversation history."
+  (interactive)
+  (setf *messages* (make-messages)))
+
 (defun pwb-add-conversation (messages u-content a-content)
   "Add conversation history."
   (let ((history (messages-conversation messages)))

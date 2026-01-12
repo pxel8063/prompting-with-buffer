@@ -1,11 +1,11 @@
-#+TITLE: pwb-curl - Emacs Claude API Client
+#+TITLE: pwb - Emacs Claude API Client
 #+AUTHOR: Your Name
-#+DATE: 2024
+#+DATE: 2026
 #+LANGUAGE: en
 
 * Overview
 
-=pwb-curl= is a lightweight Emacs client for interacting with Anthropic's Claude API.
+=pwb= is a lightweight Emacs client for interacting with Anthropic's Claude API.
 It allows you to send buffer contents to Claude and receive AI-generated responses directly within Emacs.
 
 ** Features
@@ -60,19 +60,19 @@ Option B: In init.el
 
 ** Commands
 
-| Command | Description |
-|---------|-------------|
-| =pwb-launch= | Send buffer content to Claude API |
-| =pwb-set-system-prompt= | Define system prompt from current buffer |
-| =pwb-clear-system-prompt= | Clear the current system prompt |
-| =pwb-clear-messages= | Reset conversation history |
+| Command                   | Description                              |
+|---------------------------+------------------------------------------|
+| =pwb-launch=              | Send buffer content to Claude API        |
+| =pwb-set-system-prompt=   | Define system prompt from current buffer |
+| =pwb-clear-system-prompt= | Clear the current system prompt          |
+| =pwb-clear-messages=      | Reset conversation history               |
 
 ** Customizable Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| =pwb-claude-model= | ="claude-haiku-4-5"= | Claude model to use |
-| =pwb-claude-max-tokens= | =1024= | Maximum tokens in response |
+| Variable                | Default              | Description                |
+|-------------------------+----------------------+----------------------------|
+| =pwb-claude-model=      | ="claude-haiku-4-5"= | Claude model to use        |
+| =pwb-claude-max-tokens= | =1024=               | Maximum tokens in response |
 
 *** Modify via Customize
 

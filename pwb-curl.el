@@ -48,7 +48,8 @@
 ;;                       :system ""))
 
 (defgroup pwb nil
-  "Custom variables of pwb.")
+  "Custom variables of pwb."
+  :group 'local)
 
 (defcustom pwb-claude-model "claude-haiku-4-5"
   "String to specify claude model."

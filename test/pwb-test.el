@@ -28,8 +28,22 @@
     (should (equal (list :model "claude-haiku-4-5"
 			 :max_tokens 1000
 			 :system ""
+			 :messages [(:role "user" :content "hello")
+				    (:role "assistant" :content "prefill")])
+		   (pwb-build-plist api messages "hello" "prefill")))))
+
+(ert-deftest pwb-build-plist-without-prefill-test ()
+  "Test api plist."
+  (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
+				  :max-tokens 1000
+				  :system ""))
+	(messages (make-messages)))
+    (should (equal (list :model "claude-haiku-4-5"
+			 :max_tokens 1000
+			 :system ""
 			 :messages [(:role "user" :content "hello")])
-		   (pwb-build-plist api messages "hello")))))
+		   (pwb-build-plist api messages "hello" "")))))
+
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test pwb-get-content-text can get a text properly."

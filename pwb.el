@@ -51,7 +51,7 @@
   (interactive)
   (buffer-substring-no-properties (point-min) (point-max)))
 
-(defun pwb-launch (prefill)
+(defun pwb (prefill)
   "Send a prompt based on the current buffer to api."
   (interactive "sPrefill: ")
   (let* ((prompt (pwb-buffer-string))

@@ -6,9 +6,9 @@
   "Invoke curl with PAYLOAD."
   (interactive)
   (let ((host "https://api.anthropic.com/v1/messages")
-	(api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
-	(anthropic-version "anthropic-version: 2023-06-01")
-	(application-json "content-type: application/json"))
+        (api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
+        (anthropic-version "anthropic-version: 2023-06-01")
+        (application-json "content-type: application/json"))
     (with-temp-buffer
       (call-process "curl" nil t nil host "-s"
                     "-H" api-key
@@ -32,12 +32,12 @@
                :max-tokens pwb-claude-max-tokens
                :system *system-prompt*))
          (plst (pwb-build-plist api *messages* prompt prefill))
-	 (response (pwb-curl (json-serialize plst))))
+         (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
-	 (let ((response-text (pwb-get-content-text response)))
-	   (setq *messages* (pwb-add-conversation *messages* prompt response-text))
-	   response-text)
+         (let ((response-text (pwb-get-content-text response)))
+           (setq *messages* (pwb-add-conversation *messages* prompt response-text))
+           response-text)
        (format "%S" response)))))
 
 (cl-defstruct pwb-claude-api model max-tokens system)
@@ -69,7 +69,7 @@
                            (vector (list :role "user" :content input))
                            (if (string-equal prefill "")
                                []
-                               (vector (list :role "assistant" :content prefill))))))
+                             (vector (list :role "assistant" :content prefill))))))
 
 (defvar *system-prompt* "" "The string of system prompt.")
 
@@ -124,6 +124,6 @@
   (if (= (point) (point-max))
       nil
     (cons (json-parse-buffer :object-type 'plist)
-	  (pwb-buffer-to-list-of-list))))
+          (pwb-buffer-to-list-of-list))))
 
 (provide 'pwb-curl)

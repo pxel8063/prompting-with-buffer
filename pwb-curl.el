@@ -90,9 +90,10 @@
 (defun pwb-add-conversation (messages u-content a-content)
   "Add conversation history."
   (let ((history (messages-conversation messages)))
-    (vconcat history
-             (vector (list :role "user" :content u-content))
-             (vector (list :role "assistant" :content a-content)))))
+    (make-messages :conversation
+                   (vconcat history
+                            (vector (list :role "user" :content u-content))
+                            (vector (list :role "assistant" :content a-content))))))
 
 (defun pwb-get-content-text (response)
   (plist-get (aref (plist-get response :content) 0) :text))

@@ -41,8 +41,9 @@
 (ert-deftest pwb-vector-messages-test ()
   "Proper message vector can be built? Test pwd-add-conversation"
   (let ((messages (make-messages)))
-    (should (equal (vconcat (vector (list :role "user" :content "Hi"))
-			    (vector (list :role "assistant" :content "May I help you?")))
+    (should (equal (make-messages :conversation
+				  (vconcat (vector (list :role "user" :content "Hi"))
+					   (vector (list :role "assistant" :content "May I help you?"))))
 		   (pwb-add-conversation messages "Hi" "May I help you?")))))
 
 (ert-deftest pwb-message-vector-clear-test ()

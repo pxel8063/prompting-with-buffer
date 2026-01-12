@@ -36,13 +36,15 @@
     (unless api-key
       (error "ANTHROPIC_API_KEY environment variable not set"))
     (with-temp-buffer
-      (call-process "curl" nil t nil host "-s"
-                    "-H" (concat "x-api-key: " api-key)
-                    "-H" anthropic-version
-                    "-H" application-json
-                    "-d" payload)
+      (let ((status (call-process "curl" nil t nil host "-s"
+                                  "-H" (concat "x-api-key: " api-key)
+                                  "-H" anthropic-version
+                                  "-H" application-json
+                                  "-d" payload)))
+        (unless (zerop status)
+          (error "curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
-      (json-parse-buffer :object-type 'plist))))
+      (json-parse-buffer :object-type 'plist)))))
 
 (defun pwb-buffer-string ()
   "Parse the current buffer, if narrowed, the narrowed part, "

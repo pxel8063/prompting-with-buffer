@@ -22,7 +22,7 @@
   :group 'pwb
   :type 'natnum)
 
-(defcustom pwb-claude-system-prompt ""
+(defcustom pwb-claude-system-prompt "When possible, use org-mode syntax."
   "The string of system prompt."
   :group 'pwb
   :type 'string)

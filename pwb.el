@@ -85,12 +85,12 @@
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
-  (setq pwb-claude-system-prompt (pwb-buffer-string)))
+  (customize-set-variable 'pwb-claude-system-prompt (pwb-buffer-string)))
 
 (defun pwb-clear-system-prompt ()
   "Clear system prompt."
   (interactive)
-  (setq pwb-claude-system-prompt ""))
+  (customize-set-variable 'pwb-claude-system-prompt ""))
 
 (defun pwb-message-vector-clear ()
   "Clear the conversation history."

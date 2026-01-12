@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see http://www.gnu.org/licenses.
 
 ;;; Code:
-(require 'pwb-curl)
+(require 'pwb)
 (require 'ert)
 
 (ert-deftest pwb-build-plist-test ()

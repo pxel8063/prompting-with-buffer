@@ -6,7 +6,7 @@
 
 EMACSQ = $(EMACS) -Q
 
-all: pwb-curl.elc
+all: pwb.elc
 
 %.elc: %.el
 	@$(info Compiling file $<)
@@ -14,8 +14,8 @@ all: pwb-curl.elc
 
 .PHONY: test
 test:
-	@$(EMACSQ) -l pwb-curl.el -l test/pwb-test.el -batch -f ert-run-tests-batch-and-exit
+	@$(EMACSQ) -l pwb.el -l test/pwb-test.el -batch -f ert-run-tests-batch-and-exit
 
 .PHONY: clean
 clean:
-	$(RM) pwb-curl.elc
+	$(RM) pwb.elc

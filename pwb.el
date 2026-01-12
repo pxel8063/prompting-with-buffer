@@ -129,4 +129,4 @@
     (cons (json-parse-buffer :object-type 'plist)
           (pwb-buffer-to-list-of-list))))
 
-(provide 'pwb-curl)
+(provide 'pwb)

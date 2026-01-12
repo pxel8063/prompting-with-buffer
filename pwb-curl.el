@@ -23,15 +23,15 @@
   (interactive)
   (buffer-substring-no-properties (point-min) (point-max)))
 
-(defun pwb-launch ()
+(defun pwb-launch (prefill)
   "Send a prompt based on the current buffer to api."
-  (interactive)
+  (interactive "sPrefill: ")
   (let* ((prompt (pwb-buffer-string))
          (api (make-pwb-claude-api
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system *system-prompt*))
-         (plst (pwb-build-plist api *messages* prompt))
+         (plst (pwb-build-plist api *messages* prompt prefill))
 	 (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
@@ -60,13 +60,16 @@
   :group 'pwb
   :type 'natnum)
 
-(defun pwb-build-plist (api messages input)
+(defun pwb-build-plist (api messages input prefill)
   "Return the plist of api and input."
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
         :messages (vconcat (messages-conversation messages)
-                           (vector (list :role "user" :content input)))))
+                           (vector (list :role "user" :content input))
+                           (if (string-equal prefill "")
+                               []
+                               (vector (list :role "assistant" :content prefill))))))
 
 (defvar *system-prompt* "" "The string of system prompt.")
 

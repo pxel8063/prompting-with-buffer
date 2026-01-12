@@ -2,6 +2,31 @@
 
 (require 'cl-lib)
 
+(cl-defstruct pwb-claude-api model max-tokens system)
+
+;; (defvar *claude-api* (make-pwb-claude-api
+;;                       :model pwb-claude-model
+;;                       :max-tokens pwb-claude-max-tokens
+;;                       :system ""))
+(defgroup pwb nil
+  "Custom variables of pwb."
+  :group 'local)
+
+(defcustom pwb-claude-model "claude-haiku-4-5"
+  "String to specify claude model."
+  :group 'pwb
+  :type 'string)
+
+(defcustom pwb-claude-max-tokens 1024
+  "The number of max_tokens."
+  :group 'pwb
+  :type 'natnum)
+
+(defvar *system-prompt* "" "The string of system prompt.")
+
+(cl-defstruct messages conversation)
+(defvar *messages* (make-messages) "Holding conversation history.")
+
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
   (interactive)
@@ -40,27 +65,6 @@
            response-text)
        (format "%S" response)))))
 
-(cl-defstruct pwb-claude-api model max-tokens system)
-
-;; (defvar *claude-api* (make-pwb-claude-api
-;;                       :model pwb-claude-model
-;;                       :max-tokens pwb-claude-max-tokens
-;;                       :system ""))
-
-(defgroup pwb nil
-  "Custom variables of pwb."
-  :group 'local)
-
-(defcustom pwb-claude-model "claude-haiku-4-5"
-  "String to specify claude model."
-  :group 'pwb
-  :type 'string)
-
-(defcustom pwb-claude-max-tokens 1024
-  "The number of max_tokens."
-  :group 'pwb
-  :type 'natnum)
-
 (defun pwb-build-plist (api messages input prefill)
   "Return the plist of api and input."
   (list :model (pwb-claude-api-model api)
@@ -72,8 +76,6 @@
                                []
                              (vector (list :role "assistant" :content prefill))))))
 
-(defvar *system-prompt* "" "The string of system prompt.")
-
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
@@ -83,9 +85,6 @@
   "Clear system prompt."
   (interactive)
   (setq *system-prompt* ""))
-
-(cl-defstruct messages conversation)
-(defvar *messages* (make-messages) "Holding conversation history.")
 
 (defun pwb-message-vector-clear ()
   "Clear the conversation history."

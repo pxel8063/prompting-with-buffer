@@ -30,12 +30,14 @@
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
   (let ((host "https://api.anthropic.com/v1/messages")
-        (api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
+        (api-key (getenv "ANTHROPIC_API_KEY"))
         (anthropic-version "anthropic-version: 2023-06-01")
         (application-json "content-type: application/json"))
+    (unless api-key
+      (error "ANTHROPIC_API_KEY environment variable not set"))
     (with-temp-buffer
       (call-process "curl" nil t nil host "-s"
-                    "-H" api-key
+                    "-H" (concat "x-api-key: " api-key)
                     "-H" anthropic-version
                     "-H" application-json
                     "-d" payload)

@@ -22,7 +22,10 @@
   :group 'pwb
   :type 'natnum)
 
-(defvar *system-prompt* "" "The string of system prompt.")
+(defcustom pwb-claude-system-prompt ""
+  "The string of system prompt."
+  :group 'pwb
+  :type 'string)
 
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages) "Holding conversation history.")
@@ -58,7 +61,7 @@
          (api (make-pwb-claude-api
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
-               :system *system-prompt*))
+               :system pwb-claude-system-prompt))
          (plst (pwb-build-plist api *messages* prompt prefill))
          (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
@@ -82,12 +85,12 @@
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
-  (setq *system-prompt* (pwb-buffer-string)))
+  (setq pwb-claude-system-prompt (pwb-buffer-string)))
 
 (defun pwb-clear-system-prompt ()
   "Clear system prompt."
   (interactive)
-  (setq *system-prompt* ""))
+  (setq pwb-claude-system-prompt ""))
 
 (defun pwb-message-vector-clear ()
   "Clear the conversation history."

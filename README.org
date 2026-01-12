@@ -1,0 +1,120 @@
+#+TITLE: pwb-curl - Emacs Claude API Client
+#+AUTHOR: Your Name
+#+DATE: 2024
+#+LANGUAGE: en
+
+* Overview
+
+=pwb-curl= is a lightweight Emacs client for interacting with Anthropic's Claude API.
+It allows you to send buffer contents to Claude and receive AI-generated responses directly within Emacs.
+
+** Features
+
+- Send buffer content as prompts to Claude API
+- Maintain conversation history across sessions
+- Customize system prompts
+- Display responses in a dedicated =*Anthropic*= buffer
+- Support for Claude model selection and token limits
+
+* Prerequisites
+
+- GNU Emacs 28.1 or later
+- =curl= command-line tool
+- Anthropic API key (obtain from [[https://console.anthropic.com][Anthropic Console]])
+
+* Installation
+
+** Step 1: Clone the repository
+
+#+BEGIN_SRC bash
+git clone https://github.com/yourusername/pwb-curl ~/.emacs.d/lisp/
+#+END_SRC
+
+** Step 2: Add to init.el
+
+#+BEGIN_SRC elisp
+(add-to-list 'load-path "~/.emacs.d/lisp/pwb-curl")
+(require 'pwb-curl)
+#+END_SRC
+
+** Step 3: Set API Key
+
+Option A: Environment variable (recommended)
+#+BEGIN_SRC bash
+export ANTHROPIC_API_KEY="your-api-key-here"
+#+END_SRC
+
+Option B: In init.el
+#+BEGIN_SRC elisp
+(setenv "ANTHROPIC_API_KEY" "your-api-key-here")
+#+END_SRC
+
+* Usage
+
+** Basic Workflow
+
+1. Write or select text in an Emacs buffer
+2. Run =M-x pwb-launch=
+3. (Optional) Enter prefill text when prompted
+4. View Claude's response in the =*Anthropic*= buffer
+
+** Commands
+
+| Command | Description |
+|---------|-------------|
+| =pwb-launch= | Send buffer content to Claude API |
+| =pwb-set-system-prompt= | Define system prompt from current buffer |
+| =pwb-clear-system-prompt= | Clear the current system prompt |
+| =pwb-clear-messages= | Reset conversation history |
+
+** Customizable Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| =pwb-claude-model= | ="claude-haiku-4-5"= | Claude model to use |
+| =pwb-claude-max-tokens= | =1024= | Maximum tokens in response |
+
+*** Modify via Customize
+
+#+BEGIN_SRC elisp
+M-x customize-group RET pwb RET
+#+END_SRC
+
+Or in init.el:
+#+BEGIN_SRC elisp
+(setq pwb-claude-model "claude-3-5-sonnet-20241022")
+(setq pwb-claude-max-tokens 2048)
+#+END_SRC
+
+* Examples
+
+** Example 1: Basic Prompt
+
+1. Create a new buffer or open existing file
+2. Type your prompt:
+   #+BEGIN_EXAMPLE
+   Write a Python function that calculates the nth Fibonacci number
+   #+END_EXAMPLE
+
+3. Run =M-x pwb-launch RET RET=
+4. View the response in =*Anthropic*= buffer
+
+** Example 2: Set System Prompt
+
+1. Create a new buffer
+2. Enter your system prompt:
+   #+BEGIN_EXAMPLE
+   You are an expert Python developer. Provide concise, 
+   efficient code with clear explanations.
+   #+END_EXAMPLE
+
+3. Run =M-x pwb-set-system-prompt=
+4. All subsequent prompts will use this system context
+
+** Example 3: Multi-turn Conversation
+
+1. Send first prompt using =pwb-launch=
+2. View response in =*Anthropic*= buffer
+3. Open another buffer with follow-up prompt
+4. Run =pwb-launch= again
+5. Conversation history is automatically maintained

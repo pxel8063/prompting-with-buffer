@@ -44,7 +44,7 @@
         (unless (zerop status)
           (error "curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
-      (json-parse-buffer :object-type 'plist)))))
+      (json-parse-buffer :object-type 'plist))))
 
 (defun pwb-buffer-string ()
   "Parse the current buffer, if narrowed, the narrowed part, "

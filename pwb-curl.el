@@ -29,7 +29,6 @@
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
-  (interactive)
   (let ((host "https://api.anthropic.com/v1/messages")
         (api-key (concat "x-api-key: " (getenv "ANTHROPIC_API_KEY")))
         (anthropic-version "anthropic-version: 2023-06-01")

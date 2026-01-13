@@ -129,11 +129,11 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-render-response (string)
   "Create `*Anthropic*' buffer and insert STRING and newline in this buffer."
-  (get-buffer-create "*Anthropic*")
-  (set-buffer "*Anthropic*")
-  (set-mark (point))
-  (insert string)
-  (newline 2))
+  (with-current-buffer (get-buffer-create "*Anthropic*")
+    (save-excursion
+      (goto-char (point-max))
+      (newline 2)
+      (insert string))))
 
 (defun pwb-test-response (response)
   "Test whether the response is error or not."

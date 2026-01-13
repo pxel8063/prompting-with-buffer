@@ -65,6 +65,7 @@ Like curl -H anthropic-version: 2023-06-01"
   (interactive)
   (buffer-substring-no-properties (point-min) (point-max)))
 
+;;;###autoload
 (defun pwb (prefill)
   "Send a prompt based on the current buffer to api."
   (interactive "sPrefill: ")
@@ -93,11 +94,13 @@ Like curl -H anthropic-version: 2023-06-01"
                                []
                              (vector (list :role "assistant" :content prefill))))))
 
+;;;###autoload
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
   (customize-set-variable 'pwb-claude-system-prompt (pwb-buffer-string)))
 
+;;;###autoload
 (defun pwb-clear-system-prompt ()
   "Clear system prompt."
   (interactive)
@@ -107,6 +110,7 @@ Like curl -H anthropic-version: 2023-06-01"
   "Clear the conversation history."
   (setf *messages* (make-messages)))
 
+;;;###autoload
 (defun pwb-clear-messages ()
   "Clear the conversation history."
   (interactive)

@@ -27,21 +27,32 @@
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-claude-message-api-host "https://api.anthropic.com/v1/messages"
+  "Specifing the Claude message API host."
+  :group 'pwb
+  :type 'string)
+
+(defcustom pwb-claude-anthropic-version "2023-06-01"
+  "Specifing the Claude anthropic version.
+Like curl -H anthropic-version: 2023-06-01"
+  :group 'pwb
+  :type 'string)
+
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages) "Holding conversation history.")
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
-  (let ((host "https://api.anthropic.com/v1/messages")
+  (let ((host pwb-claude-message-api-host)
         (api-key (getenv "ANTHROPIC_API_KEY"))
-        (anthropic-version "anthropic-version: 2023-06-01")
+        (anthropic-version pwb-claude-anthropic-version)
         (application-json "content-type: application/json"))
     (unless api-key
       (error "ANTHROPIC_API_KEY environment variable not set"))
     (with-temp-buffer
       (let ((status (call-process "curl" nil t nil host "-s"
                                   "-H" (concat "x-api-key: " api-key)
-                                  "-H" anthropic-version
+                                  "-H" (concat "anthropic-version: " anthropic-version)
                                   "-H" application-json
                                   "-d" payload)))
         (unless (zerop status)

@@ -1,5 +1,33 @@
-;;; pwb-curl.el --- Prompting with buffer -*- lexical-binding: t; indent-tabs-mode: nil; -*-
+;;; pwb.el --- Prompting with buffer -*- lexical-binding: t; indent-tabs-mode: nil; -*-
 
+;; Copyright (C)   2026 pxel8063
+
+;; Author:     pxel8063 <pxel8063@gmail.com>
+;; Version:    0.0.1
+;; Keywords:   lisp
+;; Package-Requires: ((emacs "29.1"))
+;; URL:        https://github.com/pxel8063/prompting-with-buffer
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of
+;; the License, or (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see http://www.gnu.org/licenses.
+
+
+;;; Commentary:
+
+;; pwb functions
+
+
+;;; Code:
 (require 'cl-lib)
 
 (cl-defstruct pwb-claude-api model max-tokens system)
@@ -148,3 +176,4 @@ Like curl -H anthropic-version: 2023-06-01"
           (pwb-buffer-to-list-of-list))))
 
 (provide 'pwb)
+;;; pwb.el ends here

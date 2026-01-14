@@ -93,7 +93,6 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-buffer-string ()
   "Parse the current buffer, if narrowed, the narrowed part, "
-  (interactive)
   (buffer-substring-no-properties (point-min) (point-max)))
 
 ;;;###autoload

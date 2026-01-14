@@ -97,7 +97,7 @@ Like curl -H anthropic-version: 2023-06-01"
   (buffer-substring-no-properties (point-min) (point-max)))
 
 ;;;###autoload
-(defun pwb (prefill)
+(defun pwb-current-buffer (prefill)
   "Send a prompt based on the current buffer to api."
   (interactive "sPrefill: ")
   (let* ((prompt (pwb-buffer-string))

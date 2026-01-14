@@ -66,6 +66,9 @@ Like curl -H anthropic-version: 2023-06-01"
   :group 'pwb
   :type 'string)
 
+(defconst pwb-claude-response-buffer "*Claude*"
+  "The name of buffer for the response from Claude.")
+
 (cl-defstruct messages conversation)
 (defvar *messages* (make-messages) "Holding conversation history.")
 
@@ -156,8 +159,9 @@ Like curl -H anthropic-version: 2023-06-01"
   (plist-get (aref (plist-get response :content) 0) :text))
 
 (defun pwb-render-response (string)
-  "Create `*Anthropic*' buffer and insert STRING and newline in this buffer."
-  (with-current-buffer (get-buffer-create "*Anthropic*")
+  "Create a buffer for displaying the response and insert STRING and
+newline in this buffer."
+  (with-current-buffer (get-buffer-create pwb-claude-response-buffer)
     (save-excursion
       (goto-char (point-max))
       (newline 2)

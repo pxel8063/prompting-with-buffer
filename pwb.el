@@ -87,7 +87,7 @@ Like curl -H anthropic-version: 2023-06-01"
                                   "-H" application-json
                                   "-d" payload)))
         (unless (zerop status)
-          (error "curl failed with status %d: %s" status (buffer-string))))
+          (error "Curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
       (json-parse-buffer :object-type 'plist))))
 
@@ -97,7 +97,8 @@ Like curl -H anthropic-version: 2023-06-01"
 
 ;;;###autoload
 (defun pwb-current-buffer (prefill)
-  "Send a prompt based on the current buffer to api."
+  "Send a prompt based on the current buffer to api.
+In minibuffer, PREFILL is used."
   (interactive "sPrefill: ")
   (let* ((prompt (pwb-buffer-string))
          (api (make-pwb-claude-api
@@ -114,7 +115,8 @@ Like curl -H anthropic-version: 2023-06-01"
        (format "%S" response)))))
 
 (defun pwb-build-plist (api messages input prefill)
-  "Return the plist of api and input."
+  "Return the API plist with INPUT and PREFILL.
+The MESSAGES so far are prepended."
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
@@ -147,7 +149,8 @@ Like curl -H anthropic-version: 2023-06-01"
   (setf pwb-messages (make-pwb-messages)))
 
 (defun pwb-add-conversation (messages u-content a-content)
-  "Add conversation history."
+  "Add conversation of U-CONTENT(user content) and A-CONTENT.
+Return MESSAGES as `pwb-messages'."
   (let ((history (pwb-messages-conversation messages)))
     (make-pwb-messages :conversation
                        (vconcat history
@@ -155,11 +158,12 @@ Like curl -H anthropic-version: 2023-06-01"
                                 (vector (list :role "assistant" :content a-content))))))
 
 (defun pwb-get-content-text (response)
+  "Return content text in the RESPONSE."
   (plist-get (aref (plist-get response :content) 0) :text))
 
 (defun pwb-render-response (string)
-  "Create a buffer for displaying the response and insert STRING and
-newline in this buffer."
+  "Create a buffer for displaying the response.
+Then insert STRING and newline in this buffer."
   (with-current-buffer (get-buffer-create pwb-claude-response-buffer)
     (save-excursion
       (goto-char (point-max))
@@ -167,12 +171,13 @@ newline in this buffer."
       (insert string))))
 
 (defun pwb-test-response (response)
-  "Test whether the response is error or not."
+  "Test whether the RESPONSE is error or not."
   (pcase (plist-get response :type)
     ("error" nil)
     ("message" t)))
 
 (defun pwb-buffer-to-list-of-list ()
+  "Build the list of plist."
   (if (= (point) (point-max))
       nil
     (cons (json-parse-buffer :object-type 'plist)

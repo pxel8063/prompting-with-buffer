@@ -92,7 +92,7 @@ Like curl -H anthropic-version: 2023-06-01"
       (json-parse-buffer :object-type 'plist))))
 
 (defun pwb-buffer-string ()
-  "Parse the current buffer, if narrowed, the narrowed part, "
+  "Parse the current buffer, if narrowed, the narrowed part."
   (buffer-substring-no-properties (point-min) (point-max)))
 
 ;;;###autoload

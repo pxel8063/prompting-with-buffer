@@ -98,7 +98,7 @@ Like curl -H anthropic-version: 2023-06-01"
 ;;;###autoload
 (defun pwb-current-buffer (prefill)
   "Send a prompt based on the current buffer to api.
-In minibuffer, PREFILL is used."
+PREFILL from minibuffer is used."
   (interactive "sPrefill: ")
   (let* ((prompt (pwb-buffer-string))
          (api (make-pwb-claude-api

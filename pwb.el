@@ -154,7 +154,7 @@ The MESSAGES so far are prepended."
   (setf pwb-messages (make-pwb-messages)))
 
 ;;;###autoload
-(defun pwb-clear-messages ()
+(defun pwb-clear-conversation ()
   "Clear the conversation history."
   (interactive)
   (setf pwb-messages (make-pwb-messages)))

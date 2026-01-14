@@ -1,4 +1,4 @@
-;;; pwb.el --- Prompting with buffer -*- lexical-binding: t; indent-tabs-mode: nil; -*-
+;;; pwb.el --- Prompting with buffer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C)   2026 pxel8063
 

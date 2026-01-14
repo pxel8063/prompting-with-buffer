@@ -24,7 +24,7 @@
   (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
 				  :max-tokens 1000
 				  :system ""))
-	(messages (make-messages)))
+	(messages (make-pwb-messages)))
     (should (equal (list :model "claude-haiku-4-5"
 			 :max_tokens 1000
 			 :system ""
@@ -37,7 +37,7 @@
   (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
 				  :max-tokens 1000
 				  :system ""))
-	(messages (make-messages)))
+	(messages (make-pwb-messages)))
     (should (equal (list :model "claude-haiku-4-5"
 			 :max_tokens 1000
 			 :system ""
@@ -54,17 +54,17 @@
 
 (ert-deftest pwb-vector-messages-test ()
   "Proper message vector can be built? Test pwd-add-conversation"
-  (let ((messages (make-messages)))
-    (should (equal (make-messages :conversation
-				  (vconcat (vector (list :role "user" :content "Hi"))
-					   (vector (list :role "assistant" :content "May I help you?"))))
+  (let ((messages (make-pwb-messages)))
+    (should (equal (make-pwb-messages :conversation
+				      (vconcat (vector (list :role "user" :content "Hi"))
+					       (vector (list :role "assistant" :content "May I help you?"))))
 		   (pwb-add-conversation messages "Hi" "May I help you?")))))
 
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that *message* hold the empty `messages'."
   (should (equal (progn (pwb-message-vector-clear)
 			*messages*)
-		 #s(messages nil))))
+		 #s(pwb-messages nil))))
 
 (ert-deftest pwb-success-or-error ()
   "Test response. Return nil if error."

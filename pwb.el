@@ -69,8 +69,8 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(cl-defstruct messages conversation)
-(defvar *messages* (make-messages) "Holding conversation history.")
+(cl-defstruct pwb-messages conversation)
+(defvar *messages* (make-pwb-messages) "Holding conversation history.")
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
@@ -119,7 +119,7 @@ Like curl -H anthropic-version: 2023-06-01"
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
-        :messages (vconcat (messages-conversation messages)
+        :messages (vconcat (pwb-messages-conversation messages)
                            (vector (list :role "user" :content input))
                            (if (string-equal prefill "")
                                []
@@ -139,21 +139,21 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-message-vector-clear ()
   "Clear the conversation history."
-  (setf *messages* (make-messages)))
+  (setf *messages* (make-pwb-messages)))
 
 ;;;###autoload
 (defun pwb-clear-messages ()
   "Clear the conversation history."
   (interactive)
-  (setf *messages* (make-messages)))
+  (setf *messages* (make-pwb-messages)))
 
 (defun pwb-add-conversation (messages u-content a-content)
   "Add conversation history."
-  (let ((history (messages-conversation messages)))
-    (make-messages :conversation
-                   (vconcat history
-                            (vector (list :role "user" :content u-content))
-                            (vector (list :role "assistant" :content a-content))))))
+  (let ((history (pwb-messages-conversation messages)))
+    (make-pwb-messages :conversation
+                       (vconcat history
+                                (vector (list :role "user" :content u-content))
+                                (vector (list :role "assistant" :content a-content))))))
 
 (defun pwb-get-content-text (response)
   (plist-get (aref (plist-get response :content) 0) :text))

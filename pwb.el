@@ -70,7 +70,7 @@ Like curl -H anthropic-version: 2023-06-01"
   "The name of buffer for the response from Claude.")
 
 (cl-defstruct pwb-messages conversation)
-(defvar *messages* (make-pwb-messages) "Holding conversation history.")
+(defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
@@ -104,12 +104,12 @@ Like curl -H anthropic-version: 2023-06-01"
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system pwb-claude-system-prompt))
-         (plst (pwb-build-plist api *messages* prompt prefill))
+         (plst (pwb-build-plist api pwb-messages prompt prefill))
          (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
          (let ((response-text (pwb-get-content-text response)))
-           (setq *messages* (pwb-add-conversation *messages* prompt response-text))
+           (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
            response-text)
        (format "%S" response)))))
 
@@ -138,13 +138,13 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-message-vector-clear ()
   "Clear the conversation history."
-  (setf *messages* (make-pwb-messages)))
+  (setf pwb-messages (make-pwb-messages)))
 
 ;;;###autoload
 (defun pwb-clear-messages ()
   "Clear the conversation history."
   (interactive)
-  (setf *messages* (make-pwb-messages)))
+  (setf pwb-messages (make-pwb-messages)))
 
 (defun pwb-add-conversation (messages u-content a-content)
   "Add conversation history."

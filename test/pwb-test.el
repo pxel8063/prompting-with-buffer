@@ -63,7 +63,7 @@
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that *message* hold the empty `messages'."
   (should (equal (progn (pwb-message-vector-clear)
-			*messages*)
+			pwb-messages)
 		 #s(pwb-messages nil))))
 
 (ert-deftest pwb-success-or-error ()

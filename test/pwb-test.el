@@ -1,4 +1,4 @@
-;;; -*- lexical-binding: t -*-
+;;; pwb-test.el --- Test for pwb -*- lexical-binding: t -*-
 
 ;;; Copyright (C) 2024 pxel8063
 
@@ -46,14 +46,14 @@
 
 
 (ert-deftest pwb-object-get-content-text-test()
-  "Test pwb-get-content-text can get a text properly."
+  "Test `pwb-get-content-text' can get a text properly."
   (should (equal (pwb-get-content-text
 		  '(:model "claude-haiku-4-5-20251001" :id "msg_01F1rvRpZWutMkCnaUYFjLai" :type "message" :role "assistant" :content [(:type "text" :text "Hello! How can I help you today?")] :stop_reason "end_turn" :stop_sequence :null :usage (:input_tokens 9 :cache_creation_input_tokens 0 :cache_read_input_tokens 0 :cache_creation (:ephemeral_5m_input_tokens 0 :ephemeral_1h_input_tokens 0) :output_tokens 12 :service_tier "standard"))
 		  )
 		 "Hello! How can I help you today?")))
 
 (ert-deftest pwb-vector-messages-test ()
-  "Proper message vector can be built? Test pwd-add-conversation"
+  "Proper message vector can be built? Test `'pwd-add-conversation'."
   (let ((messages (make-pwb-messages)))
     (should (equal (make-pwb-messages :conversation
 				      (vconcat (vector (list :role "user" :content "Hi"))
@@ -61,13 +61,13 @@
 		   (pwb-add-conversation messages "Hi" "May I help you?")))))
 
 (ert-deftest pwb-message-vector-clear-test ()
-  "Make sure that *message* hold the empty `messages'."
+  "Make sure that `pwb-messages' holds the empty `messages'."
   (should (equal (progn (pwb-message-vector-clear)
 			pwb-messages)
 		 #s(pwb-messages nil))))
 
 (ert-deftest pwb-success-or-error ()
-  "Test response. Return nil if error."
+  "Test response.  Return nil if error."
   (should (equal nil (pwb-test-response
 		      '(:type "error"
 			      :error
@@ -209,4 +209,5 @@
 }")
 
 (provide 'pwb-test)
-;;; mylisp-test.el ends here
+
+;;; pwb-test.el ends here

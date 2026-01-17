@@ -19,31 +19,32 @@
 (require 'pwb)
 (require 'ert)
 
-(ert-deftest pwb-build-plist-test ()
-  "Test api plist."
-  (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
-				  :max-tokens 1000
+(ert-deftest pwb-build-plist-test-basic ()
+  "Test basic request plist."
+  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
+				  :max-tokens 1024
 				  :system ""))
-	(messages (make-pwb-messages)))
-    (should (equal (list :model "claude-haiku-4-5"
-			 :max_tokens 1000
-			 :system ""
-			 :messages [(:role "user" :content "hello")
-				    (:role "assistant" :content "prefill")])
-		   (pwb-build-plist api messages "hello" "prefill")))))
+	(messages (make-pwb-messages))
+        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
+\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
+    (should
+     (equal json
+	    (json-serialize
+             (pwb-build-plist api messages "Hello, Claude" ""))))))
 
-(ert-deftest pwb-build-plist-without-prefill-test ()
-  "Test api plist."
-  (let ((api (make-pwb-claude-api :model "claude-haiku-4-5"
-				  :max-tokens 1000
+(ert-deftest pwb-build-plist-test-basic-prefill ()
+  "Test basic request plist with prefill"
+  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
+				  :max-tokens 1024
 				  :system ""))
-	(messages (make-pwb-messages)))
-    (should (equal (list :model "claude-haiku-4-5"
-			 :max_tokens 1000
-			 :system ""
-			 :messages [(:role "user" :content "hello")])
-		   (pwb-build-plist api messages "hello" "")))))
-
+	(messages (make-pwb-messages))
+        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
+\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"},\
+{\"role\":\"assistant\",\"content\":\"prefill\"}]}"))
+    (should
+     (equal json
+	    (json-serialize
+             (pwb-build-plist api messages "Hello, Claude" "prefill"))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."

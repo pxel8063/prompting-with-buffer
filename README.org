@@ -27,26 +27,20 @@ It allows you to send buffer contents to Claude and receive AI-generated respons
 ** Step 1: Clone the repository
 
 #+BEGIN_SRC bash
-git clone https://github.com/yourusername/pwb-curl ~/.emacs.d/lisp/
+git clone https://github.com/pxel8063/prompting-with-buffer.git ~/.emacs.d/lisp/
 #+END_SRC
 
 ** Step 2: Add to init.el
 
 #+BEGIN_SRC elisp
-(add-to-list 'load-path "~/.emacs.d/lisp/pwb-curl")
-(require 'pwb-curl)
+(add-to-list 'load-path "~/.emacs.d/lisp/prompting-with-buffer")
+(require 'pwb)
 #+END_SRC
 
 ** Step 3: Set API Key
-
-Option A: Environment variable (recommended)
+Set =auth-sourc= for the API.
 #+BEGIN_SRC bash
-export ANTHROPIC_API_KEY="your-api-key-here"
-#+END_SRC
-
-Option B: In init.el
-#+BEGIN_SRC elisp
-(setenv "ANTHROPIC_API_KEY" "your-api-key-here")
+machine api.anthropic.com password s*-*t-a-*api-key**
 #+END_SRC
 
 * Usage
@@ -54,25 +48,29 @@ Option B: In init.el
 ** Basic Workflow
 
 1. Write or select text in an Emacs buffer
-2. Run =M-x pwb-launch=
+2. Run =M-x pwb-current-buffer=
 3. (Optional) Enter prefill text when prompted
 4. View Claude's response in the =*Anthropic*= buffer
 
 ** Commands
 
-| Command                   | Description                              |
-|---------------------------+------------------------------------------|
-| =pwb-launch=              | Send buffer content to Claude API        |
-| =pwb-set-system-prompt=   | Define system prompt from current buffer |
-| =pwb-clear-system-prompt= | Clear the current system prompt          |
-| =pwb-clear-messages=      | Reset conversation history               |
+| Command                   | Description                                          |
+|---------------------------+------------------------------------------------------|
+| =pwb-current-buffer=      | Send the content of the current buffer to Claude API |
+| =pwb-set-system-prompt=   | Define system prompt from current buffer             |
+| =pwb-clear-system-prompt= | Clear the current system prompt                      |
+| =pwb-clear-messages=      | Reset conversation history                           |
 
 ** Customizable Variables
 
-| Variable                | Default              | Description                |
-|-------------------------+----------------------+----------------------------|
-| =pwb-claude-model=      | ="claude-haiku-4-5"= | Claude model to use        |
-| =pwb-claude-max-tokens= | =1024=               | Maximum tokens in response |
+| Variable                       | Default                                 | Description                       |
+|--------------------------------+-----------------------------------------+-----------------------------------|
+| =pwb-claude-model=             | ="claude-haiku-4-5"=                    | Claude model to use               |
+| =pwb-claude-max-tokens=        | =1024=                                  | Maximum tokens in response        |
+| =pwb-claude-api-host=          | ="api.anthropic.com"=                   | The machine name in =authxsource= |
+| =pwb-claude-anthropic-version= | ="2023-06-01"=                          | Anthropic version                 |
+| =pwb-claude-message-api-url=   | "https://api.anthropic.com/v1/messages" | The message API url               |
+| =pwb-claude-system-prompt=     | "When possible, use org-mode syntax."   | The system prompt                 |
 
 *** Modify via Customize
 
@@ -96,7 +94,7 @@ Or in init.el:
    Write a Python function that calculates the nth Fibonacci number
    #+END_EXAMPLE
 
-3. Run =M-x pwb-launch RET RET=
+3. Run =M-x pwb-current-buffer RET RET=
 4. View the response in =*Anthropic*= buffer
 
 ** Example 2: Set System Prompt
@@ -113,8 +111,8 @@ Or in init.el:
 
 ** Example 3: Multi-turn Conversation
 
-1. Send first prompt using =pwb-launch=
-2. View response in =*Anthropic*= buffer
+1. Send first prompt using =pwb-current-buffer==
+2. View response in =*Claude*= buffer
 3. Open another buffer with follow-up prompt
-4. Run =pwb-launch= again
+4. Run =pwb-current-buffer= again
 5. Conversation history is automatically maintained

@@ -40,6 +40,7 @@
 
 ;;; Code:
 (require 'cl-lib)
+(require 'auth-source)
 
 (cl-defstruct pwb-claude-api model max-tokens system)
 
@@ -66,8 +67,13 @@
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-claude-message-api-host "https://api.anthropic.com/v1/messages"
+(defcustom pwb-claude-message-api-url "https://api.anthropic.com/v1/messages"
   "Specifing the Claude message API host."
+  :group 'pwb
+  :type 'string)
+
+(defcustom pwb-claude-api-host "api.anthropic.com"
+  "Machine name of th api in `auth-source'."
   :group 'pwb
   :type 'string)
 
@@ -83,16 +89,20 @@ Like curl -H anthropic-version: 2023-06-01"
 (cl-defstruct pwb-messages conversation)
 (defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
 
+(defun pwb-get-credential ()
+  "Get the credential from the `auth-source'."
+  (auth-source-pick-first-password :host pwb-claude-api-host))
+
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
-  (let ((host pwb-claude-message-api-host)
-        (api-key (getenv "ANTHROPIC_API_KEY"))
+  (let ((url pwb-claude-message-api-url)
+        (api-key (pwb-get-credential))
         (anthropic-version pwb-claude-anthropic-version)
         (application-json "content-type: application/json"))
     (unless api-key
       (error "ANTHROPIC_API_KEY environment variable not set"))
     (with-temp-buffer
-      (let ((status (call-process "curl" nil t nil host "-s"
+      (let ((status (call-process "curl" nil t nil url "-s"
                                   "-H" (concat "x-api-key: " api-key)
                                   "-H" (concat "anthropic-version: " anthropic-version)
                                   "-H" application-json

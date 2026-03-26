@@ -30,7 +30,7 @@
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-plist api messages "Hello, Claude" ""))))))
+             (pwb-build-plist api messages "Hello, Claude"))))))
 
 (ert-deftest pwb-build-plist-test-basic-prefill ()
   "Test basic request plist with prefill"
@@ -39,12 +39,11 @@
 				  :system ""))
 	(messages (make-pwb-messages))
         (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
-\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"},\
-{\"role\":\"assistant\",\"content\":\"prefill\"}]}"))
+\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-plist api messages "Hello, Claude" "prefill"))))))
+             (pwb-build-plist api messages "Hello, Claude"))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."

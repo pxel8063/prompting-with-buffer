@@ -117,16 +117,16 @@ Like curl -H anthropic-version: 2023-06-01"
   (buffer-substring-no-properties (point-min) (point-max)))
 
 ;;;###autoload
-(defun pwb-current-buffer (prefill)
+(defun pwb-current-buffer ()
   "Send a prompt based on the current buffer to api.
 PREFILL from minibuffer is used."
-  (interactive "sPrefill: ")
+  (interactive)
   (let* ((prompt (pwb-buffer-string))
          (api (make-pwb-claude-api
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system pwb-claude-system-prompt))
-         (plst (pwb-build-plist api pwb-messages prompt prefill))
+         (plst (pwb-build-plist api pwb-messages prompt))
          (response (pwb-curl (json-serialize plst))))
     (pwb-render-response
      (if (pwb-test-response response)
@@ -135,17 +135,14 @@ PREFILL from minibuffer is used."
            response-text)
        (format "%S" response)))))
 
-(defun pwb-build-plist (api messages input prefill)
+(defun pwb-build-plist (api messages input)
   "Return the API plist with INPUT and PREFILL.
 The MESSAGES so far are prepended."
   (list :model (pwb-claude-api-model api)
         :max_tokens  (pwb-claude-api-max-tokens api)
         :system  (pwb-claude-api-system api)
         :messages (vconcat (pwb-messages-conversation messages)
-                           (vector (list :role "user" :content input))
-                           (if (string-equal prefill "")
-                               []
-                             (vector (list :role "assistant" :content prefill))))))
+                           (vector (list :role "user" :content input)))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

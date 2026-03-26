@@ -3,7 +3,7 @@
 ;; Copyright (C)   2026 pxel8063
 
 ;; Author:     pxel8063 <pxel8063@gmail.com>
-;; Version:    0.0.1
+;; Version:    0.0.2
 ;; Keywords:   lisp
 ;; Package-Requires: ((emacs "29.1"))
 ;; URL:        https://github.com/pxel8063/prompting-with-buffer

@@ -86,8 +86,9 @@
 
 (defun pwb-buffer-to-list-of-list-fixture (body)
   (let ((buffer (get-buffer-create "*test-temp*")))
-    (unwind-protect
-	(progn (insert "{
+    (with-current-buffer buffer
+      (unwind-protect
+	  (progn (insert "{
   \"type\": \"message\",
   \"role\": \"assistant\"
 }
@@ -95,9 +96,9 @@
   \"stop_reason\": \"end_turn\",
   \"stop_sequence\": null
 }")
-	       (goto-char (point-min))
-               (funcall body)))
-    (kill-buffer "*test-temp*")))
+	         (goto-char (point-min))
+                 (funcall body))
+        (kill-buffer buffer)))))
 
 (ert-deftest pwb-buffer-to-list-of-list-test ()
   (pwb-buffer-to-list-of-list-fixture

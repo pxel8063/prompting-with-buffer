@@ -145,6 +145,21 @@ The MESSAGES so far are prepended."
                            (vector (list :role "user" :content input)))))
 
 ;;;###autoload
+(defun pwb-save-conversation ()
+  "Save the conversation."
+  (interactive)
+  (with-temp-file "~/pwb-sampletest.el"
+    (princ "(setq pwb-messages " (current-buffer))
+    (prin1 pwb-messages (current-buffer))
+    (princ ")" (current-buffer))))
+
+;;;###autoload
+(defun pwb-restore-conversation ()
+  "Restore the conversation."
+  (interactive)
+  (load-file "~/pwb-sampletest.el"))
+
+;;;###autoload
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)

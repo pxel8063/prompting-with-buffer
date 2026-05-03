@@ -1,5 +1,5 @@
 #+TITLE: pwb - Emacs Claude API Client
-#+AUTHOR: Your Name
+#+AUTHOR: pxel8063
 #+DATE: 2026
 #+LANGUAGE: en
 
@@ -13,7 +13,7 @@ It allows you to send buffer contents to Claude and receive AI-generated respons
 - Send buffer content as prompts to Claude API
 - Maintain conversation history across sessions
 - Customize system prompts
-- Display responses in a dedicated =*Anthropic*= buffer
+- Display responses in a dedicated =*Claude*= buffer
 - Support for Claude model selection and token limits
 
 * Prerequisites
@@ -50,7 +50,7 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 1. Write or select text in an Emacs buffer
 2. Run =M-x pwb-current-buffer=
 3. (Optional) Enter prefill text when prompted
-4. View Claude's response in the =*Anthropic*= buffer
+4. View Claude's response in the =*Claude*= buffer
 
 ** Commands
 
@@ -95,7 +95,7 @@ Or in init.el:
    #+END_EXAMPLE
 
 3. Run =M-x pwb-current-buffer RET RET=
-4. View the response in =*Anthropic*= buffer
+4. View the response in =*Claude*= buffer
 
 ** Example 2: Set System Prompt
 

@@ -19,8 +19,8 @@
 (require 'pwb)
 (require 'ert)
 
-(ert-deftest pwb-build-plist-test-basic ()
-  "Test basic request plist."
+(ert-deftest pwb-build-alist-test-basic ()
+  "Test basic request alist."
   (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
 				  :max-tokens 1024
 				  :system ""))
@@ -30,10 +30,10 @@
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-plist api messages "Hello, Claude"))))))
+             (pwb-build-alist api messages "Hello, Claude"))))))
 
-(ert-deftest pwb-build-plist-test-basic-prefill ()
-  "Test basic request plist with prefill"
+(ert-deftest pwb-build-alist-test-basic-prefill ()
+  "Test basic request alist with prefill"
   (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
 				  :max-tokens 1024
 				  :system ""))
@@ -43,46 +43,53 @@
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-plist api messages "Hello, Claude"))))))
+             (pwb-build-alist api messages "Hello, Claude"))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."
   (should (equal (pwb-get-content-text
-		  '(:model "claude-haiku-4-5-20251001" :id "msg_01F1rvRpZWutMkCnaUYFjLai" :type "message" :role "assistant" :content [(:type "text" :text "Hello! How can I help you today?")] :stop_reason "end_turn" :stop_sequence :null :usage (:input_tokens 9 :cache_creation_input_tokens 0 :cache_read_input_tokens 0 :cache_creation (:ephemeral_5m_input_tokens 0 :ephemeral_1h_input_tokens 0) :output_tokens 12 :service_tier "standard"))
-		  )
+		  (list (cons 'model "claude-haiku-4-5-20251001")
+                        (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+                        (cons 'type "message")
+                        (cons 'role "assistant")
+                        (cons 'content [((type . "text") (text . "Hello! How can I help you today?"))])
+                        (cons 'stop_reason "end_turn")
+                        (cons 'stop_sequence 'null)
+                        (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))
+                  )
 		 "Hello! How can I help you today?")))
 
 (ert-deftest pwb-vector-messages-test ()
   "Proper message vector can be built? Test `'pwd-add-conversation'."
   (let ((messages (make-pwb-messages)))
     (should (equal (make-pwb-messages :conversation
-				      (vconcat (vector (list :role "user" :content "Hi"))
-					       (vector (list :role "assistant" :content "May I help you?"))))
+				      (vconcat (vector (list (cons 'role "user") (cons 'content "Hi")))
+					       (vector (list (cons 'role "assistant") (cons 'content "May I help you?")))))
 		   (pwb-add-conversation messages "Hi" "May I help you?")))))
 
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that `pwb-messages' holds the empty `messages'."
-  (should (equal (progn (pwb-message-vector-clear)
+  (should (equal (progn (pwb-clear-conversation)
 			pwb-messages)
 		 #s(pwb-messages nil))))
 
 (ert-deftest pwb-success-or-error ()
   "Test response.  Return nil if error."
   (should (equal nil (pwb-test-response
-		      '(:type "error"
-			      :error
-			      (:type "invalid_request_error"
-				     :message "Input does not match the expected shape.")
-			      :request_id "req_011CWsDcj4HTJuWosWP8djPz"))))
+		      (list (cons 'type "error")
+			    (cons 'error
+			          (list (cons 'type "invalid_request_error")
+				        (cons 'message "Input does not match the expected shape.")))
+			    (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz")))))
   (should (equal t (pwb-test-response
-		    '(:model "claude-haiku-4-5-20251001"
-			     :id "msg_01F1rvRpZWutMkCnaUYFjLai"
-			     :type "message"
-			     :role "assistant"
+		    (list (cons 'model "claude-haiku-4-5-20251001")
+			  (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+			  (cons 'type "message")
+			  (cons 'role "assistant")
 			     :content [(:type "text" :text "Hello! How can I help you today?")]
-			     :stop_reason "end_turn"
-			     :stop_sequence :null
-			     :usage (:input_tokens 9 :cache_creation_input_tokens 0 :cache_read_input_tokens 0 :cache_creation (:ephemeral_5m_input_tokens 0 :ephemeral_1h_input_tokens 0) :output_tokens 12 :service_tier "standard"))))))
+			   (cons 'stop_reason "end_turn")
+			   (cons 'stop_sequence 'null)
+			   (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))))
 
 (defun pwb-buffer-to-list-of-list-fixture (body)
   (let ((buffer (get-buffer-create "*test-temp*")))

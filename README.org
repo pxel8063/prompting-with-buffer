@@ -76,9 +76,9 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 
 *** Modify via Customize
 
-#+BEGIN_SRC elisp
+#+BEGIN_EXAMPLE
 M-x customize-group RET pwb RET
-#+END_SRC
+#+END_EXAMPLEx
 
 Or in init.el:
 #+BEGIN_SRC elisp
@@ -104,7 +104,7 @@ The order of the precedence:
 1. The current headline
 2. The org properties set at the top of the current buffer
 3. The customized variables
-   
+
 * Examples
 
 ** Example 1: Basic Prompt
@@ -123,7 +123,7 @@ The order of the precedence:
 1. Create a new buffer
 2. Enter your system prompt:
    #+BEGIN_EXAMPLE
-   You are an expert Python developer. Provide concise, 
+   You are an expert Python developer. Provide concise,
    efficient code with clear explanations.
    #+END_EXAMPLE
 

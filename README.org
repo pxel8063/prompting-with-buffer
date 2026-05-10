@@ -105,6 +105,8 @@ The order of the precedence:
 2. The org properties set at the top of the current buffer
 3. The customized variables
 
+Currently, =max_tokens=, =system= and =model= take effect.
+
 * Examples
 
 ** Example 1: Basic Prompt

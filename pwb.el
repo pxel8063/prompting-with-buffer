@@ -99,13 +99,10 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-push-org-property (ret)
   (let ((prop (org-entry-properties (point))))
-    (mapcar (lambda (elt)
-              (if (equal (car elt) "MAX_TOKENS")
-                  (let ((x (cons (car elt) (string-to-number (cdr elt)))))
-                    (push x ret))
-                  (push elt ret)))
-            (pwb-filter-org-property prop))
-    ret))
+    (dolist (elt (pwb-filter-org-property prop) ret)
+      (if (equal (car elt) "MAX_TOKENS")
+          (push (cons (car elt) (string-to-number (cdr elt))) ret)
+        (push elt ret)))))
 
 (defun pwb-accu-org-property ()
   (let* ((ret)

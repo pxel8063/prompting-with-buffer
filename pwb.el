@@ -104,12 +104,15 @@ Like curl -H anthropic-version: 2023-06-01"
           (push (cons (car elt) (string-to-number (cdr elt))) ret)
         (push elt ret)))))
 
+(declare-function org-entry-properties "org" (&optional pom which))
+
 (defun pwb-accu-org-property ()
-  (let* ((ret)
-         (accum (pwb-push-org-property ret)))
-    (save-excursion
-      (goto-char (point-min))
-      (pwb-push-org-property accum))))
+  (when (derived-mode-p 'org-mode)
+    (let* ((ret)
+           (accum (pwb-push-org-property ret)))
+      (save-excursion
+        (goto-char (point-min))
+        (pwb-push-org-property accum)))))
 
 (defmacro pwb-set-alist (param alist val)
   `(setf (alist-get ,param ,alist nil nil #'equal) ,val))

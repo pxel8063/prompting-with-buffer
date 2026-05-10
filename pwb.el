@@ -73,7 +73,7 @@
   :type 'string)
 
 (defcustom pwb-claude-api-host "api.anthropic.com"
-  "Machine name of th api in `auth-source'."
+  "Machine name of the api in `auth-source'."
   :group 'pwb
   :type 'string)
 
@@ -86,8 +86,33 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
+(defconst pwb-claude-api-parameters-by-org-property '("max_tokens" "model")
+  "The list of the claude message API parameters.")
+
 (cl-defstruct pwb-messages conversation)
 (defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
+
+(defun pwb-take-while-api-params (seq)
+  (seq-filter
+   (lambda (elt) (member (car elt) pwb-claude-api-parameters))
+   seq))
+
+(defmacro pwb-set-alist (param alist val)
+  `(setf (alist-get ,param ,alist nil nil #'equal) ,val))
+
+(defun pwb-build-alist-from-custom ()
+  (let (ret)
+    (pwb-set-alist 'max_tokens ret pwb-claude-max-tokens)
+    (pwb-set-alist 'model ret pwb-claude-model)
+    (pwb-set-alist 'system ret pwb-claude-system-prompt)
+    ret))
+
+(defun pwb-build-alist (alist messages input)
+  (let ((mes (pwb-messages-conversation messages)))
+    (setq mes (vconcat mes
+                       (vector (list (cons 'role "user") (cons 'content input)))))
+    (pwb-set-alist 'messages alist mes)
+    alist))
 
 (defun pwb-get-credential ()
   "Get the credential from the `auth-source'."
@@ -110,7 +135,7 @@ Like curl -H anthropic-version: 2023-06-01"
         (unless (zerop status)
           (error "Curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
-      (json-parse-buffer :object-type 'plist))))
+      (json-parse-buffer :object-type 'alist))))
 
 (defun pwb-buffer-string ()
   "Parse the current buffer, if narrowed, the narrowed part."
@@ -126,23 +151,14 @@ PREFILL from minibuffer is used."
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system pwb-claude-system-prompt))
-         (plst (pwb-build-plist api pwb-messages prompt))
-         (response (pwb-curl (json-serialize plst))))
+         (alst (pwb-build-alist (pwb-build-alist-from-custom) pwb-messages prompt))
+         (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)
          (let ((response-text (pwb-get-content-text response)))
            (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
            response-text)
        (format "%S" response)))))
-
-(defun pwb-build-plist (api messages input)
-  "Return the API plist with INPUT and PREFILL.
-The MESSAGES so far are prepended."
-  (list :model (pwb-claude-api-model api)
-        :max_tokens  (pwb-claude-api-max-tokens api)
-        :system  (pwb-claude-api-system api)
-        :messages (vconcat (pwb-messages-conversation messages)
-                           (vector (list :role "user" :content input)))))
 
 ;;;###autoload
 (defun pwb-save-conversation ()
@@ -171,10 +187,6 @@ The MESSAGES so far are prepended."
   (interactive)
   (customize-set-variable 'pwb-claude-system-prompt ""))
 
-(defun pwb-message-vector-clear ()
-  "Clear the conversation history."
-  (setf pwb-messages (make-pwb-messages)))
-
 ;;;###autoload
 (defun pwb-clear-conversation ()
   "Clear the conversation history."
@@ -187,12 +199,12 @@ Return MESSAGES as `pwb-messages'."
   (let ((history (pwb-messages-conversation messages)))
     (make-pwb-messages :conversation
                        (vconcat history
-                                (vector (list :role "user" :content u-content))
-                                (vector (list :role "assistant" :content a-content))))))
+                                (vector (list (cons 'role "user") (cons 'content u-content)))
+                                (vector (list (cons 'role "assistant") (cons 'content a-content)))))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
-  (plist-get (aref (plist-get response :content) 0) :text))
+  (alist-get 'text (aref (alist-get 'content response) 0)))
 
 (defun pwb-render-response (string)
   "Create a buffer for displaying the response.
@@ -205,7 +217,7 @@ Then insert STRING and newline in this buffer."
 
 (defun pwb-test-response (response)
   "Test whether the RESPONSE is error or not."
-  (pcase (plist-get response :type)
+  (pcase (alist-get 'type response)
     ("error" nil)
     ("message" t)))
 

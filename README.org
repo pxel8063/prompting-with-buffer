@@ -115,7 +115,7 @@ The order of the precedence:
    Write a Python function that calculates the nth Fibonacci number
    #+END_EXAMPLE
 
-3. Run =M-x pwb-current-buffer RET RET=
+3. Run =M-x pwb-current-buffer RET=
 4. View the response in =*Claude*= buffer
 
 ** Example 2: Set System Prompt
@@ -132,7 +132,7 @@ The order of the precedence:
 
 ** Example 3: Multi-turn Conversation
 
-1. Send first prompt using =pwb-current-buffer==
+1. Send first prompt using =pwb-current-buffer=
 2. View response in =*Claude*= buffer
 3. Open the same buffer and write a follow-up prompt
 4. Narrow the buffer to the only portion of newly written follow-up prompt

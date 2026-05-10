@@ -60,8 +60,8 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 | =pwb-set-system-prompt=   | Define system prompt from current buffer             |
 | =pwb-clear-system-prompt= | Clear the current system prompt                      |
 | =pwb-clear-conversation=  | Reset conversation history                           |
-| =pwb-save-conversation=   | Save conversation history to the file                |
-| =pwb-restor-conversation= | Restor conversation history from the file                                          |
+| =pwb-save-conversation=   | Save conversation history to a file                  |
+| =pwb-restor-conversation= | Restor conversation history from a file                                            |
 
 ** Customizable Variables
 

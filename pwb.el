@@ -42,12 +42,6 @@
 (require 'cl-lib)
 (require 'auth-source)
 
-(cl-defstruct pwb-claude-api model max-tokens system)
-
-;; (defvar *claude-api* (make-pwb-claude-api
-;;                       :model pwb-claude-model
-;;                       :max-tokens pwb-claude-max-tokens
-;;                       :system ""))
 (defgroup pwb nil
   "Custom variables of pwb."
   :group 'local)
@@ -247,13 +241,6 @@ Then insert STRING and newline in this buffer."
   (pcase (alist-get 'type response)
     ("error" nil)
     ("message" t)))
-
-(defun pwb-buffer-to-list-of-list ()
-  "Build the list of plist."
-  (if (= (point) (point-max))
-      nil
-    (cons (json-parse-buffer :object-type 'plist)
-          (pwb-buffer-to-list-of-list))))
 
 (provide 'pwb)
 ;;; pwb.el ends here

@@ -21,29 +21,16 @@
 
 (ert-deftest pwb-build-alist-test-basic ()
   "Test basic request alist."
-  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
-				  :max-tokens 1024
-				  :system ""))
+  (let ((alist '((model . "claude-sonnet-4-5")
+		 (max_tokens . 1024)
+		 (system . "")))
 	(messages (make-pwb-messages))
-        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
-\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
+        (json "{\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}],\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
+\"system\":\"\"}"))
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-alist api messages "Hello, Claude"))))))
-
-(ert-deftest pwb-build-alist-test-basic-prefill ()
-  "Test basic request alist with prefill"
-  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
-				  :max-tokens 1024
-				  :system ""))
-	(messages (make-pwb-messages))
-        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
-\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
-    (should
-     (equal json
-	    (json-serialize
-             (pwb-build-alist api messages "Hello, Claude"))))))
+             (pwb-build-alist alist messages "Hello, Claude"))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."
@@ -106,13 +93,6 @@
 	         (goto-char (point-min))
                  (funcall body))
         (kill-buffer buffer)))))
-
-(ert-deftest pwb-buffer-to-list-of-list-test ()
-  (pwb-buffer-to-list-of-list-fixture
-   (lambda ()
-     (should (equal (pwb-buffer-to-list-of-list)
-		    '((:type "message" :role "assistant")
-		      (:stop_reason "end_turn" :stop_sequence :null)))))))
 
 (setq pwb-test-response-str "{
   \"model\": \"claude-haiku-4-5-20251001\",

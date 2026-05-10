@@ -86,7 +86,7 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-from-org-property '("max_tokens" "model")
+(defconst pwb-claude-api-parameters-from-org-property '("max_tokens" "model" "system")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)

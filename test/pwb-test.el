@@ -21,29 +21,16 @@
 
 (ert-deftest pwb-build-alist-test-basic ()
   "Test basic request alist."
-  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
-				  :max-tokens 1024
-				  :system ""))
+  (let ((alist '((model . "claude-sonnet-4-5")
+		 (max_tokens . 1024)
+		 (system . "")))
 	(messages (make-pwb-messages))
-        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
-\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
+        (json "{\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}],\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
+\"system\":\"\"}"))
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-alist api messages "Hello, Claude"))))))
-
-(ert-deftest pwb-build-alist-test-basic-prefill ()
-  "Test basic request alist with prefill"
-  (let ((api (make-pwb-claude-api :model "claude-sonnet-4-5"
-				  :max-tokens 1024
-				  :system ""))
-	(messages (make-pwb-messages))
-        (json "{\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
-\"system\":\"\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}]}"))
-    (should
-     (equal json
-	    (json-serialize
-             (pwb-build-alist api messages "Hello, Claude"))))))
+             (pwb-build-alist alist messages "Hello, Claude"))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."
@@ -90,131 +77,6 @@
 			   (cons 'stop_reason "end_turn")
 			   (cons 'stop_sequence 'null)
 			   (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))))
-
-(defun pwb-buffer-to-list-of-list-fixture (body)
-  (let ((buffer (get-buffer-create "*test-temp*")))
-    (with-current-buffer buffer
-      (unwind-protect
-	  (progn (insert "{
-  \"type\": \"message\",
-  \"role\": \"assistant\"
-}
-{
-  \"stop_reason\": \"end_turn\",
-  \"stop_sequence\": null
-}")
-	         (goto-char (point-min))
-                 (funcall body))
-        (kill-buffer buffer)))))
-
-(ert-deftest pwb-buffer-to-list-of-list-test ()
-  (pwb-buffer-to-list-of-list-fixture
-   (lambda ()
-     (should (equal (pwb-buffer-to-list-of-list)
-		    '((:type "message" :role "assistant")
-		      (:stop_reason "end_turn" :stop_sequence :null)))))))
-
-(setq pwb-test-response-str "{
-  \"model\": \"claude-haiku-4-5-20251001\",
-  \"id\": \"msg_01SAFhgzYRjdc9oTKMkygSHG\",
-  \"type\": \"message\",
-  \"role\": \"assistant\",
-  \"content\": [
-    {
-      \"type\": \"text\",
-      \"text\": \"Hello! How can I help you today?\"
-    }
-  ],
-  \"stop_reason\": \"end_turn\",
-  \"stop_sequence\": null,
-  \"usage\": {
-    \"input_tokens\": 9,
-    \"cache_creation_input_tokens\": 0,
-    \"cache_read_input_tokens\": 0,
-    \"cache_creation\": {
-      \"ephemeral_5m_input_tokens\": 0,
-      \"ephemeral_1h_input_tokens\": 0
-    },
-    \"output_tokens\": 12,
-    \"service_tier\": \"standard\"
-  }
-}
-{
-  \"model\": \"claude-haiku-4-5-20251001\",
-  \"id\": \"msg_01F97D5d6BSkLdmuNbVFxTKT\",
-  \"type\": \"message\",
-  \"role\": \"assistant\",
-  \"content\": [
-    {
-      \"type\": \"text\",
-      \"text\": \"Hello! Nice to see you again. How can I help you this time?\"
-    }
-  ],
-  \"stop_reason\": \"end_turn\",
-  \"stop_sequence\": null,
-  \"usage\": {
-    \"input_tokens\": 11,
-    \"cache_creation_input_tokens\": 0,
-    \"cache_read_input_tokens\": 0,
-    \"cache_creation\": {
-      \"ephemeral_5m_input_tokens\": 0,
-      \"ephemeral_1h_input_tokens\": 0
-    },
-    \"output_tokens\": 19,
-    \"service_tier\": \"standard\"
-  }
-}")
-
-(setq pwb-test-response-str-1 "{
-  \"model\": \"claude-haiku-4-5-20251001\",
-  \"id\": \"msg_01SAFhgzYRjdc9oTKMkygSHG\",
-  \"type\": \"message\",
-  \"role\": \"assistant\",
-  \"content\": [
-    {
-      \"type\": \"text\",
-      \"text\": \"Hello! How can I help you today?\"
-    }
-  ],
-  \"stop_reason\": \"end_turn\",
-  \"stop_sequence\": null,
-  \"usage\": {
-    \"input_tokens\": 9,
-    \"cache_creation_input_tokens\": 0,
-    \"cache_read_input_tokens\": 0,
-    \"cache_creation\": {
-      \"ephemeral_5m_input_tokens\": 0,
-      \"ephemeral_1h_input_tokens\": 0
-    },
-    \"output_tokens\": 12,
-    \"service_tier\": \"standard\"
-  }
-}")
-(setq pwb-test-response-str-2 "{
-  \"model\": \"claude-haiku-4-5-20251001\",
-  \"id\": \"msg_01F97D5d6BSkLdmuNbVFxTKT\",
-  \"type\": \"message\",
-  \"role\": \"assistant\",
-  \"content\": [
-    {
-      \"type\": \"text\",
-      \"text\": \"Hello! Nice to see you again. How can I help you this time?\"
-    }
-  ],
-  \"stop_reason\": \"end_turn\",
-  \"stop_sequence\": null,
-  \"usage\": {
-    \"input_tokens\": 11,
-    \"cache_creation_input_tokens\": 0,
-    \"cache_read_input_tokens\": 0,
-    \"cache_creation\": {
-      \"ephemeral_5m_input_tokens\": 0,
-      \"ephemeral_1h_input_tokens\": 0
-    },
-    \"output_tokens\": 19,
-    \"service_tier\": \"standard\"
-  }
-}")
 
 (provide 'pwb-test)
 

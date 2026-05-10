@@ -42,12 +42,6 @@
 (require 'cl-lib)
 (require 'auth-source)
 
-(cl-defstruct pwb-claude-api model max-tokens system)
-
-;; (defvar *claude-api* (make-pwb-claude-api
-;;                       :model pwb-claude-model
-;;                       :max-tokens pwb-claude-max-tokens
-;;                       :system ""))
 (defgroup pwb nil
   "Custom variables of pwb."
   :group 'local)
@@ -86,16 +80,33 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-from-org-property '("max_tokens" "model" "system")
+(defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "SYSTEM")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
 (defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
 
-(defun pwb-take-while-api-params (seq)
+(defun pwb-filter-org-property (seq)
   (seq-filter
    (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
    seq))
+
+(defun pwb-push-org-property (ret)
+  (let ((prop (org-entry-properties (point))))
+    (dolist (elt (pwb-filter-org-property prop) ret)
+      (if (equal (car elt) "MAX_TOKENS")
+          (push (cons (car elt) (string-to-number (cdr elt))) ret)
+        (push elt ret)))))
+
+(declare-function org-entry-properties "org" (&optional pom which))
+
+(defun pwb-accu-org-property ()
+  (when (derived-mode-p 'org-mode)
+    (let* ((ret)
+           (accum (pwb-push-org-property ret)))
+      (save-excursion
+        (goto-char (point-min))
+        (pwb-push-org-property accum)))))
 
 (defmacro pwb-set-alist (param alist val)
   `(setf (alist-get ,param ,alist nil nil #'equal) ,val))
@@ -106,6 +117,19 @@ Like curl -H anthropic-version: 2023-06-01"
     (pwb-set-alist 'model ret pwb-claude-model)
     (pwb-set-alist 'system ret pwb-claude-system-prompt)
     ret))
+
+(defun pwb-seq-set-alist (seq ret)
+  "Merge SEQ into alist RET, downcasing and interning each key."
+  (dolist (entry seq ret)
+    (setq ret (pwb-set-alist (intern (downcase (car entry)))
+                             ret
+                             (cdr entry)))))
+
+
+(defun pwb-build-whole-alist ()
+  (let ((ret (pwb-build-alist-from-custom))
+        (a (pwb-accu-org-property)))
+    (pwb-seq-set-alist a ret)))
 
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
@@ -147,7 +171,7 @@ Like curl -H anthropic-version: 2023-06-01"
 PREFILL from minibuffer is used."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-         (alst (pwb-build-alist (pwb-build-alist-from-custom) pwb-messages prompt))
+         (alst (pwb-build-alist (pwb-build-whole-alist) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)
@@ -157,19 +181,20 @@ PREFILL from minibuffer is used."
        (format "%S" response)))))
 
 ;;;###autoload
-(defun pwb-save-conversation ()
-  "Save the conversation."
-  (interactive)
-  (with-temp-file "~/pwb-sampletest.el"
-    (princ "(setq pwb-messages " (current-buffer))
-    (prin1 pwb-messages (current-buffer))
-    (princ ")" (current-buffer))))
+(defun pwb-save-conversation (file)
+  "Save the conversation to FILE."
+  (interactive "FFile to save conversation: ")
+  (with-temp-file file
+    (prin1 (pwb-messages-conversation pwb-messages) (current-buffer))))
 
 ;;;###autoload
-(defun pwb-restore-conversation ()
-  "Restore the conversation."
-  (interactive)
-  (load-file "~/pwb-sampletest.el"))
+(defun pwb-restore-conversation (file)
+  "Restore the conversation from FILE."
+  (interactive "fFile to restore conversation: ")
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let ((data (read (current-buffer))))
+      (setq pwb-messages (make-pwb-messages :conversation data)))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()
@@ -216,13 +241,6 @@ Then insert STRING and newline in this buffer."
   (pcase (alist-get 'type response)
     ("error" nil)
     ("message" t)))
-
-(defun pwb-buffer-to-list-of-list ()
-  "Build the list of plist."
-  (if (= (point) (point-max))
-      nil
-    (cons (json-parse-buffer :object-type 'plist)
-          (pwb-buffer-to-list-of-list))))
 
 (provide 'pwb)
 ;;; pwb.el ends here

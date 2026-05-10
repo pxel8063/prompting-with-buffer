@@ -18,7 +18,7 @@ It allows you to send buffer contents to Claude and receive AI-generated respons
 
 * Prerequisites
 
-- GNU Emacs 28.1 or later
+- GNU Emacs 29.1 or later
 - =curl= command-line tool
 - Anthropic API key (obtain from [[https://console.anthropic.com][Anthropic Console]])
 
@@ -38,7 +38,7 @@ git clone https://github.com/pxel8063/prompting-with-buffer.git ~/.emacs.d/lisp/
 #+END_SRC
 
 ** Step 3: Set API Key
-Set =auth-sourc= for the API.
+Set =auth-source= for the API.
 #+BEGIN_SRC bash
 machine api.anthropic.com password s*-*t-a-*api-key**
 #+END_SRC
@@ -49,8 +49,7 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 
 1. Write or select text in an Emacs buffer
 2. Run =M-x pwb-current-buffer=
-3. (Optional) Enter prefill text when prompted
-4. View Claude's response in the =*Claude*= buffer
+3. View Claude's response in the =*Claude*= buffer
 
 ** Commands
 
@@ -59,7 +58,9 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 | =pwb-current-buffer=      | Send the content of the current buffer to Claude API |
 | =pwb-set-system-prompt=   | Define system prompt from current buffer             |
 | =pwb-clear-system-prompt= | Clear the current system prompt                      |
-| =pwb-clear-messages=      | Reset conversation history                           |
+| =pwb-clear-conversation=  | Reset conversation history                           |
+| =pwb-save-conversation=   | Save conversation history to the file                |
+| =pwb-restor-conversation= | Restor conversation history from the file                                          |
 
 ** Customizable Variables
 
@@ -67,7 +68,7 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 |--------------------------------+-----------------------------------------+-----------------------------------|
 | =pwb-claude-model=             | ="claude-haiku-4-5"=                    | Claude model to use               |
 | =pwb-claude-max-tokens=        | =1024=                                  | Maximum tokens in response        |
-| =pwb-claude-api-host=          | ="api.anthropic.com"=                   | The machine name in =authxsource= |
+| =pwb-claude-api-host=          | ="api.anthropic.com"=                   | The machine name in =auth-source= |
 | =pwb-claude-anthropic-version= | ="2023-06-01"=                          | Anthropic version                 |
 | =pwb-claude-message-api-url=   | "https://api.anthropic.com/v1/messages" | The message API url               |
 | =pwb-claude-system-prompt=     | "When possible, use org-mode syntax."   | The system prompt                 |
@@ -84,6 +85,25 @@ Or in init.el:
 (setq pwb-claude-max-tokens 2048)
 #+END_SRC
 
+** Org-mode Property Overrides
+
+When working in an org-mode buffer, you can override API parameters using org
+properties:
+
+#+BEGIN_SRC org
+  ,* My Prompt
+  :PROPERTIES:
+  :MODEL: claude-sonnet-4-5-20250929
+  :MAX_TOKENS: 4096
+  :SYSTEM: You are a helpful assistant.
+  :END:
+#+END_SRC
+
+The order of the precedence:
+1. The current headline
+2. The org properties set at the top of the current buffer
+3. The customized variables
+   
 * Examples
 
 ** Example 1: Basic Prompt
@@ -113,6 +133,7 @@ Or in init.el:
 
 1. Send first prompt using =pwb-current-buffer==
 2. View response in =*Claude*= buffer
-3. Open another buffer with follow-up prompt
-4. Run =pwb-current-buffer= again
-5. Conversation history is automatically maintained
+3. Open the same buffer and write a follow-up prompt
+4. Narrow the buffer to the only portion of newly written follow-up prompt
+5. Run =pwb-current-buffer= again
+6. Conversation history is automatically maintained

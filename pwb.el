@@ -114,18 +114,18 @@ Like curl -H anthropic-version: 2023-06-01"
     (pwb-set-alist 'messages alist mes)
     alist))
 
-(defun pwb-get-credential ()
+(defun pwb-get-credential (host)
   "Get the credential from the `auth-source'."
-  (auth-source-pick-first-password :host pwb-claude-api-host))
+  (auth-source-pick-first-password :host host))
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
   (let ((url pwb-claude-message-api-url)
-        (api-key (pwb-get-credential))
+        (api-key (pwb-get-credential pwb-claude-api-host))
         (anthropic-version pwb-claude-anthropic-version)
         (application-json "content-type: application/json"))
     (unless api-key
-      (error "ANTHROPIC_API_KEY environment variable not set"))
+      (error "%s can not be found in `auth-source'" pwb-claude-api-host))
     (with-temp-buffer
       (let ((status (call-process "curl" nil t nil url "-s"
                                   "-H" (concat "x-api-key: " api-key)

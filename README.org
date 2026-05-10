@@ -78,7 +78,7 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 
 #+BEGIN_EXAMPLE
 M-x customize-group RET pwb RET
-#+END_EXAMPLEx
+#+END_EXAMPLE
 
 Or in init.el:
 #+BEGIN_SRC elisp

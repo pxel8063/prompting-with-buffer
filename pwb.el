@@ -86,16 +86,33 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-from-org-property '("max_tokens" "model" "system")
+(defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "SYSTEM")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
 (defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
 
-(defun pwb-take-while-api-params (seq)
+(defun pwb-filter-org-property (seq)
   (seq-filter
    (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
    seq))
+
+(defun pwb-push-org-property (ret)
+  (let ((prop (org-entry-properties (point))))
+    (mapcar (lambda (elt)
+              (if (equal (car elt) "MAX_TOKENS")
+                  (let ((x (cons (car elt) (string-to-number (cdr elt)))))
+                    (push x ret))
+                  (push elt ret)))
+            (pwb-filter-org-property prop))
+    ret))
+
+(defun pwb-accu-org-property ()
+  (let* ((ret)
+         (accum (pwb-push-org-property ret)))
+    (save-excursion
+      (goto-char (point-min))
+      (pwb-push-org-property accum))))
 
 (defmacro pwb-set-alist (param alist val)
   `(setf (alist-get ,param ,alist nil nil #'equal) ,val))
@@ -106,6 +123,19 @@ Like curl -H anthropic-version: 2023-06-01"
     (pwb-set-alist 'model ret pwb-claude-model)
     (pwb-set-alist 'system ret pwb-claude-system-prompt)
     ret))
+
+(defun pwb-seq-set-alist (seq ret)
+  (mapcar (lambda (x)
+            (pwb-set-alist (intern (downcase (car x)))
+                           ret
+                           (cdr x)))
+          seq)
+  ret)
+
+(defun pwb-build-whole-alist ()
+  (let ((ret (pwb-build-alist-from-custom))
+        (a (pwb-accu-org-property)))
+    (pwb-seq-set-alist a ret)))
 
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
@@ -147,7 +177,7 @@ Like curl -H anthropic-version: 2023-06-01"
 PREFILL from minibuffer is used."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-         (alst (pwb-build-alist (pwb-build-alist-from-custom) pwb-messages prompt))
+         (alst (pwb-build-alist (pwb-build-whole-alist) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)

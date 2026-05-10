@@ -15,6 +15,7 @@ It allows you to send buffer contents to Claude and receive AI-generated respons
 - Customize system prompts
 - Display responses in a dedicated =*Claude*= buffer
 - Support for Claude model selection and token limits
+- Org-mode property overrides
 
 * Prerequisites
 

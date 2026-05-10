@@ -184,19 +184,20 @@ PREFILL from minibuffer is used."
        (format "%S" response)))))
 
 ;;;###autoload
-(defun pwb-save-conversation ()
-  "Save the conversation."
-  (interactive)
-  (with-temp-file "~/pwb-sampletest.el"
-    (princ "(setq pwb-messages " (current-buffer))
-    (prin1 pwb-messages (current-buffer))
-    (princ ")" (current-buffer))))
+(defun pwb-save-conversation (file)
+  "Save the conversation to FILE."
+  (interactive "FFile to save conversation: ")
+  (with-temp-file file
+    (prin1 (pwb-messages-conversation pwb-messages) (current-buffer))))
 
 ;;;###autoload
-(defun pwb-restore-conversation ()
-  "Restore the conversation."
-  (interactive)
-  (load-file "~/pwb-sampletest.el"))
+(defun pwb-restore-conversation (file)
+  "Restore the conversation from FILE."
+  (interactive "fFile to restore conversation: ")
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let ((data (read (current-buffer))))
+      (setq pwb-messages (make-pwb-messages :conversation data)))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

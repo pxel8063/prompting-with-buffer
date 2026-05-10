@@ -86,7 +86,7 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters '("max-token" "model")
+(defconst pwb-claude-api-parameters-by-org-property '("max_tokens" "model")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
@@ -102,14 +102,17 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-build-alist-from-custom ()
   (let (ret)
-    (pwb-set-alist 'max-tokens ret pwb-claude-max-tokens)
+    (pwb-set-alist 'max_tokens ret pwb-claude-max-tokens)
     (pwb-set-alist 'model ret pwb-claude-model)
     (pwb-set-alist 'system ret pwb-claude-system-prompt)
     ret))
 
-(defun pwb-build-messages-alist (alist messages)
+(defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
-    (pwb-set-alist 'messages alist mes)))
+    (setq mes (vconcat mes
+                       (vector (list (cons 'role "user") (cons 'content input)))))
+    (pwb-set-alist 'messages alist mes)
+    alist))
 
 (defun pwb-get-credential ()
   "Get the credential from the `auth-source'."
@@ -148,7 +151,7 @@ PREFILL from minibuffer is used."
                :model pwb-claude-model
                :max-tokens pwb-claude-max-tokens
                :system pwb-claude-system-prompt))
-         (alst (pwb-build-alist api pwb-messages prompt))
+         (alst (pwb-build-alist (pwb-build-alist-from-custom) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)
@@ -156,15 +159,6 @@ PREFILL from minibuffer is used."
            (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
            response-text)
        (format "%S" response)))))
-
-(defun pwb-build-alist (api messages input)
-  "Return the API plist with INPUT and PREFILL.
-The MESSAGES so far are prepended."
-  (list (cons 'model (pwb-claude-api-model api))
-        (cons 'max_tokens  (pwb-claude-api-max-tokens api))
-        (cons 'system  (pwb-claude-api-system api))
-        (cons 'messages (vconcat (pwb-messages-conversation messages)
-                                 (vector (list (cons 'role "user") (cons 'content input)))))))
 
 ;;;###autoload
 (defun pwb-save-conversation ()

@@ -86,7 +86,7 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-by-org-property '("max_tokens" "model")
+(defconst pwb-claude-api-parameters-from-org-property '("max_tokens" "model")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
@@ -94,7 +94,7 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-take-while-api-params (seq)
   (seq-filter
-   (lambda (elt) (member (car elt) pwb-claude-api-parameters))
+   (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
    seq))
 
 (defmacro pwb-set-alist (param alist val)
@@ -147,10 +147,6 @@ Like curl -H anthropic-version: 2023-06-01"
 PREFILL from minibuffer is used."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-         (api (make-pwb-claude-api
-               :model pwb-claude-model
-               :max-tokens pwb-claude-max-tokens
-               :system pwb-claude-system-prompt))
          (alst (pwb-build-alist (pwb-build-alist-from-custom) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response

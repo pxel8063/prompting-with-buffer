@@ -125,12 +125,12 @@ Like curl -H anthropic-version: 2023-06-01"
     ret))
 
 (defun pwb-seq-set-alist (seq ret)
-  (mapcar (lambda (x)
-            (pwb-set-alist (intern (downcase (car x)))
-                           ret
-                           (cdr x)))
-          seq)
-  ret)
+  "Merge SEQ into alist RET, downcasing and interning each key."
+  (dolist (entry seq ret)
+    (setq ret (pwb-set-alist (intern (downcase (car entry)))
+                             ret
+                             (cdr entry)))))
+
 
 (defun pwb-build-whole-alist ()
   (let ((ret (pwb-build-alist-from-custom))

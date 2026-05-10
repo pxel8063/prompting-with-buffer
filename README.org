@@ -54,14 +54,14 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 
 ** Commands
 
-| Command                   | Description                                          |
-|---------------------------+------------------------------------------------------|
-| =pwb-current-buffer=      | Send the content of the current buffer to Claude API |
-| =pwb-set-system-prompt=   | Define system prompt from current buffer             |
-| =pwb-clear-system-prompt= | Clear the current system prompt                      |
-| =pwb-clear-conversation=  | Reset conversation history                           |
-| =pwb-save-conversation=   | Save conversation history to a file                  |
-| =pwb-restor-conversation= | Restor conversation history from a file                                            |
+| Command                   | Description                                                                                  |
+|---------------------------+----------------------------------------------------------------------------------------------|
+| =pwb-current-buffer=      | Send the content(if narrowed, the only narrowed portion) of the current buffer to Claude API |
+| =pwb-set-system-prompt=   | Define system prompt from current buffer                                                     |
+| =pwb-clear-system-prompt= | Clear the current system prompt                                                              |
+| =pwb-clear-conversation=  | Reset conversation history                                                                   |
+| =pwb-save-conversation=   | Save conversation history to a file                                                          |
+| =pwb-restor-conversation= | Restor conversation history from a file                                                      |
 
 ** Customizable Variables
 

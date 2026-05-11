@@ -119,7 +119,7 @@ Like curl -H anthropic-version: 2023-06-01"
 
 (defun pwb-accu-org-property ()
   (when (derived-mode-p 'org-mode)
-    (let* ((ret)
+    (let* ((ret '())
            (accum (pwb-push-org-property ret)))
       (save-excursion
         (goto-char (point-min))

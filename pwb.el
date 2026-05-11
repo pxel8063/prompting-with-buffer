@@ -199,8 +199,7 @@ from org mode, only the customized variables is returned."
 
 ;;;###autoload
 (defun pwb-current-buffer ()
-  "Send a prompt based on the current buffer to api.
-PREFILL from minibuffer is used."
+  "Send a prompt based on the current buffer to api."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
          (alst (pwb-build-alist (pwb-build-whole-alist) pwb-messages prompt))

@@ -92,6 +92,22 @@ Like curl -H anthropic-version: 2023-06-01"
    (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
    seq))
 
+(defun pwb-convert-param-value (elt)
+  "Convert the car and cdr of elt into lisp object"
+  (cons (car (read-from-string (downcase (car elt))))
+        (car (read-from-string (cdr elt)))))
+
+(defun pwb-params-from-org-property ()
+  "Return alist of params from org-property at `point'."
+  (let* ((prop (org-entry-properties (point)))
+         (params (pwb-filter-org-property prop)))
+    (mapcar #'pwb-convert-param-value params)))
+
+(defun pwb-params-file-org-property ()
+  (save-excursion
+    (goto-char 1)
+    (pwb-params-from-org-property)))
+
 (defun pwb-push-org-property (ret)
   (let ((prop (org-entry-properties (point))))
     (dolist (elt (pwb-filter-org-property prop) ret)
@@ -109,15 +125,30 @@ Like curl -H anthropic-version: 2023-06-01"
         (goto-char (point-min))
         (pwb-push-org-property accum)))))
 
+(defun pwb-param-key= (a b)
+  "Compare the key of the lisp object intended to serialize to JSON. If the
+keys are the same, return true."
+  (eq (car a) (car b)))
+
+(defun pwb-merge-param ()
+  "Merge alist of params. The headline propeties have highest priority.
+The file properties have the second priority. The customized variables
+have the lowest priority. If the current buffer is not the mode derived
+from org mode, only the customized variables is returned."
+  (if (derived-mode-p 'org-mode)
+      (let ((accum (append (pwb-params-from-org-property)
+                           (pwb-params-file-org-property)
+                           (pwb-build-alist-from-custom))))
+        (seq-uniq accum #'pwb-param-key=))
+    (pwb-build-alist-from-custom)))
+
 (defmacro pwb-set-alist (param alist val)
   `(setf (alist-get ,param ,alist nil nil #'equal) ,val))
 
 (defun pwb-build-alist-from-custom ()
-  (let (ret)
-    (pwb-set-alist 'max_tokens ret pwb-claude-max-tokens)
-    (pwb-set-alist 'model ret pwb-claude-model)
-    (pwb-set-alist 'system ret pwb-claude-system-prompt)
-    ret))
+  `((max_tokens . ,pwb-claude-max-tokens)
+    (model . ,pwb-claude-model)
+    (system . ,pwb-claude-system-prompt)))
 
 (defun pwb-seq-set-alist (seq ret)
   "Merge SEQ into alist RET, downcasing and interning each key."

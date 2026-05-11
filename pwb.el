@@ -167,8 +167,7 @@ from org mode, only the customized variables is returned."
   (let ((mes (pwb-messages-conversation messages)))
     (setq mes (vconcat mes
                        (vector (list (cons 'role "user") (cons 'content input)))))
-    (pwb-set-alist 'messages alist mes)
-    alist))
+    (push (cons 'messages mes) alist)))
 
 (defun pwb-get-credential (host)
   "Get the credential from the `auth-source'."

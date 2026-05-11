@@ -84,8 +84,7 @@ Like curl -H anthropic-version: 2023-06-01"
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
-(defvar-local pwb-messages (make-pwb-messages) "Holding conversation history.")
-
+(defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
 
 (defun pwb-filter-org-property (seq)
   (seq-filter

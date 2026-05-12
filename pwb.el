@@ -254,7 +254,7 @@ Return MESSAGES as `pwb-messages'."
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
-  (alist-get 'text (aref (alist-get 'content response) 0)))
+  (pwb-find-type-from-content "text" (alist-get 'content response)))
 
 (defun pwb-find-type-from-content (type content)
   "Return the text that belongs to type \"type\".

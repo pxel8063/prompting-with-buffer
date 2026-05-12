@@ -256,6 +256,11 @@ Return MESSAGES as `pwb-messages'."
   "Return content text in the RESPONSE."
   (pwb-find-type-from-content "text" (alist-get 'content response)))
 
+(defun pwb-get-content-thinking (response)
+  "Return content thinking in the RESPONSE."
+  (pwb-find-type-from-content "thinking" (alist-get 'content response)))
+
+
 (defun pwb-find-type-from-content (type content)
   "Return the text that belongs to type \"type\".
 The first argument must be STRING."

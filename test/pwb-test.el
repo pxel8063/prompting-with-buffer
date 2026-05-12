@@ -78,10 +78,20 @@
 			  (cons 'stop_sequence 'null)
 			  (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))))
 
-(ert-deftest pwb-find-text-from-content-test ()
-  (should (equal
-           (pwb-find-text-from-content [((type . "text") (text . "Hello! How can I help you today?"))])
-           "Hello! How can I help you today?")))
+(ert-deftest pwb-find-type-from-content-test ()
+  (let ((content [((type . "thinking")
+                   (thinking . "Let me analyze this step by step...")
+                   (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
+                  ((type . "text")
+                   (text . "Hello! How can I help you today?"))] ))
+    (should (equal
+             (pwb-find-type-from-content "text"
+                                         content)
+             "Hello! How can I help you today?"))
+    (should (equal
+             (pwb-find-type-from-content "thinking"
+                                         content)
+             "Let me analyze this step by step..."))))
 
 (provide 'pwb-test)
 

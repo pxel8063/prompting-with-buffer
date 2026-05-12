@@ -200,7 +200,7 @@ from org mode, only the customized variables is returned."
   "Send a prompt based on the current buffer to api."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-         (alst (pwb-build-alist (pwb-build-whole-alist) pwb-messages prompt))
+         (alst (pwb-build-alist (pwb-merge-param) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)

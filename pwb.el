@@ -256,6 +256,10 @@ Return MESSAGES as `pwb-messages'."
   "Return content text in the RESPONSE."
   (alist-get 'text (aref (alist-get 'content response) 0)))
 
+(defun pwb-find-text-from-content (content)
+  "Return the text that belongs to type \"text\"."
+  (alist-get (intern "text") (seq-find (lambda (x) (equal (alist-get 'type x) "text")) content)))
+
 (defun pwb-render-response (string)
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."

@@ -80,7 +80,7 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "SYSTEM")
+(defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "OUTPUT_CONFIG" "SYSTEM" "THINKING")
   "The list of the claude message API parameters.")
 
 (cl-defstruct pwb-messages conversation)
@@ -204,8 +204,11 @@ from org mode, only the customized variables is returned."
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test-response response)
-         (let ((response-text (pwb-get-content-text response)))
+         (let ((response-text (pwb-get-content-text response))
+               (response-thinking (pwb-get-content-thinking response)))
            (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
+           (when response-thinking
+             (message "thinking: %s" response-thinking))
            response-text)
        (format "%S" response)))))
 

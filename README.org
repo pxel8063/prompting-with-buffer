@@ -140,3 +140,15 @@ Currently, =max_tokens=, =system= and =model= take effect.
 4. Narrow the buffer to the only portion of newly written follow-up prompt
 5. Run =pwb-current-buffer= again
 6. Conversation history is automatically maintained
+
+** Example 4: Adaptive thinking
+
+#+begin_src org
+  :PROPERTIES:
+  :model:    "claude-opus-4-6"
+  :thinking: ((type . "adaptive"))
+  :output_config: ((effort . "medium"))
+  :END:
+
+  Explain why the sum of two even numbers is always even.
+#+end_src

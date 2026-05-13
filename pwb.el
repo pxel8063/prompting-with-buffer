@@ -77,7 +77,7 @@ Like curl -H anthropic-version: 2023-06-01"
   :group 'pwb
   :type 'string)
 
-(defconst pwb-claude-response-buffer "*Claude*"
+(defconst pwb-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
 (defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "OUTPUT_CONFIG" "SYSTEM" "THINKING")
@@ -203,7 +203,7 @@ from org mode, only the customized variables is returned."
          (alst (pwb-build-alist (pwb-merge-param) pwb-messages prompt))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
-     (if (pwb-test-response response)
+     (if (pwb-test response)
          (let ((response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
            (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
@@ -273,13 +273,13 @@ The first argument must be STRING."
 (defun pwb-render-response (string)
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."
-  (with-current-buffer (get-buffer-create pwb-claude-response-buffer)
+  (with-current-buffer (get-buffer-create pwb-response-buffer)
     (save-excursion
       (goto-char (point-max))
       (newline 2)
       (insert string))))
 
-(defun pwb-test-response (response)
+(defun pwb-test (response)
   "Test whether the RESPONSE is error or not."
   (pcase (alist-get 'type response)
     ("error" nil)

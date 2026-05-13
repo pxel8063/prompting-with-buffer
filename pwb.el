@@ -210,7 +210,8 @@ from org mode, only the customized variables is returned."
            (when response-thinking
              (message "thinking: %s" response-thinking))
            response-text)
-       (format "%S" response)))))
+       (format "%S" response)))
+    (display-buffer pwb-response-buffer)))
 
 ;;;###autoload
 (defun pwb-save-conversation (file)

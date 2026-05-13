@@ -61,7 +61,7 @@
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-message-api-url "https://api.anthropic.com/v1/messages"
+(defcustom pwb-api-url "https://api.anthropic.com/v1/messages"
   "Specifing the Claude message API host."
   :group 'pwb
   :type 'string)
@@ -137,14 +137,14 @@ from org mode, only the customized variables is returned."
                        (vector (list (cons 'role "user") (cons 'content input)))))
     (push (cons 'messages mes) alist)))
 
-(defun pwb-get-credential (host)
+(defun pwb-credential (host)
   "Get the credential from the `auth-source'."
   (auth-source-pick-first-password :host host))
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
-  (let ((url pwb-message-api-url)
-        (api-key (pwb-get-credential pwb-api-host))
+  (let ((url pwb-api-url)
+        (api-key (pwb-credential pwb-api-host))
         (anthropic-version pwb-anthropic-version)
         (application-json "content-type: application/json"))
     (unless api-key
@@ -202,13 +202,13 @@ from org mode, only the customized variables is returned."
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
-  (customize-set-variable 'pwb-claude-system-prompt (pwb-buffer-string)))
+  (customize-set-variable 'pwb-system-prompt (pwb-buffer-string)))
 
 ;;;###autoload
 (defun pwb-clear-system-prompt ()
   "Clear system prompt."
   (interactive)
-  (customize-set-variable 'pwb-claude-system-prompt ""))
+  (customize-set-variable 'pwb-system-prompt ""))
 
 ;;;###autoload
 (defun pwb-clear-conversation ()

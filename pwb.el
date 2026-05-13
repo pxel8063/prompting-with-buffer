@@ -46,32 +46,32 @@
   "Custom variables of pwb."
   :group 'local)
 
-(defcustom pwb-claude-model "claude-haiku-4-5"
+(defcustom pwb-model "claude-haiku-4-5"
   "String to specify claude model."
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-claude-max-tokens 1024
+(defcustom pwb-max-tokens 1024
   "The number of max_tokens."
   :group 'pwb
   :type 'natnum)
 
-(defcustom pwb-claude-system-prompt "When possible, use org-mode syntax."
+(defcustom pwb-system-prompt "When possible, use org-mode syntax."
   "The string of system prompt."
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-claude-message-api-url "https://api.anthropic.com/v1/messages"
+(defcustom pwb-message-api-url "https://api.anthropic.com/v1/messages"
   "Specifing the Claude message API host."
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-claude-api-host "api.anthropic.com"
+(defcustom pwb-api-host "api.anthropic.com"
   "Machine name of the api in `auth-source'."
   :group 'pwb
   :type 'string)
 
-(defcustom pwb-claude-anthropic-version "2023-06-01"
+(defcustom pwb-anthropic-version "2023-06-01"
   "Specifing the Claude anthropic version.
 Like curl -H anthropic-version: 2023-06-01"
   :group 'pwb
@@ -127,9 +127,9 @@ from org mode, only the customized variables is returned."
     (pwb-build-alist-from-custom)))
 
 (defun pwb-build-alist-from-custom ()
-  `((max_tokens . ,pwb-claude-max-tokens)
-    (model . ,pwb-claude-model)
-    (system . ,pwb-claude-system-prompt)))
+  `((max_tokens . ,pwb-max-tokens)
+    (model . ,pwb-model)
+    (system . ,pwb-system-prompt)))
 
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
@@ -143,12 +143,12 @@ from org mode, only the customized variables is returned."
 
 (defun pwb-curl (payload)
   "Invoke curl with PAYLOAD."
-  (let ((url pwb-claude-message-api-url)
-        (api-key (pwb-get-credential pwb-claude-api-host))
-        (anthropic-version pwb-claude-anthropic-version)
+  (let ((url pwb-message-api-url)
+        (api-key (pwb-get-credential pwb-api-host))
+        (anthropic-version pwb-anthropic-version)
         (application-json "content-type: application/json"))
     (unless api-key
-      (error "%s can not be found in `auth-source'" pwb-claude-api-host))
+      (error "%s can not be found in `auth-source'" pwb-api-host))
     (with-temp-buffer
       (let ((status (call-process "curl" nil t nil url "-s"
                                   "-H" (concat "x-api-key: " api-key)

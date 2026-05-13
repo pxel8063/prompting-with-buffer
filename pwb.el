@@ -196,7 +196,7 @@ from org mode, only the customized variables is returned."
   (with-temp-buffer
     (insert-file-contents file)
     (let ((data (read (current-buffer))))
-      (setq pwb-messages (make-pwb-messages :conversation data)))))
+      (setf (pwb-messages-conversation pwb-messages) data))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

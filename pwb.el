@@ -107,22 +107,7 @@ Like curl -H anthropic-version: 2023-06-01"
     (goto-char 1)
     (pwb-params-from-org-property)))
 
-(defun pwb-push-org-property (ret)
-  (let ((prop (org-entry-properties (point))))
-    (dolist (elt (pwb-filter-org-property prop) ret)
-      (if (equal (car elt) "MAX_TOKENS")
-          (push (cons (car elt) (string-to-number (cdr elt))) ret)
-        (push elt ret)))))
-
 (declare-function org-entry-properties "org" (&optional pom which))
-
-(defun pwb-accu-org-property ()
-  (when (derived-mode-p 'org-mode)
-    (let* ((ret '())
-           (accum (pwb-push-org-property ret)))
-      (save-excursion
-        (goto-char (point-min))
-        (pwb-push-org-property accum)))))
 
 (defun pwb-param-key= (a b)
   "Compare the key of the lisp object intended to serialize to JSON. If the
@@ -141,26 +126,10 @@ from org mode, only the customized variables is returned."
         (seq-uniq accum #'pwb-param-key=))
     (pwb-build-alist-from-custom)))
 
-(defmacro pwb-set-alist (param alist val)
-  `(setf (alist-get ,param ,alist nil nil #'equal) ,val))
-
 (defun pwb-build-alist-from-custom ()
   `((max_tokens . ,pwb-claude-max-tokens)
     (model . ,pwb-claude-model)
     (system . ,pwb-claude-system-prompt)))
-
-(defun pwb-seq-set-alist (seq ret)
-  "Merge SEQ into alist RET, downcasing and interning each key."
-  (dolist (entry seq ret)
-    (setq ret (pwb-set-alist (intern (downcase (car entry)))
-                             ret
-                             (cdr entry)))))
-
-
-(defun pwb-build-whole-alist ()
-  (let ((ret (pwb-build-alist-from-custom))
-        (a (pwb-accu-org-property)))
-    (pwb-seq-set-alist a ret)))
 
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))

@@ -142,8 +142,7 @@ from org mode, only the customized variables is returned."
 
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
-    (setq mes (vconcat mes
-                       (vector (list (cons 'role "user") (cons 'content input)))))
+    (setq mes (pwb-concat-turns mes (pwb-user-turn input)))
     (push (cons 'messages mes) alist)))
 
 (defun pwb-add-conversation (messages u-content a-content)
@@ -151,9 +150,9 @@ from org mode, only the customized variables is returned."
 Return MESSAGES as `pwb-messages'."
   (let ((history (pwb-messages-conversation messages)))
     (make-pwb-messages :conversation
-                       (vconcat history
-                                (vector (list (cons 'role "user") (cons 'content u-content)))
-                                (vector (list (cons 'role "assistant") (cons 'content a-content)))))))
+                       (pwb-concat-turns history
+                                         (pwb-user-turn u-content)
+                                         (pwb-assistant-turn a-content)))))
 
 (defun pwb-credential (host)
   "Get the credential from the `auth-source'."

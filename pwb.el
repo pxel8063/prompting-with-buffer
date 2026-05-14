@@ -131,6 +131,15 @@ from org mode, only the customized variables is returned."
     (model . ,pwb-model)
     (system . ,pwb-system-prompt)))
 
+(defmacro pwb-concat-turns (turns &rest body)
+  `(vconcat ,turns ,@body))
+
+(defun pwb-user-turn (content)
+  (vector `((role . "user") (content . ,content))))
+
+(defun pwb-assistant-turn (content)
+  (vector `((role . "assistant") (content . ,content))))
+
 (defun pwb-build-alist (alist messages input)
   (let ((mes (pwb-messages-conversation messages)))
     (setq mes (vconcat mes

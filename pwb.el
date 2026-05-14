@@ -145,14 +145,12 @@ from org mode, only the customized variables is returned."
     (setq mes (pwb-concat-turns mes (pwb-user-turn input)))
     (push (cons 'messages mes) alist)))
 
-(defun pwb-add-conversation (messages u-content a-content)
+(defun pwb-add-conversation (turns u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
-Return MESSAGES as `pwb-messages'."
-  (let ((history (pwb-messages-turns messages)))
-    (make-pwb-messages :turns
-                       (pwb-concat-turns history
-                                         (pwb-user-turn u-content)
-                                         (pwb-assistant-turn a-content)))))
+Return the vector of turns'."
+  (pwb-concat-turns turns
+                    (pwb-user-turn u-content)
+                    (pwb-assistant-turn a-content)))
 
 (defun pwb-credential (host)
   "Get the credential from the `auth-source'."
@@ -192,7 +190,8 @@ Return MESSAGES as `pwb-messages'."
      (if (pwb-test response)
          (let ((response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
-           (setq pwb-messages (pwb-add-conversation pwb-messages prompt response-text))
+           (setf (pwb-messages-turns pwb-messages)
+                 (pwb-add-conversation (pwb-messages-turns pwb-messages) prompt response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
            response-text)

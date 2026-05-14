@@ -87,12 +87,13 @@ Like curl -H anthropic-version: 2023-06-01"
 (defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
 
 (defun pwb-filter-org-property (seq)
+  "Return the list of claude related org properties taken from SEQ."
   (seq-filter
    (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
    seq))
 
 (defun pwb-convert-param-value (elt)
-  "Convert the car and cdr of elt into lisp object"
+  "Convert the car and cdr of ELT into Lisp object."
   (cons (car (read-from-string (downcase (car elt))))
         (car (read-from-string (cdr elt)))))
 

@@ -137,6 +137,15 @@ from org mode, only the customized variables is returned."
                        (vector (list (cons 'role "user") (cons 'content input)))))
     (push (cons 'messages mes) alist)))
 
+(defun pwb-add-conversation (messages u-content a-content)
+  "Add conversation of U-CONTENT(user content) and A-CONTENT.
+Return MESSAGES as `pwb-messages'."
+  (let ((history (pwb-messages-conversation messages)))
+    (make-pwb-messages :conversation
+                       (vconcat history
+                                (vector (list (cons 'role "user") (cons 'content u-content)))
+                                (vector (list (cons 'role "assistant") (cons 'content a-content)))))))
+
 (defun pwb-credential (host)
   "Get the credential from the `auth-source'."
   (auth-source-pick-first-password :host host))
@@ -215,15 +224,6 @@ from org mode, only the customized variables is returned."
   "Clear the conversation history."
   (interactive)
   (setf pwb-messages (make-pwb-messages)))
-
-(defun pwb-add-conversation (messages u-content a-content)
-  "Add conversation of U-CONTENT(user content) and A-CONTENT.
-Return MESSAGES as `pwb-messages'."
-  (let ((history (pwb-messages-conversation messages)))
-    (make-pwb-messages :conversation
-                       (vconcat history
-                                (vector (list (cons 'role "user") (cons 'content u-content)))
-                                (vector (list (cons 'role "assistant") (cons 'content a-content)))))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."

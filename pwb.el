@@ -83,7 +83,7 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "OUTPUT_CONFIG" "SYSTEM" "THINKING")
   "The list of the claude message API parameters.")
 
-(cl-defstruct pwb-messages turns)
+(cl-defstruct pwb-messages (turns (vector)))
 (defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
 
 (defun pwb-filter-org-property (seq)

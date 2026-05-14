@@ -188,10 +188,11 @@ Return the vector of turns'."
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test response)
-         (let ((response-text (pwb-get-content-text response))
+         (let ((turns (pwb-messages-turns pwb-messages))
+               (response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
            (setf (pwb-messages-turns pwb-messages)
-                 (pwb-add-conversation (pwb-messages-turns pwb-messages) prompt response-text))
+                 (pwb-add-conversation turns prompt response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
            response-text)

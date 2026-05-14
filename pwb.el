@@ -140,10 +140,8 @@ from org mode, only the customized variables is returned."
 (defun pwb-assistant-turn (content)
   (vector `((role . "assistant") (content . ,content))))
 
-(defun pwb-build-alist (alist messages input)
-  (let ((mes (pwb-messages-turns messages)))
-    (setq mes (pwb-concat-turns mes (pwb-user-turn input)))
-    (push (cons 'messages mes) alist)))
+(defun pwb-build-alist (alist messages)
+  (push messages alist))
 
 (defun pwb-add-conversation (turns u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
@@ -184,7 +182,11 @@ Return the vector of turns'."
   "Send a prompt based on the current buffer to api."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
-         (alst (pwb-build-alist (pwb-merge-param) pwb-messages prompt))
+         (turns (pwb-messages-turns pwb-messages))
+         (messages
+          (cons 'messages (pwb-concat-turns turns
+                                            (pwb-user-turn prompt))))
+         (alst (pwb-build-alist (pwb-merge-param) messages))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test response)

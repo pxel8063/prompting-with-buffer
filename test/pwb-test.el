@@ -30,7 +30,9 @@
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-alist alist messages "Hello, Claude"))))))
+             (pwb-build-alist alist
+                              (cons 'messages (pwb-concat-turns (vector)
+                                                                (pwb-user-turn "Hello, Claude")))))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."
@@ -52,13 +54,13 @@
     (should (equal (make-pwb-messages :turns
 				      (vconcat (vector (list (cons 'role "user") (cons 'content "Hi")))
 					       (vector (list (cons 'role "assistant") (cons 'content "May I help you?")))))
-		   (pwb-add-conversation messages "Hi" "May I help you?")))))
+		   (make-pwb-messages :turns (pwb-add-conversation (pwb-messages-turns messages) "Hi" "May I help you?"))))))
 
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that `pwb-messages' holds the empty `messages'."
   (should (equal (progn (pwb-clear-conversation)
 			pwb-messages)
-		 #s(pwb-messages nil))))
+		 #s(pwb-messages []))))
 
 (ert-deftest pwb-success-or-error ()
   "Test response.  Return nil if error."

@@ -83,8 +83,8 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "OUTPUT_CONFIG" "SYSTEM" "THINKING")
   "The list of the claude message API parameters.")
 
-(cl-defstruct pwb-messages conversation)
-(defvar pwb-messages (make-pwb-messages) "Holding conversation history.")
+(cl-defstruct pwb-messages turns)
+(defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
 
 (defun pwb-filter-org-property (seq)
   (seq-filter
@@ -141,15 +141,15 @@ from org mode, only the customized variables is returned."
   (vector `((role . "assistant") (content . ,content))))
 
 (defun pwb-build-alist (alist messages input)
-  (let ((mes (pwb-messages-conversation messages)))
+  (let ((mes (pwb-messages-turns messages)))
     (setq mes (pwb-concat-turns mes (pwb-user-turn input)))
     (push (cons 'messages mes) alist)))
 
 (defun pwb-add-conversation (messages u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
 Return MESSAGES as `pwb-messages'."
-  (let ((history (pwb-messages-conversation messages)))
-    (make-pwb-messages :conversation
+  (let ((history (pwb-messages-turns messages)))
+    (make-pwb-messages :turns
                        (pwb-concat-turns history
                                          (pwb-user-turn u-content)
                                          (pwb-assistant-turn a-content)))))
@@ -204,7 +204,7 @@ Return MESSAGES as `pwb-messages'."
   "Save the conversation to FILE."
   (interactive "FFile to save conversation: ")
   (with-temp-file file
-    (prin1 (pwb-messages-conversation pwb-messages) (current-buffer))))
+    (prin1 (pwb-messages-turns pwb-messages) (current-buffer))))
 
 ;;;###autoload
 (defun pwb-restore-conversation (file)
@@ -213,7 +213,7 @@ Return MESSAGES as `pwb-messages'."
   (with-temp-buffer
     (insert-file-contents file)
     (let ((data (read (current-buffer))))
-      (setf (pwb-messages-conversation pwb-messages) data))))
+      (setf (pwb-messages-turns pwb-messages) data))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

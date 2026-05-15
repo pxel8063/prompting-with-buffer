@@ -132,6 +132,9 @@ from org mode, only the customized variables is returned."
     (model . ,pwb-model)
     (system . ,pwb-system-prompt)))
 
+(defun pwb-messages-param (messages)
+  (cons 'messages messages))
+
 (defmacro pwb-concat-turns (turns &rest body)
   `(vconcat ,turns ,@body))
 
@@ -184,10 +187,10 @@ Return the vector of turns'."
   (interactive)
   (let* ((prompt (pwb-buffer-string))
          (turns (pwb-messages-turns pwb-messages))
-         (messages
-          (cons 'messages (pwb-concat-turns turns
-                                            (pwb-user-turn prompt))))
-         (alst (pwb-build-alist (pwb-merge-param) messages))
+         (msgs
+          (pwb-messages-param (pwb-concat-turns turns
+                                                (pwb-user-turn prompt))))
+         (alst (pwb-build-alist (pwb-merge-param) msgs))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
      (if (pwb-test response)

@@ -42,8 +42,6 @@
 (require 'cl-lib)
 (require 'auth-source)
 
-(declare-function org-entry-properties "org" (&optional pom which))
-
 (defgroup pwb nil
   "Custom variables of pwb."
   :group 'local)
@@ -82,36 +80,8 @@ Like curl -H anthropic-version: 2023-06-01"
 (defconst pwb-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
 
-(defconst pwb-claude-api-parameters-from-org-property '("MAX_TOKENS" "MODEL" "OUTPUT_CONFIG" "SYSTEM" "THINKING")
-  "The list of the claude message API parameters.")
-
 (cl-defstruct pwb-messages (turns []))
 (defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
-
-(defun pwb-filter-org-property (seq)
-  "Return the list of claude related org properties taken from SEQ."
-  (seq-filter
-   (lambda (elt) (member (car elt) pwb-claude-api-parameters-from-org-property))
-   seq))
-
-(defun pwb-convert-param-value (elt)
-  "Convert the car and cdr of ELT into Lisp object."
-  (cons (car (read-from-string (downcase (car elt))))
-        (car (read-from-string (cdr elt)))))
-
-(defun pwb-params-from-org-property ()
-  "Return alist of params from org-property at `point'."
-  (let* ((prop (org-entry-properties (point)))
-         (params (pwb-filter-org-property prop)))
-    (mapcar #'pwb-convert-param-value params)))
-
-(defun pwb-params-file-org-property ()
-  "Return alist of params from the file-level org property drawer."
-  (save-excursion
-    (save-restriction
-      (widen)
-      (goto-char (point-min))
-      (pwb-params-from-org-property))))
 
 (defun pwb-param-key= (a b)
   "Compare the key of the lisp object intended to serialize to JSON. If the
@@ -124,9 +94,7 @@ The file properties have the second priority. The customized variables
 have the lowest priority. If the current buffer is not the mode derived
 from org mode, only the customized variables is returned."
   (if (derived-mode-p 'org-mode)
-      (let ((accum (append (pwb-params-from-org-property)
-                           (pwb-params-file-org-property)
-                           (pwb-build-alist-from-custom))))
+      (let ((accum (append (pwb-build-alist-from-custom))))
         (seq-uniq accum #'pwb-param-key=))
     (pwb-build-alist-from-custom)))
 

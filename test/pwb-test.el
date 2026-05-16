@@ -21,9 +21,11 @@
 
 (ert-deftest pwb-build-param-test ()
   "Test"
-  (let* ((pwb-system-prompt "")
+  (let* (;; Override customize variable
+         (pwb-system-prompt "")
          (pwb-max-tokens 16)
          (pwb-model "claude-opus-4-6")
+         ;; Prepare a local environment
          (prompt "Hi.")
          (messages (make-pwb-messages))
          (turns (pwb-messages-turns messages))

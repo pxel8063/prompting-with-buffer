@@ -19,6 +19,18 @@
 (require 'pwb)
 (require 'ert)
 
+(defvar pwb-buffer-org-file "Hello?")
+
+(ert-deftest pwb-check-response ()
+  "Test to whether the API response."
+  (let* ((pwb-messages (make-pwb-messages))
+         (pwb-model "claude-haiku-4-5")
+         (pwb-max-tokens 256)
+         (res (with-temp-buffer
+                (insert pwb-buffer-org-file)
+                (pwb-current-buffer))))
+    (should (eq res t))))
+
 (ert-deftest pwb-build-param-test ()
   "Test"
   (let* (;; Override customize variable

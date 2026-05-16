@@ -207,18 +207,20 @@ process finishes.  On failure, an error is signaled."
     (pwb-curl-async
      payload
      (lambda (response)
-       (pwb-render-response
-        (if (pwb-response-ok-p response)
+       (if (pwb-response-ok-p response)
             (let ((response-text (pwb-get-content-text response))
                   (response-thinking (pwb-get-content-thinking response)))
               (setf (pwb-messages-turns pwb-messages)
                     (pwb-add-conversation turns prompt response-text))
               (when response-thinking
                 (message "thinking: %s" response-thinking))
-              response-text)
-          (format "%S" response)))
-       (display-buffer pwb-response-buffer)
-       (message "pwb: response received.")))))
+              (pwb-render-response response-text)
+              (display-buffer pwb-response-buffer)
+              (message "pwb: response received.")
+              t)
+         (progn (message "pwb: error; %S" response)
+                (message "pwb: response received.")
+                nil))))))
 
 ;;;###autoload
 (defun pwb-current-buffer ()
@@ -231,8 +233,7 @@ process finishes.  On failure, an error is signaled."
                                                 (pwb-user-turn prompt))))
          (alst (pwb-build-alist (pwb-merge-param) msgs))
          (response (pwb-curl (json-serialize alst))))
-    (pwb-render-response
-     (if (pwb-response-ok-p response)
+    (if (pwb-response-ok-p response)
          (let ((turns (pwb-messages-turns pwb-messages))
                (response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
@@ -240,9 +241,11 @@ process finishes.  On failure, an error is signaled."
                  (pwb-add-conversation turns prompt response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
-           response-text)
-       (format "%S" response)))
-    (display-buffer pwb-response-buffer)))
+           (pwb-render-response response-text)
+           (display-buffer pwb-response-buffer)
+           t)
+      (progn (message "pwb: error; %S" response)
+             nil))))
 
 ;;;###autoload
 (defun pwb-save-conversation (file)

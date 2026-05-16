@@ -239,7 +239,7 @@ process finishes.  On failure, an error is signaled."
      payload
      (lambda (response)
        (pwb-render-response
-        (if (pwb-test response)
+        (if (pwb-response-ok-p response)
             (let ((response-text (pwb-get-content-text response))
                   (response-thinking (pwb-get-content-thinking response)))
               (setf (pwb-messages-turns pwb-messages)
@@ -263,7 +263,7 @@ process finishes.  On failure, an error is signaled."
          (alst (pwb-build-alist (pwb-merge-param) msgs))
          (response (pwb-curl (json-serialize alst))))
     (pwb-render-response
-     (if (pwb-test response)
+     (if (pwb-response-ok-p response)
          (let ((turns (pwb-messages-turns pwb-messages))
                (response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
@@ -333,7 +333,7 @@ Then insert STRING and newline in this buffer."
       (newline 2)
       (insert string))))
 
-(defun pwb-test (response)
+(defun pwb-response-ok-p (response)
   "Test whether the RESPONSE is error or not."
   (pcase (alist-get 'type response)
     ("error" nil)

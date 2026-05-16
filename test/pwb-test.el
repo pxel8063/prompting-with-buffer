@@ -85,13 +85,13 @@
 
 (ert-deftest pwb-success-or-error ()
   "Test response.  Return nil if error."
-  (should (equal nil (pwb-test
+  (should (equal nil (pwb-response-ok-p
 		      (list (cons 'type "error")
 			    (cons 'error
 			          (list (cons 'type "invalid_request_error")
 				        (cons 'message "Input does not match the expected shape.")))
 			    (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz")))))
-  (should (equal t (pwb-test
+  (should (equal t (pwb-response-ok-p
 		    (list (cons 'model "claude-haiku-4-5-20251001")
 			  (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
 			  (cons 'type "message")

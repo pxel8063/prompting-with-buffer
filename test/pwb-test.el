@@ -26,7 +26,7 @@
          (pwb-model "claude-opus-4-6")
          (prompt "Hi.")
          (messages (make-pwb-messages))
-         (turns (pwb-messages-turns pwb-messages))
+         (turns (pwb-messages-turns messages))
          (msgs
           (pwb-messages-param (pwb-concat-turns turns
                                                 (pwb-user-turn prompt)))))

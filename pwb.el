@@ -181,6 +181,73 @@ Return the vector of turns'."
   "Parse the current buffer, if narrowed, the narrowed part."
   (buffer-substring-no-properties (point-min) (point-max)))
 
+(defun pwb-curl-async (payload callback)
+  "Invoke curl with PAYLOAD asynchronously.
+CALLBACK is called with the parsed response alist when the
+process finishes.  On failure, an error is signaled."
+  (let* ((url pwb-api-url)
+         (api-key (pwb-credential pwb-api-host))
+         (anthropic-version pwb-anthropic-version)
+         (buf (generate-new-buffer " *pwb-curl*")))
+    (unless api-key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let ((proc (make-process
+                 :name "pwb-curl"
+                 :buffer buf
+                 :command (list "curl" url "-s"
+                                "-H" (concat "x-api-key: " api-key)
+                                "-H" (concat "anthropic-version: " anthropic-version)
+                                "-H" "content-type: application/json"
+                                "-d" payload)
+                 :sentinel
+                 (lambda (process event)
+                   (unwind-protect
+                       (let ((exit-status (process-exit-status process))
+                             (output-buf (process-buffer process)))
+                         (cond
+                          ((not (eq (process-status process) 'exit))
+                           (message "pwb: curl process %s" (string-trim event)))
+                          ((not (zerop exit-status))
+                           (message "pwb: curl failed with status %d: %s"
+                                    exit-status
+                                    (with-current-buffer output-buf
+                                      (buffer-string))))
+                          (t
+                           (let ((response
+                                  (with-current-buffer output-buf
+                                    (goto-char (point-min))
+                                    (json-parse-buffer :object-type 'alist))))
+                             (funcall callback response)))))
+                     (when (buffer-live-p buf)
+                       (kill-buffer buf)))))))
+      proc)))
+
+;;;###autoload
+(defun pwb-async-current-buffer ()
+  "Send a prompt based on the current buffer to api."
+  (interactive)
+  (let* ((prompt (pwb-buffer-string))
+         (turns (pwb-messages-turns pwb-messages))
+         (msgs (pwb-messages-param (vconcat turns (pwb-user-turn prompt))))
+         (alst (cons msgs (pwb-merge-param)))
+         (payload (json-serialize alst)))
+    (message "pwb: sending request...")
+    (pwb-curl-async
+     payload
+     (lambda (response)
+       (pwb-render-response
+        (if (pwb-test response)
+            (let ((response-text (pwb-get-content-text response))
+                  (response-thinking (pwb-get-content-thinking response)))
+              (setf (pwb-messages-turns pwb-messages)
+                    (pwb-add-conversation turns prompt response-text))
+              (when response-thinking
+                (message "thinking: %s" response-thinking))
+              response-text)
+          (format "%S" response)))
+       (display-buffer pwb-response-buffer)
+       (message "pwb: response received.")))))
+
 ;;;###autoload
 (defun pwb-current-buffer ()
   "Send a prompt based on the current buffer to api."

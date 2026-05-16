@@ -138,8 +138,9 @@ from org mode, only the customized variables is returned."
 (defun pwb-messages-param (messages)
   (cons 'messages messages))
 
-(defmacro pwb-concat-turns (turns &rest body)
-  `(vconcat ,turns ,@body))
+(defun pwb-concat-turns (turns &rest new-turns)
+  "Combine TURNS with NEW-TURNS into a single turns sequence."
+  (apply #'vconcat turns new-turns))
 
 (defun pwb-user-turn (content)
   (vector `((role . "user") (content . ,content))))

@@ -42,6 +42,8 @@
 (require 'cl-lib)
 (require 'auth-source)
 
+(declare-function org-entry-properties "org" (&optional pom which))
+
 (defgroup pwb nil
   "Custom variables of pwb."
   :group 'local)
@@ -110,8 +112,6 @@ Like curl -H anthropic-version: 2023-06-01"
       (widen)
       (goto-char (point-min))
       (pwb-params-from-org-property))))
-
-(declare-function org-entry-properties "org" (&optional pom which))
 
 (defun pwb-param-key= (a b)
   "Compare the key of the lisp object intended to serialize to JSON. If the

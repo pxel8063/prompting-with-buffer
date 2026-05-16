@@ -31,6 +31,20 @@
                 (pwb-current-buffer))))
     (should (eq res t))))
 
+(defvar pwb-buffer-with-local-variables "Hello?
+
+# Local Variables:
+# pwb-max-tokens: 128
+# pwb-body-params: '((max_tokens . 2048))
+# End:
+")
+(ert-deftest pwb-local-variables-test ()
+  (should (eq (with-temp-buffer
+                (insert pwb-buffer-with-local-variables)
+                (hack-local-variables)
+                (local-variable-p 'pwb-max-tokens))
+              t)))
+
 (ert-deftest pwb-build-param-test ()
   "Test"
   (let* (;; Override customize variable

@@ -83,20 +83,18 @@ Like curl -H anthropic-version: 2023-06-01"
 (cl-defstruct pwb-messages (turns []))
 (defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
 
+(defvar pwb-body-params nil)
+
 (defun pwb-param-key= (a b)
   "Compare the key of the lisp object intended to serialize to JSON. If the
 keys are the same, return true."
   (eq (car a) (car b)))
 
 (defun pwb-merge-param ()
-  "Merge alist of params. The headline propeties have highest priority.
-The file properties have the second priority. The customized variables
-have the lowest priority. If the current buffer is not the mode derived
-from org mode, only the customized variables is returned."
-  (if (derived-mode-p 'org-mode)
-      (let ((accum (append (pwb-build-alist-from-custom))))
-        (seq-uniq accum #'pwb-param-key=))
-    (pwb-build-alist-from-custom)))
+  "Merge alist of params."
+  (let ((accum (append pwb-body-params
+                       (pwb-build-alist-from-custom))))
+    (seq-uniq accum #'pwb-param-key=)))
 
 (defun pwb-build-alist-from-custom ()
   `((max_tokens . ,pwb-max-tokens)

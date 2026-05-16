@@ -357,7 +357,8 @@ Then insert STRING and newline in this buffer."
   "Test whether the RESPONSE is error or not."
   (pcase (alist-get 'type response)
     ("error" nil)
-    ("message" t)))
+    ("message" t)
+    (other (message "pwb: unexpected response type: %S" other) nil)))
 
 (provide 'pwb)
 ;;; pwb.el ends here

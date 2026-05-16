@@ -47,7 +47,6 @@
   (let ((alist '((model . "claude-sonnet-4-5")
 		 (max_tokens . 1024)
 		 (system . "")))
-	(messages (make-pwb-messages))
         (json "{\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude\"}],\"model\":\"claude-sonnet-4-5\",\"max_tokens\":1024,\
 \"system\":\"\"}"))
     (should

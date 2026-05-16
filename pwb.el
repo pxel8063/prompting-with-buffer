@@ -283,7 +283,7 @@ process finishes.  On failure, an error is signaled."
   (with-temp-file file
     (let ((print-length nil)
           (print-level nil))
-      (prin1 (pwb-messages-turns pwb-messages) (current-buffer)))))
+      (prin1 pwb-messages (current-buffer)))))
 
 ;;;###autoload
 (defun pwb-restore-conversation (file)

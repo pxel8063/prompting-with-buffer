@@ -281,7 +281,9 @@ process finishes.  On failure, an error is signaled."
   "Save the conversation to FILE."
   (interactive "FFile to save conversation: ")
   (with-temp-file file
-    (prin1 (pwb-messages-turns pwb-messages) (current-buffer))))
+    (let ((print-length nil)
+          (print-level nil))
+      (prin1 (pwb-messages-turns pwb-messages) (current-buffer)))))
 
 ;;;###autoload
 (defun pwb-restore-conversation (file)
@@ -290,7 +292,9 @@ process finishes.  On failure, an error is signaled."
   (with-temp-buffer
     (insert-file-contents file)
     (let ((data (read (current-buffer))))
-      (setf (pwb-messages-turns pwb-messages) data))))
+      (unless (pwb-messages-p data)
+        (error "File does not contain a valid pwb-messages struct"))
+      (setf pwb-messages data))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

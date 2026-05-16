@@ -104,9 +104,12 @@ Like curl -H anthropic-version: 2023-06-01"
     (mapcar #'pwb-convert-param-value params)))
 
 (defun pwb-params-file-org-property ()
+  "Return alist of params from the file-level org property drawer."
   (save-excursion
-    (goto-char 1)
-    (pwb-params-from-org-property)))
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (pwb-params-from-org-property))))
 
 (declare-function org-entry-properties "org" (&optional pom which))
 

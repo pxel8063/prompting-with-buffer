@@ -300,13 +300,13 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-set-system-prompt ()
   "Set system prompt string to the current buffer."
   (interactive)
-  (customize-set-variable 'pwb-system-prompt (pwb-buffer-string)))
+  (setq pwb-system-prompt (pwb-buffer-string)))
 
 ;;;###autoload
 (defun pwb-clear-system-prompt ()
   "Clear system prompt."
   (interactive)
-  (customize-set-variable 'pwb-system-prompt ""))
+  (setq pwb-system-prompt ""))
 
 ;;;###autoload
 (defun pwb-clear-conversation ()

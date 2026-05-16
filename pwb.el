@@ -314,6 +314,21 @@ process finishes.  On failure, an error is signaled."
   (interactive)
   (setf pwb-messages (make-pwb-messages)))
 
+;;;###autoload
+(defun pwb-print-assistant-turns ()
+  "Print the assistant turns into `'pwb-response-buffer'."
+  (with-current-buffer (get-buffer-create pwb-response-buffer)
+    (save-excursion
+      (goto-char (point-max))
+      (insert
+       (seq-reduce
+        (lambda (acc x)
+          (if (equal (alist-get 'role x) "assistant")
+              (concat acc (alist-get 'content x))
+            acc))
+        (pwb-messages-turns pwb-messages)
+        "")))))
+
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
   (pwb-find-type-from-content "text" (alist-get 'content response)))

@@ -283,20 +283,24 @@ process finishes.  On failure, an error is signaled."
   (interactive)
   (setf pwb-messages (make-pwb-messages)))
 
+(defmacro pwb-with-response-buffer (&rest body)
+  "Macro for response buffer printing."
+  `(with-current-buffer (get-buffer-create pwb-response-buffer)
+     (save-excursion
+       (goto-char (point-max))
+       ,@body)))
+
 ;;;###autoload
 (defun pwb-print-assistant-turns ()
   "Print the assistant turns into `'pwb-response-buffer'."
-  (with-current-buffer (get-buffer-create pwb-response-buffer)
-    (save-excursion
-      (goto-char (point-max))
-      (insert
-       (seq-reduce
-        (lambda (acc x)
-          (if (equal (alist-get 'role x) "assistant")
-              (concat acc (alist-get 'content x))
-            acc))
-        (pwb-messages-turns pwb-messages)
-        "")))))
+  (pwb-with-response-buffer
+   (insert (seq-reduce
+            (lambda (acc x)
+              (if (equal (alist-get 'role x) "assistant")
+                  (concat acc (alist-get 'content x))
+                acc))
+            (pwb-messages-turns pwb-messages)
+            ""))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
@@ -316,11 +320,9 @@ The first argument must be STRING."
 (defun pwb-render-response (string)
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."
-  (with-current-buffer (get-buffer-create pwb-response-buffer)
-    (save-excursion
-      (goto-char (point-max))
-      (newline 2)
-      (insert string))))
+  (pwb-with-response-buffer
+    (newline 2)
+    (insert string)))
 
 (defun pwb-response-ok-p (response)
   "Test whether the RESPONSE is error or not."

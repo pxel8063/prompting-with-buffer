@@ -64,11 +64,11 @@
     (should (equal turns
                    (vector)))
     (should (equal msgs
-                   (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi."))))))
-    (should (equal (pwb-build-alist (pwb-merge-params
+                   (list (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi.")))))))
+    (should (equal (pwb-merge-params msgs
                                      pwb-body-params
                                      (pwb-build-alist-from-custom))
-                                    msgs)
+
                    (list (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi."))))
                          (cons 'max_tokens 16)
                          (cons 'model "claude-opus-4-6")
@@ -84,9 +84,9 @@
     (should
      (equal json
 	    (json-serialize
-             (pwb-build-alist alist
-                              (cons 'messages (pwb-concat-turns (vector)
-                                                                (pwb-user-turn "Hello, Claude")))))))))
+             (pwb-merge-params (list (cons 'messages (pwb-concat-turns (vector)
+                                                                       (pwb-user-turn "Hello, Claude"))))
+                               alist))))))
 
 (ert-deftest pwb-object-get-content-text-test()
   "Test `pwb-get-content-text' can get a text properly."

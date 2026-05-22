@@ -101,7 +101,7 @@ keys are the same, return true."
         (cons 'system pwb-system-prompt)))
 
 (defun pwb-messages-param (messages)
-  (cons 'messages messages))
+  (list (cons 'messages messages)))
 
 (defun pwb-concat-turns (turns &rest new-turns)
   "Combine TURNS with NEW-TURNS into a single turns sequence."
@@ -112,9 +112,6 @@ keys are the same, return true."
 
 (defun pwb-assistant-turn (content)
   (vector (list (cons 'role "assistant") (cons 'content content))))
-
-(defun pwb-build-alist (alist messages)
-  (push messages alist))
 
 (defun pwb-add-conversation (turns u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
@@ -198,8 +195,9 @@ process finishes.  On failure, an error is signaled."
   (let* ((prompt (pwb-buffer-string))
          (turns (pwb-messages-turns pwb-messages))
          (msgs (pwb-messages-param (vconcat turns (pwb-user-turn prompt))))
-         (alst (cons msgs (pwb-merge-params
-                           pwb-body-params (pwb-build-alist-from-custom))))
+         (alst (pwb-merge-params msgs
+                                 pwb-body-params
+                                 (pwb-build-alist-from-custom)))
          (payload (json-serialize alst)))
     (message "pwb: sending request...")
     (pwb-curl-async
@@ -229,8 +227,9 @@ process finishes.  On failure, an error is signaled."
          (msgs
           (pwb-messages-param (pwb-concat-turns turns
                                                 (pwb-user-turn prompt))))
-         (alst (pwb-build-alist (pwb-merge-params
-                                 pwb-body-params (pwb-build-alist-from-custom)) msgs))
+         (alst (pwb-merge-params msgs
+                                 pwb-body-params
+                                 (pwb-build-alist-from-custom)))
          (response (pwb-curl (json-serialize alst))))
     (if (pwb-response-ok-p response)
          (let ((turns (pwb-messages-turns pwb-messages))

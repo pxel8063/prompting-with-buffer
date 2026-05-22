@@ -97,9 +97,9 @@ keys are the same, return true."
     (seq-uniq accum #'pwb-param-key=)))
 
 (defun pwb-build-alist-from-custom ()
-  `((max_tokens . ,pwb-max-tokens)
-    (model . ,pwb-model)
-    (system . ,pwb-system-prompt)))
+  (list (cons 'max_tokens pwb-max-tokens)
+        (cons 'model pwb-model)
+        (cons 'system pwb-system-prompt)))
 
 (defun pwb-messages-param (messages)
   (cons 'messages messages))
@@ -109,10 +109,10 @@ keys are the same, return true."
   (apply #'vconcat turns new-turns))
 
 (defun pwb-user-turn (content)
-  (vector `((role . "user") (content . ,content))))
+  (vector (list (cons 'role "user") (cons 'content content))))
 
 (defun pwb-assistant-turn (content)
-  (vector `((role . "assistant") (content . ,content))))
+  (vector (list (cons 'role "assistant") (cons 'content content))))
 
 (defun pwb-build-alist (alist messages)
   (push messages alist))

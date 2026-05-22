@@ -47,10 +47,12 @@
 
 (ert-deftest pwb-build-param-test ()
   "Test"
-  (let* (;; Override customize variable
+  (let* (;; Override customize variables
          (pwb-system-prompt "")
          (pwb-max-tokens 16)
          (pwb-model "claude-opus-4-6")
+         ;; Override the variable
+         (pwb-body-params nil)
          ;; Prepare a local environment
          (prompt "Hi.")
          (messages (make-pwb-messages))
@@ -62,7 +64,10 @@
                    (vector)))
     (should (equal msgs
                    (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi."))))))
-    (should (equal (pwb-build-alist (pwb-merge-param) msgs)
+    (should (equal (pwb-build-alist (pwb-merge-params
+                                     pwb-body-params
+                                     (pwb-build-alist-from-custom))
+                                    msgs)
                    (list (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi."))))
                          (cons 'max_tokens 16)
                          (cons 'model "claude-opus-4-6")

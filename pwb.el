@@ -90,10 +90,9 @@ Like curl -H anthropic-version: 2023-06-01"
 keys are the same, return true."
   (eq (car a) (car b)))
 
-(defun pwb-merge-param ()
-  "Merge alist of params."
-  (let ((accum (append pwb-body-params
-                       (pwb-build-alist-from-custom))))
+(defun pwb-merge-params (&rest params)
+  "Merge alist of params. The order of the precedents is from left to right"
+  (let ((accum (apply #'append params)))
     (seq-uniq accum #'pwb-param-key=)))
 
 (defun pwb-build-alist-from-custom ()
@@ -199,7 +198,8 @@ process finishes.  On failure, an error is signaled."
   (let* ((prompt (pwb-buffer-string))
          (turns (pwb-messages-turns pwb-messages))
          (msgs (pwb-messages-param (vconcat turns (pwb-user-turn prompt))))
-         (alst (cons msgs (pwb-merge-param)))
+         (alst (cons msgs (pwb-merge-params
+                           pwb-body-params (pwb-build-alist-from-custom))))
          (payload (json-serialize alst)))
     (message "pwb: sending request...")
     (pwb-curl-async
@@ -229,7 +229,8 @@ process finishes.  On failure, an error is signaled."
          (msgs
           (pwb-messages-param (pwb-concat-turns turns
                                                 (pwb-user-turn prompt))))
-         (alst (pwb-build-alist (pwb-merge-param) msgs))
+         (alst (pwb-build-alist (pwb-merge-params
+                                 pwb-body-params (pwb-build-alist-from-custom)) msgs))
          (response (pwb-curl (json-serialize alst))))
     (if (pwb-response-ok-p response)
          (let ((turns (pwb-messages-turns pwb-messages))

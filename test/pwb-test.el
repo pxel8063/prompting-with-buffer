@@ -39,11 +39,12 @@
 # End:
 ")
 (ert-deftest pwb-local-variables-test ()
-  (should (eq (with-temp-buffer
-                (insert pwb-buffer-with-local-variables)
-                (hack-local-variables)
-                (local-variable-p 'pwb-max-tokens))
-              t)))
+  (let ((enable-local-variables :all))
+    (should (eq (with-temp-buffer
+                  (insert pwb-buffer-with-local-variables)
+                  (hack-local-variables)
+                  (local-variable-p 'pwb-max-tokens))
+                t))))
 
 (ert-deftest pwb-build-param-test ()
   "Test"

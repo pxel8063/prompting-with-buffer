@@ -37,10 +37,11 @@
 
 (ert-deftest pwb-check-response ()
   "Test to whether the API response."
-  (should (eq (with-temp-buffer
-                (insert pwb-buffer-org-file)
-                (pwb-current-buffer))
-              t)))
+  (pwb-with-custom
+   (should (eq (with-temp-buffer
+                 (insert pwb-buffer-org-file)
+                 (pwb-current-buffer))
+               t))))
 
 (ert-deftest pwb-build-alist-from-custom-test ()
   "Test to build alist from the customized variables."

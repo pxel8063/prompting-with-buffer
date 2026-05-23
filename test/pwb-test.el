@@ -19,17 +19,27 @@
 (require 'pwb)
 (require 'ert)
 
+(defmacro pwb-with-custom (&rest body)
+  (let ((gbod (gensym)))
+    `(let ((,gbod #'(lambda () ,@body)))
+       (pwb-with-custom-fn ,gbod))))
+
+(defun pwb-with-custom-fn (body)
+  (progn
+    (let ((pwb-messages (make-pwb-messages))
+          (pwb-system-prompt "")
+          (pwb-model "claude-haiku-4-5")
+          (pwb-max-tokens 256))
+      (funcall body))))
+
 (defvar pwb-buffer-org-file "Hello?")
 
 (ert-deftest pwb-check-response ()
   "Test to whether the API response."
-  (let* ((pwb-messages (make-pwb-messages))
-         (pwb-model "claude-haiku-4-5")
-         (pwb-max-tokens 256)
-         (res (with-temp-buffer
+  (should (eq (with-temp-buffer
                 (insert pwb-buffer-org-file)
-                (pwb-current-buffer))))
-    (should (eq res t))))
+                (pwb-current-buffer))
+              t)))
 
 (defvar pwb-buffer-with-local-variables "Hello?
 

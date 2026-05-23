@@ -16,10 +16,11 @@
 ;; along with this program.  If not, see http://www.gnu.org/licenses.
 
 ;;; Code:
-(require 'pwb)
 (require 'ert)
+(require 'cl-lib)
+(require 'pwb)
 
-(defmacro pwb-with-custom (&rest body)
+(cl-defmacro pwb-with-custom (&body body)
   (let ((gbod (gensym)))
     `(let ((,gbod #'(lambda () ,@body)))
        (pwb-with-custom-fn ,gbod))))

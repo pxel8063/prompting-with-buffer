@@ -48,6 +48,15 @@
    (should (equal (pwb-build-alist-from-custom)
                   '((max_tokens . 256)(model . "claude-haiku-4-5")(system . ""))))))
 
+(ert-deftest pwb-add-conversation-test ()
+  "Test to add conversation. pwb-user-turn, pwb-assistant-turn,
+pwb-concat-turns are also tested."
+  (should (equal (pwb-add-conversation []
+                                       "First."
+                                       "First response.")
+                 [((role . "user")(content . "First."))
+                  ((role . "assistant")(content . "First response."))])))
+
 (defvar pwb-buffer-with-local-variables "Hello?
 
 # Local Variables:

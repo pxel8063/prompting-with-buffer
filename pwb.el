@@ -299,6 +299,7 @@ process finishes.  On failure, an error is signaled."
 ;;;###autoload
 (defun pwb-print-assistant-turns ()
   "Print the assistant turns into `'pwb-response-buffer'."
+  (interactive)
   (pwb-with-response-buffer
    (insert (seq-reduce
             (lambda (acc x)

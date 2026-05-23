@@ -192,6 +192,7 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-async-current-buffer ()
   "Send a prompt based on the current buffer to api."
   (interactive)
+  (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
          (turns (pwb-messages-turns pwb-messages))
          (msgs (pwb-messages-param (vconcat turns (pwb-user-turn prompt))))
@@ -222,6 +223,7 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-current-buffer ()
   "Send a prompt based on the current buffer to api."
   (interactive)
+  (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
@@ -258,6 +260,7 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-restore-conversation (file)
   "Restore the conversation from FILE."
   (interactive "fFile to restore conversation: ")
+  (make-local-variable 'pwb-messages)
   (with-temp-buffer
     (insert-file-contents file)
     (let ((data (read (current-buffer))))
@@ -281,6 +284,7 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-clear-conversation ()
   "Clear the conversation history."
   (interactive)
+  (make-local-variable 'pwb-messages)
   (setf pwb-messages (make-pwb-messages)))
 
 (defmacro pwb-with-response-buffer (&rest body)

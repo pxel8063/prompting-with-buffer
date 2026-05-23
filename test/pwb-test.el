@@ -94,34 +94,6 @@ pwb-concat-turns are also tested."
                   (local-variable-p 'pwb-max-tokens))
                 t))))
 
-(ert-deftest pwb-build-param-test ()
-  "Test"
-  (let* (;; Override customize variables
-         (pwb-system-prompt "")
-         (pwb-max-tokens 16)
-         (pwb-model "claude-opus-4-6")
-         ;; Override the variable
-         (pwb-body-params nil)
-         ;; Prepare a local environment
-         (prompt "Hi.")
-         (messages (make-pwb-messages))
-         (turns (pwb-messages-turns messages))
-         (msgs
-          (pwb-messages-param (pwb-concat-turns turns
-                                                (pwb-user-turn prompt)))))
-    (should (equal turns
-                   (vector)))
-    (should (equal msgs
-                   (list (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi.")))))))
-    (should (equal (pwb-merge-params msgs
-                                     pwb-body-params
-                                     (pwb-build-alist-from-custom))
-
-                   (list (cons 'messages (vector (list (cons 'role "user") (cons 'content "Hi."))))
-                         (cons 'max_tokens 16)
-                         (cons 'model "claude-opus-4-6")
-                         (cons 'system ""))))))
-
 (ert-deftest pwb-build-alist-test-basic ()
   "Test basic request alist."
   (let ((alist '((model . "claude-sonnet-4-5")

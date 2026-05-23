@@ -41,6 +41,12 @@
                 (pwb-current-buffer))
               t)))
 
+(ert-deftest pwb-build-alist-from-custom-test ()
+  "Test to build alist from the customized variables."
+  (pwb-with-custom
+   (should (equal (pwb-build-alist-from-custom)
+                  '((max_tokens . 256)(model . "claude-haiku-4-5")(system . ""))))))
+
 (defvar pwb-buffer-with-local-variables "Hello?
 
 # Local Variables:

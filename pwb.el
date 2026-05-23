@@ -261,12 +261,14 @@ process finishes.  On failure, an error is signaled."
   "Restore the conversation from FILE."
   (interactive "fFile to restore conversation: ")
   (make-local-variable 'pwb-messages)
-  (with-temp-buffer
-    (insert-file-contents file)
-    (let ((data (read (current-buffer))))
-      (unless (pwb-messages-p data)
-        (error "File does not contain a valid pwb-messages struct"))
-      (setf pwb-messages data))))
+  (let ((cbuf (current-buffer)))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (let ((data (read (current-buffer))))
+        (unless (pwb-messages-p data)
+          (error "File does not contain a valid pwb-messages struct"))
+        (with-current-buffer cbuf
+          (setf pwb-messages data))))))
 
 ;;;###autoload
 (defun pwb-set-system-prompt ()

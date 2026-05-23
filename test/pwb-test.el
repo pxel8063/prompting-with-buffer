@@ -57,6 +57,28 @@ pwb-concat-turns are also tested."
                  [((role . "user")(content . "First."))
                   ((role . "assistant")(content . "First response."))])))
 
+(ert-deftest pwb-merge-params-test ()
+  "Test pwb-merge-params function.  Test also the precedence of the params"
+  (let ((msgs-param '((messages . [(role . "user")(content . " First.")])))
+        (body-params '((thinking . adaptive)))
+        (custom-params '((max_tokens . 256)(model . "claude-haiku-4-5")(system . ""))))
+    (should (equal (pwb-merge-params msgs-param body-params custom-params)
+                   '((messages . [(role . "user")(content . " First.")])
+                     (thinking . adaptive)
+                     (max_tokens . 256)(model . "claude-haiku-4-5")(system . ""))))
+    (should (equal (pwb-merge-params msgs-param (append body-params '((max_tokens . 128))) custom-params)
+                   '((messages . [(role . "user")(content . " First.")])
+                     (thinking . adaptive)
+                     (max_tokens . 128)(model . "claude-haiku-4-5")(system . ""))))
+    (should (equal (pwb-merge-params msgs-param (append body-params '((model . "claude-sonnet-4-6"))) custom-params)
+                   '((messages . [(role . "user")(content . " First.")])
+                     (thinking . adaptive)(model . "claude-sonnet-4-6")
+                     (max_tokens . 256)(system . ""))))
+    (should (equal (pwb-merge-params msgs-param (append body-params '((system . "prompt")) ) custom-params)
+                   '((messages . [(role . "user")(content . " First.")])
+                     (thinking . adaptive)(system . "prompt")
+                     (max_tokens . 256)(model . "claude-haiku-4-5"))))))
+
 (defvar pwb-buffer-with-local-variables "Hello?
 
 # Local Variables:

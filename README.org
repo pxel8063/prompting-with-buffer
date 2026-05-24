@@ -53,25 +53,27 @@ machine api.anthropic.com password s*-*t-a-*api-key**
 
 ** Commands
 
-| Command                   | Description                                                                                  |
-|---------------------------+----------------------------------------------------------------------------------------------|
-| =pwb-current-buffer=      | Send the content(if narrowed, the only narrowed portion) of the current buffer to Claude API |
-| =pwb-set-system-prompt=   | Define system prompt from current buffer                                                     |
-| =pwb-clear-system-prompt= | Clear the current system prompt                                                              |
-| =pwb-clear-conversation=  | Reset conversation history                                                                   |
-| =pwb-save-conversation=   | Save conversation history to a file                                                          |
-| =pwb-restor-conversation= | Restor conversation history from a file                                                      |
+| Command                     | Description                                                                                  |
+|-----------------------------+----------------------------------------------------------------------------------------------|
+| =pwb-current-buffer=        | Send the content(if narrowed, the only narrowed portion) of the current buffer to Claude API |
+| =pwb-async-current-buffer=  | The async version of the above                                                               |
+| =pwb-set-system-prompt=     | Define system prompt from current buffer                                                     |
+| =pwb-clear-system-prompt=   | Clear the current system prompt                                                              |
+| =pwb-clear-conversation=    | Reset conversation history                                                                   |
+| =pwb-save-conversation=     | Save the conversation history to a file                                                      |
+| =pwb-restor-conversation=   | Restore the conversation history from a file                                                 |
+| =pwb-print-assistant-turns= | Restore the =*Claude*= buffer                                                                |
 
 ** Customizable Variables
 
 | Variable                       | Default                                 | Description                       |
 |--------------------------------+-----------------------------------------+-----------------------------------|
-| =pwb-claude-model=             | ="claude-haiku-4-5"=                    | Claude model to use               |
-| =pwb-claude-max-tokens=        | =1024=                                  | Maximum tokens in response        |
-| =pwb-claude-api-host=          | ="api.anthropic.com"=                   | The machine name in =auth-source= |
-| =pwb-claude-anthropic-version= | ="2023-06-01"=                          | Anthropic version                 |
-| =pwb-claude-message-api-url=   | "https://api.anthropic.com/v1/messages" | The message API url               |
-| =pwb-claude-system-prompt=     | "When possible, use org-mode syntax."   | The system prompt                 |
+| =pwb-model=             | ="claude-haiku-4-5"=                    | Claude model to use               |
+| =pwb-max-tokens=        | =1024=                                  | Maximum tokens in response        |
+| =pwb-api-host=          | ="api.anthropic.com"=                   | The machine name in =auth-source= |
+| =pwb-anthropic-version= | ="2023-06-01"=                          | Anthropic version                 |
+| =pwb-message-api-url=   | "https://api.anthropic.com/v1/messages" | The message API url               |
+| =pwb-system-prompt=     | "When possible, use org-mode syntax."   | The system prompt                 |
 
 *** Modify via Customize
 
@@ -81,8 +83,8 @@ M-x customize-group RET pwb RET
 
 Or in init.el:
 #+BEGIN_SRC elisp
-(setq pwb-claude-model "claude-3-5-sonnet-20241022")
-(setq pwb-claude-max-tokens 2048)
+(setq pwb-model "claude-3-5-sonnet-20241022")
+(setq pwb-max-tokens 2048)
 #+END_SRC
 
 * Examples

@@ -254,6 +254,8 @@ process finishes.  On failure, an error is signaled."
   (with-temp-file file
     (let ((print-length nil)
           (print-level nil))
+      (princ ";; -*- coding: utf-8; lexical-binding: t; -*-\n"
+             (current-buffer))
       (prin1 pwb-messages (current-buffer)))))
 
 ;;;###autoload

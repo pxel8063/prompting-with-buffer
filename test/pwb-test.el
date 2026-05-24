@@ -1,6 +1,7 @@
 ;;; pwb-test.el --- Test for pwb -*- lexical-binding: t -*-
 
 ;;; Copyright (C) 2024 pxel8063
+;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as

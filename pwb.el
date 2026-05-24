@@ -1,6 +1,7 @@
 ;;; pwb.el --- Prompting with buffer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C)   2026 pxel8063
+;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; Author:     pxel8063 <pxel8063@gmail.com>
 ;; Version:    0.0.13

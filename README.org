@@ -1,136 +1,154 @@
-#+TITLE: pwb - Emacs Claude API Client
+#+TITLE: pwb - Prompting with Buffer
 #+AUTHOR: pxel8063
 #+DATE: 2026
 #+LANGUAGE: en
 
 * Overview
 
-=pwb= is a lightweight Emacs client for interacting with Anthropic's Claude API.
-It allows you to send buffer contents to Claude and receive AI-generated responses directly within Emacs.
+=pwb= (Prompting with Buffer) is a lightweight Emacs client for Anthropic's
+Claude API. It sends buffer contents as prompts and displays responses in a
+dedicated =*Claude*= buffer. Conversation history is maintained per buffer, so
+you can carry on multi-turn dialogues without leaving Emacs.
 
-** Features
+* Features
 
-- Send buffer content as prompts to Claude API
-- Maintain conversation history across sessions
-- Customize system prompts
-- Display responses in a dedicated =*Claude*= buffer
-- Support for Claude model selection and token limits
+- Send the current buffer (or its narrowed region) as a prompt
+- Synchronous and asynchronous request modes
+- Per-buffer conversation history with save and restore
+- Customizable model, token limit, and system prompt
+- Fine-grained parameter control via =pwb-body-params=
 
 * Prerequisites
 
 - GNU Emacs 29.1 or later
-- =curl= command-line tool
-- Anthropic API key (obtain from [[https://console.anthropic.com][Anthropic Console]])
+- =curl= command-line tool installed and on your =PATH=
+- An Anthropic API key (obtain one from [[https://console.anthropic.com][Anthropic Console]])
 
 * Installation
 
-** Step 1: Clone the repository
+** Clone the repository
 
-#+BEGIN_SRC bash
-git clone https://github.com/pxel8063/prompting-with-buffer.git ~/.emacs.d/lisp/
-#+END_SRC
+#+begin_src bash
+git clone https://github.com/pxel8063/prompting-with-buffer.git ~/.emacs.d/lisp/prompting-with-buffer
+#+end_src
 
-** Step 2: Add to init.el
+** Add to your init file
 
-#+BEGIN_SRC elisp
+#+begin_src emacs-lisp
 (add-to-list 'load-path "~/.emacs.d/lisp/prompting-with-buffer")
 (require 'pwb)
-#+END_SRC
+#+end_src
 
-** Step 3: Set API Key
-Set =auth-source= for the API.
-#+BEGIN_SRC bash
-machine api.anthropic.com password s*-*t-a-*api-key**
-#+END_SRC
+** Configure your API key
+
+=pwb= reads the API key from =auth-source=. Add an entry to your
+=~/.authinfo= (or =~/.authinfo.gpg= for encrypted storage):
+
+#+begin_example
+machine api.anthropic.com password sk-ant-your-api-key-here
+#+end_example
+
+The =machine= value must match =pwb-api-host=, which defaults to
+=api.anthropic.com=.
 
 * Usage
 
-** Basic Workflow
+** Basic workflow
 
-1. Write or select text in an Emacs buffer
-2. Run =M-x pwb-current-buffer=
-3. View Claude's response in the =*Claude*= buffer
+1. Write or open text in an Emacs buffer.
+2. Run =M-x pwb-current-buffer=.
+3. View Claude's response in the =*Claude*= buffer.
+
+If you want the buffer to remain responsive while waiting, use
+=M-x pwb-async-current-buffer= instead.
 
 ** Commands
 
-| Command                     | Description                                                                                  |
-|-----------------------------+----------------------------------------------------------------------------------------------|
-| =pwb-current-buffer=        | Send the content(if narrowed, the only narrowed portion) of the current buffer to Claude API |
-| =pwb-async-current-buffer=  | The async version of the above                                                               |
-| =pwb-set-system-prompt=     | Define system prompt from current buffer                                                     |
-| =pwb-clear-system-prompt=   | Clear the current system prompt                                                              |
-| =pwb-clear-conversation=    | Reset conversation history                                                                   |
-| =pwb-save-conversation=     | Save the conversation history to a file                                                      |
-| =pwb-restor-conversation=   | Restore the conversation history from a file                                                 |
-| =pwb-print-assistant-turns= | Restore the =*Claude*= buffer                                                                |
+| Command                       | Description                                                  |
+|-------------------------------+--------------------------------------------------------------|
+| =pwb-current-buffer=          | Send the buffer (narrowed region if active) to Claude        |
+| =pwb-async-current-buffer=    | Same as above, but asynchronous                              |
+| =pwb-set-system-prompt=       | Set the system prompt to the current buffer's content        |
+| =pwb-clear-system-prompt=     | Reset the system prompt to an empty string                   |
+| =pwb-clear-conversation=      | Discard conversation history for the current buffer          |
+| =pwb-save-conversation=       | Save conversation history to a file                          |
+| =pwb-restore-conversation=    | Restore conversation history from a file                     |
+| =pwb-print-assistant-turns=   | Re-print all assistant responses into the =*Claude*= buffer |
 
-** Customizable Variables
+** Customizable variables
 
-| Variable                       | Default                                 | Description                       |
-|--------------------------------+-----------------------------------------+-----------------------------------|
-| =pwb-model=             | ="claude-haiku-4-5"=                    | Claude model to use               |
-| =pwb-max-tokens=        | =1024=                                  | Maximum tokens in response        |
-| =pwb-api-host=          | ="api.anthropic.com"=                   | The machine name in =auth-source= |
-| =pwb-anthropic-version= | ="2023-06-01"=                          | Anthropic version                 |
-| =pwb-message-api-url=   | "https://api.anthropic.com/v1/messages" | The message API url               |
-| =pwb-system-prompt=     | "When possible, use org-mode syntax."   | The system prompt                 |
+| Variable                 | Default                                   | Description                                |
+|--------------------------+-------------------------------------------+--------------------------------------------|
+| =pwb-model=              | ="claude-haiku-4-5"=                      | Claude model identifier                    |
+| =pwb-max-tokens=         | =1024=                                    | Maximum tokens in the response             |
+| =pwb-system-prompt=      | ="When possible, use org-mode syntax."=   | System prompt sent with every request      |
+| =pwb-api-url=            | ="https://api.anthropic.com/v1/messages"= | Messages API endpoint URL                  |
+| =pwb-api-host=           | ="api.anthropic.com"=                     | Machine name used for =auth-source= lookup |
+| =pwb-anthropic-version=  | ="2023-06-01"=                            | Anthropic API version header               |
 
-*** Modify via Customize
+You can customise these interactively with =M-x customize-group RET pwb RET=,
+or set them in your init file:
 
-#+BEGIN_EXAMPLE
-M-x customize-group RET pwb RET
-#+END_EXAMPLE
+#+begin_src emacs-lisp
+(setq pwb-model "claude-sonnet-4-5"
+      pwb-max-tokens 2048)
+#+end_src
 
-Or in init.el:
-#+BEGIN_SRC elisp
-(setq pwb-model "claude-3-5-sonnet-20241022")
-(setq pwb-max-tokens 2048)
-#+END_SRC
+** Per-buffer conversations
+
+Each buffer maintains its own conversation history. When you call
+=pwb-current-buffer= or =pwb-async-current-buffer=, a buffer-local copy of the
+conversation state is created automatically. This means you can have
+independent conversations running in different buffers simultaneously.
 
 * Examples
 
-** Example 1: Basic Prompt
+** Sending a simple prompt
 
-1. Create a new buffer or open existing file
-2. Type your prompt:
-   #+BEGIN_EXAMPLE
-   Write a Python function that calculates the nth Fibonacci number
-   #+END_EXAMPLE
+Open a buffer, type a prompt, and send it:
 
-3. Run =M-x pwb-current-buffer RET=
-4. View the response in =*Claude*= buffer
+#+begin_example
+Explain the difference between lexical and dynamic binding in Emacs Lisp.
+#+end_example
 
-** Example 2: Set System Prompt
+Then run =M-x pwb-current-buffer=. The response appears in =*Claude*=.
 
-1. Create a new buffer
-2. Enter your system prompt:
-   #+BEGIN_EXAMPLE
-   You are an expert Python developer. Provide concise,
-   efficient code with clear explanations.
-   #+END_EXAMPLE
+** Setting a system prompt
 
-3. Run =M-x pwb-set-system-prompt=
-4. All subsequent prompts will use this system context
+Create a buffer with the system prompt you want:
 
-** Example 3: Multi-turn Conversation
+#+begin_example
+You are an expert Python developer. Provide concise,
+efficient code with clear explanations.
+#+end_example
 
-1. Send first prompt using =pwb-current-buffer=
-2. View response in =*Claude*= buffer
-3. Open the same buffer and write a follow-up prompt
-4. Narrow the buffer to the only portion of newly written follow-up prompt
-5. Run =pwb-current-buffer= again
-6. Conversation history is automatically maintained
+Run =M-x pwb-set-system-prompt=. All subsequent requests will include this
+system prompt until you change or clear it.
 
-** Example 4(Option):  Tweeking the message parameters
+** Multi-turn conversation
 
-By setting =pwb-body-params=, you can control the parameters of the Claude Message
-API.
+1. Write your first prompt and run =pwb-current-buffer=.
+2. Read the response in =*Claude*=.
+3. In the same buffer, write a follow-up prompt below the original.
+4. Narrow the buffer to only the follow-up text (=C-x n n=).
+5. Run =pwb-current-buffer= again.
 
-To use adaptive thinking, the content of buffer
+The conversation history from the first exchange is included automatically, so
+Claude has full context.
+
+** Controlling API parameters with =pwb-body-params=
+
+The variable =pwb-body-params= lets you pass additional parameters to the
+Claude Messages API. It is an alist that takes precedence over the customized
+variables.
+
+For example, to enable adaptive thinking, set up your buffer with file-local
+variables:
+
 #+begin_src org
   Explain why the sum of two even numbers is always even.
 
-  
+
   # Local Variables:
   # pwb-model: "claude-opus-4-7"
   # pwb-max-tokens: 16000
@@ -139,27 +157,36 @@ To use adaptive thinking, the content of buffer
   # End:
 #+end_src
 
-is roughly equivalent to the adaptive thinking message below.
+Running =pwb-current-buffer= in this buffer produces a request equivalent to:
 
-#+begin_src example
+#+begin_example
 curl https://api.anthropic.com/v1/messages \
-       --header "x-api-key: $ANTHROPIC_API_KEY" \
-       --header "anthropic-version: 2023-06-01" \
-       --header "content-type: application/json" \
-       --data \
-  '{
-      "model": "claude-opus-4-7",
-      "max_tokens": 16000,
-      "thinking": {
-          "type": "adaptive"
-      },
-      "messages": [
-          {
-              "role": "user",
-              "content": "Explain why the sum of two even numbers is always even."
-          }
-      ]
-  }'
-#+end_src
+     --header "x-api-key: $ANTHROPIC_API_KEY" \
+     --header "anthropic-version: 2023-06-01" \
+     --header "content-type: application/json" \
+     --data \
+'{
+    "model": "claude-opus-4-7",
+    "max_tokens": 16000,
+    "thinking": {
+        "type": "adaptive"
+    },
+    "messages": [
+        {
+            "role": "user",
+            "content": "Explain why the sum of two even numbers is always even."
+        }
+    ]
+}'
+#+end_example
 
-The parameters of =pwb-body-params= take precedence to the customized variables.
+The precedence order for parameters, from highest to lowest, is:
+=pwb-body-params=, then the customized variables (=pwb-model=,
+=pwb-max-tokens=, =pwb-system-prompt=).
+
+* License
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See [[http://www.gnu.org/licenses][GNU Licenses]] for details.

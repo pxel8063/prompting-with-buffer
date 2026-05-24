@@ -24,13 +24,10 @@
 
 ;;; Commentary:
 
-;; pwb (Prompting with Buffer) is an Emacs interface for the Claude API.
-;;
-;; It allows you to send buffer content as prompts to Claude and receive
-;; responses directly in Emacs.  Features include:
-;; - Conversation history tracking across multiple prompts
-;; - Customizable system prompts
-;; - Support for prefilled assistant responses
+;; pwb (Prompting with Buffer) is a lightweight Emacs client for Anthropic's
+;; Claude API. It sends buffer contents as prompts and displays responses in a
+;; dedicated *Claude* buffer. Conversation history is maintained per buffer, so
+;; you can carry on multi-turn dialogues without leaving Emacs.
 ;;
 ;; Basic usage:
 ;;   M-x pwb-current-buffer RET

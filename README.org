@@ -15,7 +15,6 @@ It allows you to send buffer contents to Claude and receive AI-generated respons
 - Customize system prompts
 - Display responses in a dedicated =*Claude*= buffer
 - Support for Claude model selection and token limits
-- Org-mode property overrides
 
 * Prerequisites
 
@@ -86,27 +85,6 @@ Or in init.el:
 (setq pwb-claude-max-tokens 2048)
 #+END_SRC
 
-** Org-mode Property Overrides
-
-When working in an org-mode buffer, you can override API parameters using org
-properties:
-
-#+BEGIN_SRC org
-  ,* My Prompt
-  :PROPERTIES:
-  :MODEL: claude-sonnet-4-5-20250929
-  :MAX_TOKENS: 4096
-  :SYSTEM: You are a helpful assistant.
-  :END:
-#+END_SRC
-
-The order of the precedence:
-1. The current headline
-2. The org properties set at the top of the current buffer
-3. The customized variables
-
-Currently, =max_tokens=, =system= and =model= take effect.
-
 * Examples
 
 ** Example 1: Basic Prompt
@@ -141,14 +119,45 @@ Currently, =max_tokens=, =system= and =model= take effect.
 5. Run =pwb-current-buffer= again
 6. Conversation history is automatically maintained
 
-** Example 4: Adaptive thinking
+** Example 4(Option):  Tweeking the message parameters
 
+By setting =pwb-body-params=, you can control the parameters of the Claude Message
+API.
+
+To use adaptive thinking, the content of buffer
 #+begin_src org
-  :PROPERTIES:
-  :model:    "claude-opus-4-6"
-  :thinking: ((type . "adaptive"))
-  :output_config: ((effort . "medium"))
-  :END:
-
   Explain why the sum of two even numbers is always even.
+
+  
+  # Local Variables:
+  # pwb-model: "claude-opus-4-7"
+  # pwb-max-tokens: 16000
+  # pwb-body-params: ((thinking . "adaptive"))
+  # pwb-system-prompt: ""
+  # End:
 #+end_src
+
+is roughly equivalent the adaptive thinking message below.
+
+#+begin_src example
+curl https://api.anthropic.com/v1/messages \
+       --header "x-api-key: $ANTHROPIC_API_KEY" \
+       --header "anthropic-version: 2023-06-01" \
+       --header "content-type: application/json" \
+       --data \
+  '{
+      "model": "claude-opus-4-7",
+      "max_tokens": 16000,
+      "thinking": {
+          "type": "adaptive"
+      },
+      "messages": [
+          {
+              "role": "user",
+              "content": "Explain why the sum of two even numbers is always even."
+          }
+      ]
+  }'
+#+end_src
+
+The parameters of =pwb-body-params= takes precedence to the customized variables.

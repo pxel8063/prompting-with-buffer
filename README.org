@@ -132,12 +132,12 @@ To use adaptive thinking, the content of buffer
   # Local Variables:
   # pwb-model: "claude-opus-4-7"
   # pwb-max-tokens: 16000
-  # pwb-body-params: ((thinking . "adaptive"))
+  # pwb-body-params: ((thinking . (type . "adaptive")))
   # pwb-system-prompt: ""
   # End:
 #+end_src
 
-is roughly equivalent the adaptive thinking message below.
+is roughly equivalent to the adaptive thinking message below.
 
 #+begin_src example
 curl https://api.anthropic.com/v1/messages \

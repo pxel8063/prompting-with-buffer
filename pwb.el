@@ -307,14 +307,16 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-print-assistant-turns ()
   "Print the assistant turn into `pwb-response-buffer'."
   (interactive)
-  (pwb-with-response-buffer
-   (insert (seq-reduce
-            (lambda (acc x)
-              (if (equal (alist-get 'role x) "assistant")
-                  (concat acc (alist-get 'content x))
-                acc))
-            (pwb-messages-turns pwb-messages)
-            ""))))
+  (let ((cbuf (current-buffer)))
+    (pwb-with-response-buffer
+     (insert (seq-reduce
+              (lambda (acc x)
+                (if (equal (alist-get 'role x) "assistant")
+                    (concat acc (alist-get 'content x))
+                  acc))
+              (with-current-buffer cbuf
+                (pwb-messages-turns pwb-messages))
+              "")))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."

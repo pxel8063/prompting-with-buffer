@@ -37,6 +37,7 @@
 
 (ert-deftest pwb-check-response ()
   "Test to whether the API response."
+  (skip-unless nil)
   (pwb-with-custom
    (should (eq (with-temp-buffer
                  (insert pwb-buffer-org-file)

@@ -162,4 +162,4 @@ curl https://api.anthropic.com/v1/messages \
   }'
 #+end_src
 
-The parameters of =pwb-body-params= takes precedence to the customized variables.
+The parameters of =pwb-body-params= take precedence to the customized variables.

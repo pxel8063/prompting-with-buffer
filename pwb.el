@@ -86,42 +86,47 @@ Like curl -H anthropic-version: 2023-06-01"
 (defvar pwb-body-params nil)
 
 (defun pwb-param-key= (a b)
-  "Compare the key of the lisp object intended to serialize to JSON. If the
-keys are the same, return true."
+  "Compare the key of the argument intended to serialize to JSON.
+If the key A and the key B are the same, return true."
   (eq (car a) (car b)))
 
 (defun pwb-merge-params (&rest params)
-  "Merge alist of params. The order of the precedents is from left to right"
+  "Merge alist of PARAMS.
+The order of the precedents is from left to right."
   (let ((accum (apply #'append params)))
     (seq-uniq accum #'pwb-param-key=)))
 
 (defun pwb-build-alist-from-custom ()
+  "Construct the params from the customized variables.
+These params are essential for the query."
   (list (cons 'max_tokens pwb-max-tokens)
         (cons 'model pwb-model)
         (cons 'system pwb-system-prompt)))
 
 (defun pwb-messages-param (messages)
+  "Construct MESSAGES params."
   (list (cons 'messages messages)))
 
 (defun pwb-concat-turns (turns &rest new-turns)
-  "Combine TURNS with NEW-TURNS into a single turns sequence."
+  "Combine TURNS with NEW-TURNS into a single Turn sequence."
   (apply #'vconcat turns new-turns))
 
 (defun pwb-user-turn (content)
+  "Construct the user turn form CONTENT."
   (vector (list (cons 'role "user") (cons 'content content))))
 
 (defun pwb-assistant-turn (content)
-  (vector (list (cons 'role "assistant") (cons 'content content))))
+  "Construct the assistant turn from CONTENT."(vector (list (cons 'role "assistant") (cons 'content content))))
 
 (defun pwb-add-conversation (turns u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
-Return the vector of turns'."
+Return the vector of TURNS'."
   (pwb-concat-turns turns
                     (pwb-user-turn u-content)
                     (pwb-assistant-turn a-content)))
 
 (defun pwb-credential (host)
-  "Get the credential from the `auth-source'."
+  "Get the credential for HOST from the `auth-source'."
   (auth-source-pick-first-password :host host))
 
 (defun pwb-curl (payload)
@@ -292,7 +297,7 @@ process finishes.  On failure, an error is signaled."
   (setf pwb-messages (make-pwb-messages)))
 
 (defmacro pwb-with-response-buffer (&rest body)
-  "Macro for response buffer printing."
+  "Print to `pwb-response-buffer' based on the BODY."
   `(with-current-buffer (get-buffer-create pwb-response-buffer)
      (save-excursion
        (goto-char (point-max))
@@ -300,7 +305,7 @@ process finishes.  On failure, an error is signaled."
 
 ;;;###autoload
 (defun pwb-print-assistant-turns ()
-  "Print the assistant turns into `'pwb-response-buffer'."
+  "Print the assistant turn into `pwb-response-buffer'."
   (interactive)
   (pwb-with-response-buffer
    (insert (seq-reduce
@@ -321,8 +326,8 @@ process finishes.  On failure, an error is signaled."
 
 
 (defun pwb-find-type-from-content (type content)
-  "Return the text that belongs to type \"type\".
-The first argument must be STRING."
+  "Return the text that belongs to TYPE.
+The CONTENT argument must be STRING."
   (alist-get (intern type)
              (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
 

@@ -254,12 +254,15 @@ process finishes.  On failure, an error is signaled."
 (defun pwb-save-conversation (file)
   "Save the conversation to FILE."
   (interactive "FFile to save conversation: ")
-  (with-temp-file file
-    (let ((print-length nil)
-          (print-level nil))
-      (princ ";; -*- coding: utf-8; lexical-binding: t; -*-\n"
-             (current-buffer))
-      (prin1 pwb-messages (current-buffer)))))
+  ;; Store pwb-messgages before the current buffer change to with-temp-file
+  ;; buffer.
+  (let ((msgs pwb-messages))
+    (with-temp-file file
+      (let ((print-length nil)
+            (print-level nil))
+        (princ ";; -*- coding: utf-8; lexical-binding: t; -*-\n"
+               (current-buffer))
+        (prin1 msgs (current-buffer))))))
 
 ;;;###autoload
 (defun pwb-restore-conversation (file)

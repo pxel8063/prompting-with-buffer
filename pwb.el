@@ -75,8 +75,15 @@ Like curl -H anthropic-version: 2023-06-01"
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-response-before-hook nil
+  "Hook run just before writing `pwb-response-buffer'
+as the current buffer with the response from the API."
+  :group 'pwb
+  :type 'hook)
+
 (defconst pwb-response-buffer "*Claude*"
   "The name of buffer for the response from Claude.")
+
 
 (cl-defstruct pwb-messages (turns []))
 (defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
@@ -296,10 +303,6 @@ process finishes.  On failure, an error is signaled."
   (interactive)
   (make-local-variable 'pwb-messages)
   (setf pwb-messages (make-pwb-messages)))
-
-(defvar pwb-response-before-hook nil
-  "Hook run just before writing `pwb-response-buffer'
-as the current buffer with the response from the API.")
 
 (defmacro pwb-with-response-buffer (&rest body)
   "Print to `pwb-response-buffer' based on the BODY."

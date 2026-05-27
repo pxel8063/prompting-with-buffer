@@ -85,6 +85,7 @@ If you want the buffer to remain responsive while waiting, use
 | =pwb-api-url=            | ="https://api.anthropic.com/v1/messages"= | Messages API endpoint URL                  |
 | =pwb-api-host=           | ="api.anthropic.com"=                     | Machine name used for =auth-source= lookup |
 | =pwb-anthropic-version=  | ="2023-06-01"=                            | Anthropic API version header               |
+| pwb-response-before-hook | nil                                       | Hook before writing *Claude* buffer        |
 
 You can customise these interactively with =M-x customize-group RET pwb RET=,
 or set them in your init file:

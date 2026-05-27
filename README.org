@@ -152,7 +152,7 @@ variables:
   # Local Variables:
   # pwb-model: "claude-opus-4-7"
   # pwb-max-tokens: 16000
-  # pwb-body-params: ((thinking . (type . "adaptive")))
+  # pwb-body-params: ((thinking (type . "adaptive")))
   # pwb-system-prompt: ""
   # End:
 #+end_src

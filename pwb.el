@@ -297,11 +297,16 @@ process finishes.  On failure, an error is signaled."
   (make-local-variable 'pwb-messages)
   (setf pwb-messages (make-pwb-messages)))
 
+(defvar pwb-response-before-hook nil
+  "Hook run just before writing `pwb-response-buffer'
+as the current buffer with the response from the API.")
+
 (defmacro pwb-with-response-buffer (&rest body)
   "Print to `pwb-response-buffer' based on the BODY."
   `(with-current-buffer (get-buffer-create pwb-response-buffer)
      (save-excursion
        (goto-char (point-max))
+       (run-hooks 'pwb-response-before-hook)
        ,@body)))
 
 ;;;###autoload

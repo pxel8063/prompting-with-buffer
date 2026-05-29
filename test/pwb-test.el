@@ -139,6 +139,24 @@ pwb-concat-turns are also tested."
 			pwb-messages)
 		 #s(pwb-messages []))))
 
+(ert-deftest pwb-render-error-response-test ()
+  "Test to render an errorresponse."
+  (let ((error-res (list (cons 'type "error")
+			 (cons 'error
+			       (list (cons 'type "invalid_request_error")
+				     (cons 'message "Input does not match the expected shape.")))
+			 (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz"))))
+    (pwb-render-error-response error-res)
+    (with-current-buffer (get-buffer-create pwb-response-buffer)
+      (save-excursion
+        (goto-char (point-max))
+        (backward-list)
+        (let ((error-json (buffer-substring-no-properties
+                          (point)
+                          (point-max))))
+          (should (equal "{\n  \"type\": \"error\",\n  \"error\": {\n    \"type\": \"invalid_request_error\",\n    \"message\": \"Input does not match the expected shape.\"\n  },\n  \"request_id\": \"req_011CWsDcj4HTJuWosWP8djPz\"\n}"
+                         error-json)))))))
+
 (ert-deftest pwb-success-or-error ()
   "Test response.  Return nil if error."
   (should (equal nil (pwb-response-ok-p

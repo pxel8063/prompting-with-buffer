@@ -225,7 +225,8 @@ process finishes.  On failure, an error is signaled."
               (display-buffer pwb-response-buffer)
               (message "pwb: response received.")
               t)
-         (progn (message "pwb: error; %S" response)
+         (progn (pwb-render-error-response response)
+                (message "pwb: error; %S" response)
                 (message "pwb: response received.")
                 nil))))))
 
@@ -254,7 +255,8 @@ process finishes.  On failure, an error is signaled."
            (pwb-render-response response-text)
            (display-buffer pwb-response-buffer)
            t)
-      (progn (message "pwb: error; %S" response)
+      (progn (pwb-render-error-response response)
+             (message "pwb: error; %S" response)
              nil))))
 
 ;;;###autoload
@@ -348,6 +350,17 @@ Then insert STRING and newline in this buffer."
   (pwb-with-response-buffer
     (newline 2)
     (insert string)))
+
+(defun pwb-render-error-response (string)
+  "Create a buffer for displaying the error response.
+Then insert STRING as alist and newline in this buffer."
+  (let ((json (json-serialize string)))
+    (pwb-with-response-buffer
+     (let ((marker (make-marker)))
+       (newline 2)
+       (set-marker marker (point))
+       (insert json)
+       (json-pretty-print marker (point))))))
 
 (defun pwb-response-ok-p (response)
   "Test whether the RESPONSE is error or not."

@@ -1,6 +1,6 @@
 ;;; pwb-test.el --- Test for pwb -*- lexical-binding: t -*-
 
-;;; Copyright (C) 2024 pxel8063
+;;; Copyright (C) 2026 pxel8063
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 (require 'cl-lib)
 (require 'pwb)
 
-(cl-defmacro pwb-with-custom (&body body)
+(defmacro pwb-with-custom (&rest body)
   (let ((gbod (gensym)))
     `(let ((,gbod #'(lambda () ,@body)))
        (pwb-with-custom-fn ,gbod))))

@@ -5,7 +5,7 @@
 
 ;; Author:     pxel8063 <pxel8063@gmail.com>
 ;; Version:    0.0.14
-;; Keywords:   lisp
+;; Keywords:   comm, convenience
 ;; Package-Requires: ((emacs "29.1"))
 ;; URL:        https://github.com/pxel8063/prompting-with-buffer
 
@@ -26,8 +26,8 @@
 ;;; Commentary:
 
 ;; pwb (Prompting with Buffer) is a lightweight Emacs client for Anthropic's
-;; Claude API. It sends buffer contents as prompts and displays responses in a
-;; dedicated *Claude* buffer. Conversation history is maintained per buffer, so
+;; Claude API.  It sends buffer contents as prompts and displays responses in a
+;; dedicated *Claude* buffer.  Conversation history is maintained per buffer, so
 ;; you can carry on multi-turn dialogues without leaving Emacs.
 ;;
 ;; Basic usage:
@@ -50,17 +50,17 @@
   :type 'string)
 
 (defcustom pwb-max-tokens 1024
-  "The number of max_tokens."
+  "Maximum number of tokens in the API response."
   :group 'pwb
   :type 'natnum)
 
 (defcustom pwb-system-prompt "When possible, use org-mode syntax."
-  "The string of system prompt."
+  "System prompt set with every API request."
   :group 'pwb
   :type 'string)
 
 (defcustom pwb-api-url "https://api.anthropic.com/v1/messages"
-  "Specifing the Claude message API host."
+  "Specifying the Claude message API host."
   :group 'pwb
   :type 'string)
 
@@ -70,8 +70,8 @@
   :type 'string)
 
 (defcustom pwb-anthropic-version "2023-06-01"
-  "Specifing the Claude anthropic version.
-Like curl -H anthropic-version: 2023-06-01"
+  "Anthropic API version string sent in the
+`anthropic-version` header."
   :group 'pwb
   :type 'string)
 
@@ -86,9 +86,15 @@ as the current buffer with the response from the API."
 
 
 (cl-defstruct pwb-messages (turns []))
-(defvar pwb-messages (make-pwb-messages) "Holding multiple turns.")
+(defvar pwb-messages (make-pwb-messages)
+  "Conversation history holding multiple turns.")
 
-(defvar pwb-body-params nil)
+(defcustom pwb-body-params nil "Alist of additional parameters to include in API requests.
+These take precedence over `pwb-model', `pwb-max-tokens', and
+`pwb-system-prompt'.  See the Anthropic Messages API documentation
+for available parameters."
+  :group 'pwb
+  :type 'sexp)
 
 (defun pwb-param-key= (a b)
   "Compare the key of the argument intended to serialize to JSON.
@@ -112,16 +118,17 @@ These params are essential for the query."
   "Construct MESSAGES params."
   (list (cons 'messages messages)))
 
-(defun pwb-concat-turns (turns &rest new-turns)
-  "Combine TURNS with NEW-TURNS into a single Turn sequence."
-  (apply #'vconcat turns new-turns))
+(defun pwb-concat-turns (previous-turns &rest new-turns)
+  "Combine PREVIOUS-TURNS with NEW-TURNS into a single Turn sequence."
+  (apply #'vconcat previous-turns new-turns))
 
 (defun pwb-user-turn (content)
   "Construct the user turn form CONTENT."
   (vector (list (cons 'role "user") (cons 'content content))))
 
 (defun pwb-assistant-turn (content)
-  "Construct the assistant turn from CONTENT."(vector (list (cons 'role "assistant") (cons 'content content))))
+  "Construct the assistant turn from CONTENT."
+  (vector (list (cons 'role "assistant") (cons 'content content))))
 
 (defun pwb-add-conversation (turns u-content a-content)
   "Add conversation of U-CONTENT(user content) and A-CONTENT.
@@ -225,10 +232,9 @@ process finishes.  On failure, an error is signaled."
               (display-buffer pwb-response-buffer)
               (message "pwb: response received.")
               t)
-         (progn (pwb-render-error-response response)
-                (message "pwb: error; %S" response)
-                (message "pwb: response received.")
-                nil))))))
+         (pwb-render-error-response response)
+         (message "pwb: error; %S" response)
+         (message "pwb: response received."))))))
 
 ;;;###autoload
 (defun pwb-current-buffer ()
@@ -245,8 +251,7 @@ process finishes.  On failure, an error is signaled."
                                  (pwb-build-alist-from-custom)))
          (response (pwb-curl (json-serialize alst))))
     (if (pwb-response-ok-p response)
-         (let ((turns (pwb-messages-turns pwb-messages))
-               (response-text (pwb-get-content-text response))
+         (let ((response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
            (setf (pwb-messages-turns pwb-messages)
                  (pwb-add-conversation turns prompt response-text))
@@ -255,9 +260,9 @@ process finishes.  On failure, an error is signaled."
            (pwb-render-response response-text)
            (display-buffer pwb-response-buffer)
            t)
-      (progn (pwb-render-error-response response)
-             (message "pwb: error; %S" response)
-             nil))))
+      (pwb-render-error-response response)
+      (message "pwb: error; %S" response)
+      nil)))
 
 ;;;###autoload
 (defun pwb-save-conversation (file)
@@ -307,7 +312,10 @@ process finishes.  On failure, an error is signaled."
   (setf pwb-messages (make-pwb-messages)))
 
 (defmacro pwb-with-response-buffer (&rest body)
-  "Print to `pwb-response-buffer' based on the BODY."
+    "Execute BODY with `pwb-response-buffer' as the current buffer.
+Point is moved to the end of the buffer and `pwb-response-before-hook'
+is run before BODY."
+  (declare (indent defun))
   `(with-current-buffer (get-buffer-create pwb-response-buffer)
      (save-excursion
        (goto-char (point-max))
@@ -351,10 +359,10 @@ Then insert STRING and newline in this buffer."
     (newline 2)
     (insert string)))
 
-(defun pwb-render-error-response (string)
-  "Create a buffer for displaying the error response.
-Then insert STRING as alist and newline in this buffer."
-  (let ((json (json-serialize string)))
+(defun pwb-render-error-response (response)
+  "Render error RESPONSE in the response buffer.
+RESPONSE is an alist parsed from the API's JSON error body."
+  (let ((json (json-serialize response)))
     (pwb-with-response-buffer
      (let ((marker (make-marker)))
        (newline 2)

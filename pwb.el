@@ -81,9 +81,10 @@ as the current buffer with the response from the API."
   :group 'pwb
   :type 'hook)
 
-(defconst pwb-response-buffer "*Claude*"
-  "The name of buffer for the response from Claude.")
-
+(defcustom pwb-response-buffer "*Claude*"
+  "The name of buffer for the response from Claude."
+  :group 'pwb
+  :type 'string)
 
 (cl-defstruct pwb-messages (turns []))
 (defvar pwb-messages (make-pwb-messages)

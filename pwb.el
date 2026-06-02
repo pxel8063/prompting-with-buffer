@@ -44,7 +44,7 @@
   "Custom variables of pwb."
   :group 'local)
 
-(defcustom pwb-model "claude-haiku-4-5"
+(defcustom pwb-model "claude-opus-4-8"
   "String to specify claude model."
   :group 'pwb
   :type 'string)
@@ -131,11 +131,19 @@ These params are essential for the query."
   "Construct the assistant turn from CONTENT."
   (vector (list (cons 'role "assistant") (cons 'content content))))
 
-(defun pwb-add-conversation (turns u-content a-content)
-  "Add conversation of U-CONTENT(user content) and A-CONTENT.
-Return the vector of TURNS'."
+(defun pwb-system-turn (content)
+  "Construct the system turn from CONTENT."
+  (if content
+      (vector (list (cons 'role "system") (cons 'content content)))
+    nil))
+
+(defun pwb-add-conversation (turns u-content s-content a-content)
+  "Add conversation of U-CONTENT(user content), S-CONTENT if non-nil
+and A-CONTENT. Return the vector of TURNS'."
   (pwb-concat-turns turns
                     (pwb-user-turn u-content)
+                    (when s-content
+                      (pwb-system-turn s-content))
                     (pwb-assistant-turn a-content)))
 
 (defun pwb-credential (host)
@@ -207,13 +215,21 @@ process finishes.  On failure, an error is signaled."
       proc)))
 
 ;;;###autoload
-(defun pwb-async-current-buffer ()
-  "Send a prompt based on the current buffer to api."
-  (interactive)
+(defun pwb-async-current-buffer (&optional arg)
+  "Send a prompt based on the current buffer to api.
+With \\[universal-argument], prompt for a mid-conversation system
+message."
+  (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
+         (system (if arg
+                     (read-string "Enter mid-conversation system message: ")
+                   nil))
          (turns (pwb-messages-turns pwb-messages))
-         (msgs (pwb-messages-param (vconcat turns (pwb-user-turn prompt))))
+         (msgs
+          (pwb-messages-param (pwb-concat-turns turns
+                                                (pwb-user-turn prompt)
+                                                (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
                                  pwb-body-params
                                  (pwb-build-alist-from-custom)))
@@ -226,7 +242,7 @@ process finishes.  On failure, an error is signaled."
             (let ((response-text (pwb-get-content-text response))
                   (response-thinking (pwb-get-content-thinking response)))
               (setf (pwb-messages-turns pwb-messages)
-                    (pwb-add-conversation turns prompt response-text))
+                    (pwb-add-conversation turns prompt system response-text))
               (when response-thinking
                 (message "thinking: %s" response-thinking))
               (pwb-render-response response-text)
@@ -238,15 +254,20 @@ process finishes.  On failure, an error is signaled."
          (message "pwb: response received."))))))
 
 ;;;###autoload
-(defun pwb-current-buffer ()
-  "Send a prompt based on the current buffer to api."
-  (interactive)
+(defun pwb-current-buffer (&optional arg)
+  "Send a prompt based on the current buffer to api.
+With \\[universal-argument], prompt for a mid-conversation system message."
+  (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
+         (system (if arg
+                     (read-string "Enter mid-conversation system message: ")
+                   nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
           (pwb-messages-param (pwb-concat-turns turns
-                                                (pwb-user-turn prompt))))
+                                                (pwb-user-turn prompt)
+                                                (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
                                  pwb-body-params
                                  (pwb-build-alist-from-custom)))
@@ -255,7 +276,7 @@ process finishes.  On failure, an error is signaled."
          (let ((response-text (pwb-get-content-text response))
                (response-thinking (pwb-get-content-thinking response)))
            (setf (pwb-messages-turns pwb-messages)
-                 (pwb-add-conversation turns prompt response-text))
+                 (pwb-add-conversation turns prompt system response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
            (pwb-render-response response-text)

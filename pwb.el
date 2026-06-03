@@ -22,19 +22,69 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see http://www.gnu.org/licenses.
 
-
 ;;; Commentary:
 
-;; pwb (Prompting with Buffer) is a lightweight Emacs client for Anthropic's
-;; Claude API.  It sends buffer contents as prompts and displays responses in a
-;; dedicated *Claude* buffer.  Conversation history is maintained per buffer, so
-;; you can carry on multi-turn dialogues without leaving Emacs.
+;; pwb (Prompting with Buffer) is a lightweight Emacs client for
+;; Anthropic's Claude API.  It sends buffer contents as prompts and
+;; displays responses in a dedicated response buffer.  Conversation
+;; history is maintained per source buffer, so you can carry on
+;; multi-turn dialogues without leaving Emacs.
+;;
+;; Features:
+;;
+;;   - Synchronous and asynchronous request commands.
+;;   - Per-buffer conversation history (buffer-local `pwb-messages').
+;;   - Optional mid-conversation system messages via a prefix
+;;     argument.
+;;   - Save and restore conversations to disk.
+;;   - Customizable model, max tokens, system prompt, and arbitrary
+;;     additional request parameters via `pwb-body-params'.
+;;   - API key retrieval through `auth-source'.
 ;;
 ;; Basic usage:
+;;
 ;;   M-x pwb-current-buffer RET
 ;;
-;; This will send the current buffer to Claude and display the response
-;; in the *Claude* buffer.
+;; This sends the current buffer to Claude (synchronously) and
+;; appends the response to the buffer named by `pwb-response-buffer'
+;; (default: *Claude*).  For non-blocking requests, use
+;; `pwb-async-current-buffer' instead.  With a prefix argument
+;; (\\[universal-argument]), either command prompts for a
+;; mid-conversation system message.
+;;
+;; Authentication:
+;;
+;; The API key is looked up via `auth-source' using the host given
+;; by `pwb-api-host' (default: api.anthropic.com).  For example,
+;; add a line to ~/.authinfo.gpg:
+;;
+;;   machine api.anthropic.com password sk-ant-...
+;;
+;; Conversation management:
+;;
+;;   - `pwb-clear-conversation' resets the history for the current
+;;     buffer.
+;;   - `pwb-save-conversation' / `pwb-restore-conversation' persist
+;;     the history to a file as a readable Lisp form.
+;;   - `pwb-set-system-prompt' uses the current buffer's contents
+;;     as the system prompt for subsequent requests;
+;;     `pwb-clear-system-prompt' clears it.
+;;   - `pwb-print-assistant-turns' inserts all assistant replies
+;;     from the current buffer's history into the response buffer.
+;;
+;; Customization:
+;;
+;; See the `pwb' customization group.  Key variables include
+;; `pwb-model', `pwb-max-tokens', `pwb-system-prompt',
+;; `pwb-api-url', `pwb-anthropic-version', `pwb-response-buffer',
+;; `pwb-response-before-hook', and `pwb-body-params'.  Parameters
+;; in `pwb-body-params' take precedence over the dedicated
+;; customization variables and may be used to enable features such
+;; as extended thinking or prompt caching.
+;;
+;; Requirements:
+;;
+;; Emacs 29.1 or later and the `curl' command-line tool on PATH.
 
 ;;; Code:
 (require 'cl-lib)

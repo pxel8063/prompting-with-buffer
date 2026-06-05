@@ -221,8 +221,11 @@ and A-CONTENT. Return the vector of TURNS'."
       (json-parse-buffer :object-type 'alist))))
 
 (defun pwb-buffer-string ()
-  "Parse the current buffer, if narrowed, the narrowed part."
-  (buffer-substring-no-properties (point-min) (point-max)))
+  "Return prompt string, which is,  if the region is active, one in the region,
+if narrowed, one in the narrowed part."
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+      (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun pwb-curl-async (payload callback)
   "Invoke curl with PAYLOAD asynchronously.

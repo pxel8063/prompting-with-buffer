@@ -139,6 +139,7 @@ as the current buffer with the response from the API."
 (cl-defstruct pwb-messages (turns []))
 (defvar pwb-messages (make-pwb-messages)
   "Conversation history holding multiple turns.")
+(make-local-variable 'pwb-messages)
 
 (defcustom pwb-body-params nil "Alist of additional parameters to include in API requests.
 These take precedence over `pwb-model', `pwb-max-tokens', and
@@ -270,7 +271,6 @@ process finishes.  On failure, an error is signaled."
 With \\[universal-argument], prompt for a mid-conversation system
 message."
   (interactive "P")
-  (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
          (system (if arg
                      (read-string "Enter mid-conversation system message: ")
@@ -308,7 +308,6 @@ message."
   "Send a prompt based on the current buffer to api.
 With \\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
-  (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
          (system (if arg
                      (read-string "Enter mid-conversation system message: ")
@@ -354,7 +353,6 @@ With \\[universal-argument], prompt for a mid-conversation system message."
 (defun pwb-restore-conversation (file)
   "Restore the conversation from FILE."
   (interactive "fFile to restore conversation: ")
-  (make-local-variable 'pwb-messages)
   (let ((cbuf (current-buffer)))
     (with-temp-buffer
       (insert-file-contents file)
@@ -380,7 +378,6 @@ With \\[universal-argument], prompt for a mid-conversation system message."
 (defun pwb-clear-conversation ()
   "Clear the conversation history."
   (interactive)
-  (make-local-variable 'pwb-messages)
   (setf pwb-messages (make-pwb-messages)))
 
 (defmacro pwb-with-response-buffer (&rest body)

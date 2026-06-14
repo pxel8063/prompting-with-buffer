@@ -88,6 +88,7 @@
 
 ;;; Code:
 (require 'cl-lib)
+(require 'url)
 (require 'auth-source)
 
 (defgroup pwb nil
@@ -199,26 +200,6 @@ and A-CONTENT. Return the vector of TURNS'."
 (defun pwb-credential (host)
   "Get the credential for HOST from the `auth-source'."
   (auth-source-pick-first-password :host host))
-
-(defun pwb-curl (payload)
-  "Invoke curl with PAYLOAD."
-  (let ((url pwb-api-url)
-        (api-key (pwb-credential pwb-api-host))
-        (anthropic-version pwb-anthropic-version)
-        (application-json "content-type: application/json"))
-    (unless api-key
-      (error "%s can not be found in `auth-source'" pwb-api-host))
-    (with-temp-buffer
-      (let ((status (call-process "curl" nil t nil url "-s"
-                                  "-H" (concat "x-api-key: " api-key)
-                                  "-H" (concat "anthropic-version: " anthropic-version)
-                                  "-H" application-json
-                                  "-d" payload)))
-        (unless (zerop status)
-          (error "Curl failed with status %d: %s" status (buffer-string))))
-      (goto-char (point-min))
-      (json-parse-buffer :object-type 'alist))))
-
 (defun pwb-buffer-string ()
   "Return prompt string, which is,  if the region is active, one in the region,
 if narrowed, one in the narrowed part."
@@ -226,46 +207,57 @@ if narrowed, one in the narrowed part."
       (buffer-substring-no-properties (region-beginning) (region-end))
       (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun pwb-curl-async (payload callback)
-  "Invoke curl with PAYLOAD asynchronously.
-CALLBACK is called with the parsed response alist when the
-process finishes.  On failure, an error is signaled."
-  (let* ((url pwb-api-url)
-         (api-key (pwb-credential pwb-api-host))
-         (anthropic-version pwb-anthropic-version)
-         (buf (generate-new-buffer " *pwb-curl*")))
+(defun pwb--parse-response-buffer ()
+  "Parse the JSON response body in the current `url-retrieve' buffer.
+Point should be in the buffer returned by `url-retrieve'.  The
+HTTP headers are skipped and the remaining body is parsed as JSON."
+  (goto-char (point-min))
+  (re-search-forward "\n\n" nil t)
+  (json-parse-buffer :object-type 'alist))
+
+(defun pwb--url-request-headers ()
+  "Build the HTTP headers alist for the Anthropic API request."
+  (let ((api-key (pwb-credential pwb-api-host)))
     (unless api-key
-      (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let ((proc (make-process
-                 :name "pwb-curl"
-                 :buffer buf
-                 :command (list "curl" url "-s"
-                                "-H" (concat "x-api-key: " api-key)
-                                "-H" (concat "anthropic-version: " anthropic-version)
-                                "-H" "content-type: application/json"
-                                "-d" payload)
-                 :sentinel
-                 (lambda (process event)
-                   (unwind-protect
-                       (let ((exit-status (process-exit-status process))
-                             (output-buf (process-buffer process)))
-                         (cond
-                          ((not (eq (process-status process) 'exit))
-                           (message "pwb: curl process %s" (string-trim event)))
-                          ((not (zerop exit-status))
-                           (message "pwb: curl failed with status %d: %s"
-                                    exit-status
-                                    (with-current-buffer output-buf
-                                      (buffer-string))))
-                          (t
-                           (let ((response
-                                  (with-current-buffer output-buf
-                                    (goto-char (point-min))
-                                    (json-parse-buffer :object-type 'alist))))
-                             (funcall callback response)))))
-                     (when (buffer-live-p buf)
-                       (kill-buffer buf)))))))
-      proc)))
+      (error "%s cannot be found in `auth-source'" pwb-api-host))
+    (list (cons "x-api-key" api-key)
+          (cons "anthropic-version" pwb-anthropic-version)
+          (cons "Content-Type" "application/json"))))
+
+(defun pwb-curl (payload)
+  "Send PAYLOAD to the Anthropic API synchronously.
+Returns the parsed response as an alist."
+  (let ((url-request-method "POST")
+        (url-request-extra-headers (pwb--url-request-headers))
+        (url-request-data (encode-coding-string payload 'utf-8)))
+    (let ((buf (url-retrieve-synchronously pwb-api-url t)))
+      (unless buf
+        (error "pwb: HTTP request to %s failed" pwb-api-url))
+      (unwind-protect
+          (with-current-buffer buf
+            (pwb--parse-response-buffer))
+        (kill-buffer buf)))))
+
+(defun pwb-curl-async (payload callback)
+  "Send PAYLOAD to the Anthropic API asynchronously.
+CALLBACK is called with the parsed response alist when the
+request completes.  On HTTP-level failure an error is signaled
+via `message'."
+  (let ((url-request-method "POST")
+        (url-request-extra-headers (pwb--url-request-headers))
+        (url-request-data (encode-coding-string payload 'utf-8)))
+    (url-retrieve
+     pwb-api-url
+     (lambda (status callback-fn)
+       (unwind-protect
+           (if-let* ((err (plist-get status :error)))
+               (message "pwb: HTTP error: %S" err)
+             (let ((response (pwb--parse-response-buffer)))
+               (funcall callback-fn response)))
+         (when (buffer-live-p (current-buffer))
+           (kill-buffer (current-buffer)))))
+     (list callback)
+     t)))
 
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)

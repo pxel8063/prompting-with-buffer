@@ -270,19 +270,25 @@ process finishes.  On failure, an error is signaled."
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)
   "Send a prompt based on the current buffer to api.
-With \\[universal-argument], prompt for a mid-conversation system
-message."
+With one \\[universal-argument], prompt for an image file.  With two
+\\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
-         (system (if arg
+         (system (if (equal arg '(16))
                      (read-string "Enter mid-conversation system message: ")
                    nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
-          (pwb-messages-param (pwb-concat-turns turns
-                                                (pwb-user-turn prompt)
-                                                (pwb-system-turn system))))
+          (pwb-messages-param
+           (pwb-concat-turns turns
+                             (if (equal arg '(4))
+                                 (let* ((image-file
+                                         (read-file-name "Image jpeg file: "))
+                                        (image (pwb-convert-file-base64 image-file)))
+                                   (pwb-user-turn-with-image prompt image))
+                               (pwb-user-turn prompt))
+                             (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
                                  pwb-body-params
                                  (pwb-build-alist-from-custom)))
@@ -293,7 +299,9 @@ message."
      (lambda (response)
        (if (pwb-response-ok-p response)
             (let ((response-text (pwb-get-content-text response))
-                  (response-thinking (pwb-get-content-thinking response)))
+                  (response-thinking (pwb-get-content-thinking response))
+                  (response-stop-reason (pwb-get-stop-reason response))
+                  (response-usage (pwb-get-usage response)))
               (setf (pwb-messages-turns pwb-messages)
                     (pwb-add-conversation turns prompt system response-text))
               (when response-thinking
@@ -301,6 +309,7 @@ message."
               (pwb-render-response response-text)
               (display-buffer pwb-response-buffer)
               (message "pwb: response received.")
+              (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
               t)
          (pwb-render-error-response response)
          (message "pwb: error; %S" response)
@@ -309,7 +318,8 @@ message."
 ;;;###autoload
 (defun pwb-current-buffer (&optional arg)
   "Send a prompt based on the current buffer to api.
-With \\[universal-argument], prompt for a mid-conversation system message."
+With one \\[universal-argument], prompt for an image file.  With two
+\\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
@@ -318,14 +328,15 @@ With \\[universal-argument], prompt for a mid-conversation system message."
                    nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
-          (pwb-messages-param (pwb-concat-turns turns
-                                                (if (equal arg '(4))
-                                                    (let* ((image-file
-                                                            (read-file-name "Image jpeg file: "))
-                                                           (image (pwb-convert-file-base64 image-file)))
-                                                      (pwb-user-turn-with-image prompt image))
-                                                  (pwb-user-turn prompt))
-                                                (pwb-system-turn system))))
+          (pwb-messages-param
+           (pwb-concat-turns turns
+                             (if (equal arg '(4))
+                                 (let* ((image-file
+                                         (read-file-name "Image jpeg file: "))
+                                        (image (pwb-convert-file-base64 image-file)))
+                                   (pwb-user-turn-with-image prompt image))
+                               (pwb-user-turn prompt))
+                             (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
                                  pwb-body-params
                                  (pwb-build-alist-from-custom)))

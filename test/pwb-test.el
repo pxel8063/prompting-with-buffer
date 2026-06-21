@@ -57,11 +57,13 @@ pwb-concat-turns are also tested."
   (should (equal (pwb-add-conversation []
                                        "First."
                                        nil
+                                       nil
                                        "First response.")
                  [((role . "user")(content . "First."))
                   ((role . "assistant")(content . "First response."))]))
   (should (equal (pwb-add-conversation []
                                        "First."
+                                       nil
                                        "System message"
                                        "First response.")
                  [((role . "user")(content . "First."))
@@ -139,7 +141,7 @@ pwb-concat-turns are also tested."
     (should (equal (make-pwb-messages :turns
 				      (vconcat (vector (list (cons 'role "user") (cons 'content "Hi")))
 					       (vector (list (cons 'role "assistant") (cons 'content "May I help you?")))))
-		   (make-pwb-messages :turns (pwb-add-conversation (pwb-messages-turns messages) "Hi" nil "May I help you?"))))))
+		   (make-pwb-messages :turns (pwb-add-conversation (pwb-messages-turns messages) "Hi" nil nil "May I help you?"))))))
 
 (ert-deftest pwb-message-vector-clear-test ()
   "Make sure that `pwb-messages' holds the empty `messages'."

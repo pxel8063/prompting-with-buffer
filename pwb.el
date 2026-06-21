@@ -187,11 +187,13 @@ These params are essential for the query."
       (vector (list (cons 'role "system") (cons 'content content)))
     nil))
 
-(defun pwb-add-conversation (turns u-content s-content a-content)
-  "Add conversation of U-CONTENT(user content), S-CONTENT if non-nil
-and A-CONTENT. Return the vector of TURNS'."
+(defun pwb-add-conversation (turns u-content ibase64 s-content a-content)
+  "Add conversation of U-CONTENT(user content), IBASE64 if non-nil
+,S-CONTENT if non-nil and A-CONTENT. Return the vector of TURNS'."
   (pwb-concat-turns turns
-                    (pwb-user-turn u-content)
+                    (if ibase64
+                        (pwb-user-turn-with-image u-content ibase64)
+                      (pwb-user-turn u-content))
                     (when s-content
                       (pwb-system-turn s-content))
                     (pwb-assistant-turn a-content)))
@@ -278,15 +280,17 @@ With one \\[universal-argument], prompt for an image file.  With two
          (system (if (equal arg '(16))
                      (read-string "Enter mid-conversation system message: ")
                    nil))
+         (image (if (equal arg '(4))
+                    (let* ((image-file
+                            (read-file-name "Image jpeg file: ")))
+                      (pwb-convert-file-base64 image-file))
+                  nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
           (pwb-messages-param
            (pwb-concat-turns turns
-                             (if (equal arg '(4))
-                                 (let* ((image-file
-                                         (read-file-name "Image jpeg file: "))
-                                        (image (pwb-convert-file-base64 image-file)))
-                                   (pwb-user-turn-with-image prompt image))
+                             (if image
+                                 (pwb-user-turn-with-image prompt image)
                                (pwb-user-turn prompt))
                              (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
@@ -303,7 +307,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                   (response-stop-reason (pwb-get-stop-reason response))
                   (response-usage (pwb-get-usage response)))
               (setf (pwb-messages-turns pwb-messages)
-                    (pwb-add-conversation turns prompt system response-text))
+                    (pwb-add-conversation turns prompt image system response-text))
               (when response-thinking
                 (message "thinking: %s" response-thinking))
               (pwb-render-response response-text)
@@ -326,15 +330,17 @@ With one \\[universal-argument], prompt for an image file.  With two
          (system (if (equal arg '(16))
                      (read-string "Enter mid-conversation system message: ")
                    nil))
+         (image (if (equal arg '(4))
+                    (let* ((image-file
+                            (read-file-name "Image jpeg file: ")))
+                      (pwb-convert-file-base64 image-file))
+                  nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
           (pwb-messages-param
            (pwb-concat-turns turns
-                             (if (equal arg '(4))
-                                 (let* ((image-file
-                                         (read-file-name "Image jpeg file: "))
-                                        (image (pwb-convert-file-base64 image-file)))
-                                   (pwb-user-turn-with-image prompt image))
+                             (if image
+                                 (pwb-user-turn-with-image prompt image)
                                (pwb-user-turn prompt))
                              (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
@@ -347,7 +353,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                (response-stop-reason (pwb-get-stop-reason response))
                (response-usage (pwb-get-usage response)))
            (setf (pwb-messages-turns pwb-messages)
-                 (pwb-add-conversation turns prompt system response-text))
+                 (pwb-add-conversation turns prompt image system response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
            (message "stop reason: %s, usage: %s" response-stop-reason response-usage)

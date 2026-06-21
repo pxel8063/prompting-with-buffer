@@ -313,13 +313,18 @@ With \\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((prompt (pwb-buffer-string))
-         (system (if arg
+         (system (if (equal arg '(16))
                      (read-string "Enter mid-conversation system message: ")
                    nil))
          (turns (pwb-messages-turns pwb-messages))
          (msgs
           (pwb-messages-param (pwb-concat-turns turns
-                                                (pwb-user-turn prompt)
+                                                (if (equal arg '(4))
+                                                    (let* ((image-file
+                                                            (read-file-name "Image jpeg file: "))
+                                                           (image (pwb-convert-file-base64 image-file)))
+                                                      (pwb-user-turn-with-image prompt image))
+                                                  (pwb-user-turn prompt))
                                                 (pwb-system-turn system))))
          (alst (pwb-merge-params msgs
                                  pwb-body-params
@@ -327,11 +332,14 @@ With \\[universal-argument], prompt for a mid-conversation system message."
          (response (pwb-curl (json-serialize alst))))
     (if (pwb-response-ok-p response)
          (let ((response-text (pwb-get-content-text response))
-               (response-thinking (pwb-get-content-thinking response)))
+               (response-thinking (pwb-get-content-thinking response))
+               (response-stop-reason (pwb-get-stop-reason response))
+               (response-usage (pwb-get-usage response)))
            (setf (pwb-messages-turns pwb-messages)
                  (pwb-add-conversation turns prompt system response-text))
            (when response-thinking
              (message "thinking: %s" response-thinking))
+           (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
            (pwb-render-response response-text)
            (display-buffer pwb-response-buffer)
            t)
@@ -420,6 +428,13 @@ is run before BODY."
   "Return content thinking in the RESPONSE."
   (pwb-find-type-from-content "thinking" (alist-get 'content response)))
 
+(defun pwb-get-stop-reason (response)
+  "Return a stop reason in the RESPONSE."
+  (alist-get 'stop_reason response))
+
+(defun pwb-get-usage (response)
+  "Return a stop reason in the RESPONSE."
+  (alist-get 'usage response))
 
 (defun pwb-find-type-from-content (type content)
   "Return the text that belongs to TYPE.
@@ -451,6 +466,27 @@ RESPONSE is an alist parsed from the API's JSON error body."
     ("error" nil)
     ("message" t)
     (other (message "pwb: unexpected response type: %S" other) nil)))
+
+(defun pwb-convert-file-base64 (file)
+  "Return the base 64 string of the image FILE."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (base64-encode-region (point-min) (point-max) t)
+    (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun pwb-user-turn-with-image (content ibase64)
+  "Construct the user turn from CONTENT and image string IBASE64."
+  (vector
+   (list (cons 'role "user")
+         (cons 'content (vconcat (list
+                                  (list (cons 'type "image")
+                                        (list 'source
+                                              (cons 'type "base64")
+                                              (cons 'media_type "image/jpeg")
+                                              (cons 'data ibase64))))
+                                 (list
+                                  (list (cons 'type "text")
+                                        (cons 'text content))))))))
 
 (provide 'pwb)
 ;;; pwb.el ends here

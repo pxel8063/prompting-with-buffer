@@ -211,26 +211,3 @@ pwb-concat-turns are also tested."
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here
-;; ELISP> (json-parse-string "{
-;;     \"model\": \"claude-opus-4-8\",
-;;     \"max_tokens\": 1024,
-;;     \"messages\": [
-;;         {\"role\": \"user\", \"content\": [
-;;             {\"type\": \"image\", \"source\": {
-;;                 \"type\": \"base64\",
-;;                 \"media_type\": \"IMAGE_MEDIA_TYPE\",
-;;                 \"data\": \"$IMAGE_BASE64\"
-;;             }},
-;;             {\"type\": \"text\", \"text\": \"What is in the above image?\"}
-;;         ]}
-;;     ]
-;; }" :object-type 'alist)
-;; ((model . "claude-opus-4-8") (max_tokens . 1024)
-;;  (messages
-;;   . [((role . "user")
-;;       (content
-;;        . [((type . "image")
-;;            (source (type . "base64") (media_type . "IMAGE_MEDIA_TYPE")
-;;                    (data . "$IMAGE_BASE64")))
-;;           ((type . "text") (text . "What is in the above image?"))]))]))
-

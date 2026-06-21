@@ -187,16 +187,14 @@ These params are essential for the query."
       (vector (list (cons 'role "system") (cons 'content content)))
     nil))
 
-(defun pwb-add-conversation (turns u-content ibase64 s-content a-content)
+(defun pwb-add-conversation (turns u-turn s-turn a-turn)
   "Add conversation of U-CONTENT(user content), IBASE64 if non-nil
 ,S-CONTENT if non-nil and A-CONTENT. Return the vector of TURNS'."
   (pwb-concat-turns turns
-                    (if ibase64
-                        (pwb-user-turn-with-image u-content ibase64)
-                      (pwb-user-turn u-content))
-                    (when s-content
-                      (pwb-system-turn s-content))
-                    (pwb-assistant-turn a-content)))
+                    u-turn
+                    (when s-turn
+                      s-turn)
+                    a-turn))
 
 (defun pwb-credential (host)
   "Get the credential for HOST from the `auth-source'."
@@ -307,7 +305,14 @@ With one \\[universal-argument], prompt for an image file.  With two
                   (response-stop-reason (pwb-get-stop-reason response))
                   (response-usage (pwb-get-usage response)))
               (setf (pwb-messages-turns pwb-messages)
-                    (pwb-add-conversation turns prompt image system response-text))
+                    (pwb-add-conversation turns
+                                          (if image
+                                              (pwb-user-turn-with-image prompt image)
+                                            (pwb-user-turn prompt))
+                                          (if system
+                                              (pwb-system-turn system)
+                                            nil)
+                                          (pwb-assistant-turn response-text)))
               (when response-thinking
                 (message "thinking: %s" response-thinking))
               (pwb-render-response response-text)
@@ -353,7 +358,14 @@ With one \\[universal-argument], prompt for an image file.  With two
                (response-stop-reason (pwb-get-stop-reason response))
                (response-usage (pwb-get-usage response)))
            (setf (pwb-messages-turns pwb-messages)
-                 (pwb-add-conversation turns prompt image system response-text))
+                 (pwb-add-conversation turns
+                                       (if image
+                                           (pwb-user-turn-with-image prompt image)
+                                         (pwb-user-turn prompt))
+                                       (if system
+                                              (pwb-system-turn system)
+                                            nil)
+                                       (pwb-assistant-turn response-text)))
            (when response-thinking
              (message "thinking: %s" response-thinking))
            (message "stop reason: %s, usage: %s" response-stop-reason response-usage)

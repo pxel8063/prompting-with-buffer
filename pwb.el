@@ -517,5 +517,18 @@ RESPONSE is an alist parsed from the API's JSON error body."
                                   (list (cons 'type "text")
                                         (cons 'text content))))))))
 
+(defun pwb-make-curl-config-file (payload)
+  "Make a temporary curl config file and return its filename. PAYLOAD is
+alist. The caller is responsible to delete the temporary file after it
+has done."
+  (let ((tmpfile (make-temp-file "pwb-")))
+    (with-temp-file tmpfile
+      (insert "url " pwb-api-url "\n")
+      (insert "-H " "\"x-api-key: " (pwb-credential pwb-api-host) "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"content-type: application/json\"\n")
+      (insert "-d " (prin1-to-string (json-serialize payload))))
+    tmpfile))
+
 (provide 'pwb)
 ;;; pwb.el ends here

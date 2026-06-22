@@ -209,6 +209,34 @@ pwb-concat-turns are also tested."
                 ((type . "text") (text . "What is in the above image?"))]))]
           (pwb-user-turn-with-image "What is in the above image?" "IMAGE_BASE64"))))
 
+(defun pwb-make-curl-config-file-test-fn (body)
+  (pwb-with-custom
+   (let (filename)
+     (unwind-protect
+         (let* ((prompt "Hello?")
+                (pwb-messages (make-pwb-messages))
+                (turns (pwb-messages-turns pwb-messages))
+                (msgs
+                 (pwb-messages-param
+                  (pwb-concat-turns turns
+                                    (pwb-user-turn prompt))))
+                (alst (pwb-merge-params msgs
+                                        pwb-body-params
+                                        (pwb-build-alist-from-custom))))
+           (setq filename (pwb-make-curl-config-file alst))
+           (find-file-literally filename)
+           (funcall body (buffer-substring-no-properties (point-min) (point-max))))
+       (delete-file filename)))))
+
+(ert-deftest pwb-make-curl-config-file-test ()
+  (skip-unless nil)
+  (pwb-make-curl-config-file-test-fn
+   (lambda (x)
+     (should (equal x "url https://api.anthropic.com/v1/messages
+-H \"anthropic-version: 2023-06-01\"
+-H \"content-type: application/json\"
+-d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Hello?\\\"}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"\\\"}\"")))))
+
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here

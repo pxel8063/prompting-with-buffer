@@ -431,7 +431,8 @@ With one \\[universal-argument], prompt for an image file.  With two
 (defun pwb-curl-with-config (payload)
   "Make a curl config file based on PAYLOAD, invoke curl by calling
 process, return the response."
-  (let ((config (pwb-make-curl-config-file payload)))
+  (let ((config (pwb-make-curl-config-file payload))
+        (response))
     (with-temp-buffer
       (let ((status (call-process "curl" nil t nil "--no-progress-meter"
                                   "--config"
@@ -439,7 +440,9 @@ process, return the response."
         (unless (zerop status)
           (error "Curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
-      (json-parse-buffer :object-type 'alist))))
+      (setq response (json-parse-buffer :object-type 'alist))
+      (delete-file config)
+      response)))
 
 ;;;###autoload
 (defun pwb-save-conversation (file)

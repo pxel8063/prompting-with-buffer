@@ -377,6 +377,71 @@ With one \\[universal-argument], prompt for an image file.  With two
       nil)))
 
 ;;;###autoload
+(defun pwb-large-current-buffer (&optional arg)
+  "Send a prompt based on the current buffer to api.
+With one \\[universal-argument], prompt for an image file.  With two
+\\[universal-argument], prompt for a mid-conversation system message."
+  (interactive "P")
+  (make-local-variable 'pwb-messages)
+  (let* ((prompt (pwb-buffer-string))
+         (system (if (equal arg '(32))
+                     (read-string "Enter mid-conversation system message: ")
+                   nil))
+         (image (if (equal arg '(4))
+                    (let* ((image-file
+                            (read-file-name "Image jpeg file: ")))
+                      (pwb-convert-file-base64 image-file))
+                  nil))
+         (turns (pwb-messages-turns pwb-messages))
+         (msgs
+          (pwb-messages-param
+           (pwb-concat-turns turns
+                             (if image
+                                 (pwb-user-turn-with-image prompt image)
+                               (pwb-user-turn prompt))
+                             (pwb-system-turn system))))
+         (alst (pwb-merge-params msgs
+                                 pwb-body-params
+                                 (pwb-build-alist-from-custom)))
+         (response (pwb-curl-with-config alst)))
+    (if (pwb-response-ok-p response)
+        (let ((response-text (pwb-get-content-text response))
+              (response-thinking (pwb-get-content-thinking response))
+              (response-stop-reason (pwb-get-stop-reason response))
+              (response-usage (pwb-get-usage response)))
+          (setf (pwb-messages-turns pwb-messages)
+                (pwb-add-conversation turns
+                                      (if image
+                                          (pwb-user-turn-with-image prompt image)
+                                        (pwb-user-turn prompt))
+                                      (if system
+                                          (pwb-system-turn system)
+                                        nil)
+                                      (pwb-assistant-turn response-text)))
+          (when response-thinking
+            (message "thinking: %s" response-thinking))
+          (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
+          (pwb-render-response response-text)
+          (display-buffer pwb-response-buffer)
+          t)
+      (pwb-render-error-response response)
+      (message "pwb: error; %S" response)
+      nil)))
+
+(defun pwb-curl-with-config (payload)
+  "Make a curl config file based on PAYLOAD, invoke curl by calling
+process, return the response."
+  (let ((config (pwb-make-curl-config-file payload)))
+    (with-temp-buffer
+      (let ((status (call-process "curl" nil t nil "--no-progress-meter"
+                                  "--config"
+                                  config)))
+        (unless (zerop status)
+          (error "Curl failed with status %d: %s" status (buffer-string))))
+      (goto-char (point-min))
+      (json-parse-buffer :object-type 'alist))))
+
+;;;###autoload
 (defun pwb-save-conversation (file)
   "Save the conversation to FILE."
   (interactive "FFile to save conversation: ")
@@ -521,13 +586,19 @@ RESPONSE is an alist parsed from the API's JSON error body."
   "Make a temporary curl config file and return its filename. PAYLOAD is
 alist. The caller is responsible to delete the temporary file after it
 has done."
-  (let ((tmpfile (make-temp-file "pwb-")))
+  (let ((tmpfile (make-temp-file "pwb-"))
+        (coding-system-for-write 'utf-8))
     (with-temp-file tmpfile
-      (insert "url " pwb-api-url "\n")
-      (insert "-H " "\"x-api-key: " (pwb-credential pwb-api-host) "\"\n")
-      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
-      (insert "-H " "\"content-type: application/json\"\n")
-      (insert "-d " (prin1-to-string (json-serialize payload))))
+      (let ((key (pwb-credential pwb-api-host)))
+        (unless key
+          (error "%s can not be found in `auth-source'" pwb-api-host))
+        (insert "url " pwb-api-url "\n")
+        (insert "-H " "\"x-api-key: " key "\"\n")
+        (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+        (insert "-H " "\"content-type: application/json\"\n")
+        (insert "-d " (prin1-to-string (decode-coding-string
+                                        (json-serialize payload)
+                                        'utf-8)))))
     tmpfile))
 
 (provide 'pwb)

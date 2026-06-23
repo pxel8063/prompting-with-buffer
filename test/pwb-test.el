@@ -215,6 +215,7 @@ pwb-concat-turns are also tested."
      (unwind-protect
          (let* ((prompt "Hello?")
                 (pwb-messages (make-pwb-messages))
+                (pwb-body-params nil)
                 (turns (pwb-messages-turns pwb-messages))
                 (msgs
                  (pwb-messages-param
@@ -225,11 +226,16 @@ pwb-concat-turns are also tested."
                                         (pwb-build-alist-from-custom))))
            (setq filename (pwb-make-curl-config-file alst))
            (find-file-literally filename)
+
+           ;; Delete the line containing "x-api-key"
+           (goto-char (point-min))
+           (when (search-forward "x-api-key" nil t)
+             (beginning-of-line)
+             (kill-whole-line))
            (funcall body (buffer-substring-no-properties (point-min) (point-max))))
        (delete-file filename)))))
 
 (ert-deftest pwb-make-curl-config-file-test ()
-  (skip-unless nil)
   (pwb-make-curl-config-file-test-fn
    (lambda (x)
      (should (equal x "url https://api.anthropic.com/v1/messages

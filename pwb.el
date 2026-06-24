@@ -478,6 +478,96 @@ With one \\[universal-argument], prompt for an image file.  With two
       nil)))
 
 ;;;###autoload
+(defun pwb-large-async-current-buffer (&optional arg)
+  "Send a prompt based on the current buffer to api.
+With one \\[universal-argument], prompt for an image file.  With two
+\\[universal-argument], prompt for a mid-conversation system message."
+  (interactive "P")
+  (make-local-variable 'pwb-messages)
+  (let* ((prompt (pwb-buffer-string))
+         (system (if (equal arg '(32))
+                     (read-string "Enter mid-conversation system message: ")
+                   nil))
+         (image (if (equal arg '(4))
+                    (let* ((image-file
+                            (read-file-name "Image jpeg file: ")))
+                      (pwb-convert-file-base64 image-file))
+                  nil))
+         (turns (pwb-messages-turns pwb-messages))
+         (msgs
+          (pwb-messages-param
+           (pwb-concat-turns turns
+                             (if image
+                                 (pwb-user-turn-with-image prompt image)
+                               (pwb-user-turn prompt))
+                             (pwb-system-turn system))))
+         (alst (pwb-merge-params msgs
+                                 pwb-body-params
+                                 (pwb-build-alist-from-custom))))
+    (message "pwb: sending request...")
+    (pwb-async-curl-with-config
+     alst
+     (lambda (response)
+       (if (pwb-response-ok-p response)
+           (let ((response-text (pwb-get-content-text response))
+                 (response-thinking (pwb-get-content-thinking response))
+                 (response-stop-reason (pwb-get-stop-reason response))
+                 (response-usage (pwb-get-usage response)))
+             (setf (pwb-messages-turns pwb-messages)
+                   (pwb-add-conversation turns
+                                         (if image
+                                             (pwb-user-turn-with-image prompt image)
+                                           (pwb-user-turn prompt))
+                                         (if system
+                                             (pwb-system-turn system)
+                                           nil)
+                                         (pwb-assistant-turn response-text)))
+             (when response-thinking
+               (message "thinking: %s" response-thinking))
+             (pwb-render-response response-text)
+             (display-buffer pwb-response-buffer)
+             (message "pwb: response received.")
+             (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
+             t)
+         (pwb-render-error-response response)
+         (message "pwb: error; %S" response)
+         (message "pwb: response received."))))))
+
+(defun pwb-async-curl-with-config (payload callback)
+  "Invoke curl with PAYLOAD asynchronously with large file.
+CALLBACK is called with the parsed response alist when the
+process finishes.  On failure, an error is signaled."
+  (let* ((config (pwb-make-curl-config-file payload))
+         (buf (generate-new-buffer " *pwb-curl*"))
+         (proc (make-process
+                :name "pwb-curl"
+                :buffer buf
+                :command (list "curl" "-s" "--no-progress-meter"
+                               "--config" config)
+                :sentinel
+                (lambda (process event)
+                  (unwind-protect
+                      (let ((exit-status (process-exit-status process))
+                            (output-buf (process-buffer process)))
+                        (cond
+                         ((not (eq (process-status process) 'exit))
+                          (message "pwb: curl process %s" (string-trim event)))
+                         ((not (zerop exit-status))
+                          (message "pwb: curl failed with status %d: %s"
+                                   exit-status
+                                   (with-current-buffer output-buf
+                                     (buffer-string))))
+                         (t
+                          (let ((response
+                                 (with-current-buffer output-buf
+                                   (goto-char (point-min))
+                                   (json-parse-buffer :object-type 'alist))))
+                            (funcall callback response)))))
+                    (when (buffer-live-p buf)
+                       (kill-buffer buf)))))))
+    proc))
+
+;;;###autoload
 (defun pwb-save-conversation (file)
   "Save the conversation to FILE."
   (interactive "FFile to save conversation: ")

@@ -422,7 +422,8 @@ process, return the response."
           (error "Curl failed with status %d: %s" status (buffer-string))))
       (goto-char (point-min))
       (setq response (json-parse-buffer :object-type 'alist))
-      (delete-file config)
+      (when (file-exists-p config)
+        (delete-file config))
       response)))
 
 ;;;###autoload
@@ -563,8 +564,11 @@ process finishes.  On failure, an error is signaled."
                                    (goto-char (point-min))
                                    (json-parse-buffer :object-type 'alist))))
                             (funcall callback response)))))
-                    (when (buffer-live-p buf)
-                       (kill-buffer buf)))))))
+                    (progn
+                      (when (file-exists-p config)
+                        (delete-file config))
+                      (when (buffer-live-p buf)
+                        (kill-buffer buf))))))))
     proc))
 
 ;;;###autoload

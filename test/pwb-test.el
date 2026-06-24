@@ -161,8 +161,8 @@ pwb-concat-turns are also tested."
         (goto-char (point-max))
         (backward-list)
         (let ((error-json (buffer-substring-no-properties
-                          (point)
-                          (point-max))))
+                           (point)
+                           (point-max))))
           (should (equal "{\n  \"type\": \"error\",\n  \"error\": {\n    \"type\": \"invalid_request_error\",\n    \"message\": \"Input does not match the expected shape.\"\n  },\n  \"request_id\": \"req_011CWsDcj4HTJuWosWP8djPz\"\n}"
                          error-json)))))))
 

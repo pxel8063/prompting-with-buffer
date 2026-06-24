@@ -224,7 +224,7 @@ These params are essential for the query."
 if narrowed, one in the narrowed part."
   (if (use-region-p)
       (buffer-substring-no-properties (region-beginning) (region-end))
-      (buffer-substring-no-properties (point-min) (point-max))))
+    (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun pwb-curl-async (payload callback)
   "Invoke curl with PAYLOAD asynchronously.
@@ -300,26 +300,26 @@ With one \\[universal-argument], prompt for an image file.  With two
      payload
      (lambda (response)
        (if (pwb-response-ok-p response)
-            (let ((response-text (pwb-get-content-text response))
-                  (response-thinking (pwb-get-content-thinking response))
-                  (response-stop-reason (pwb-get-stop-reason response))
-                  (response-usage (pwb-get-usage response)))
-              (setf (pwb-messages-turns pwb-messages)
-                    (pwb-add-conversation turns
-                                          (if image
-                                              (pwb-user-turn-with-image prompt image)
-                                            (pwb-user-turn prompt))
-                                          (if system
-                                              (pwb-system-turn system)
-                                            nil)
-                                          (pwb-assistant-turn response-text)))
-              (when response-thinking
-                (message "thinking: %s" response-thinking))
-              (pwb-render-response response-text)
-              (display-buffer pwb-response-buffer)
-              (message "pwb: response received.")
-              (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
-              t)
+           (let ((response-text (pwb-get-content-text response))
+                 (response-thinking (pwb-get-content-thinking response))
+                 (response-stop-reason (pwb-get-stop-reason response))
+                 (response-usage (pwb-get-usage response)))
+             (setf (pwb-messages-turns pwb-messages)
+                   (pwb-add-conversation turns
+                                         (if image
+                                             (pwb-user-turn-with-image prompt image)
+                                           (pwb-user-turn prompt))
+                                         (if system
+                                             (pwb-system-turn system)
+                                           nil)
+                                         (pwb-assistant-turn response-text)))
+             (when response-thinking
+               (message "thinking: %s" response-thinking))
+             (pwb-render-response response-text)
+             (display-buffer pwb-response-buffer)
+             (message "pwb: response received.")
+             (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
+             t)
          (pwb-render-error-response response)
          (message "pwb: error; %S" response)
          (message "pwb: response received."))))))
@@ -353,25 +353,25 @@ With one \\[universal-argument], prompt for an image file.  With two
                                  (pwb-build-alist-from-custom)))
          (response (pwb-curl (json-serialize alst))))
     (if (pwb-response-ok-p response)
-         (let ((response-text (pwb-get-content-text response))
-               (response-thinking (pwb-get-content-thinking response))
-               (response-stop-reason (pwb-get-stop-reason response))
-               (response-usage (pwb-get-usage response)))
-           (setf (pwb-messages-turns pwb-messages)
-                 (pwb-add-conversation turns
-                                       (if image
-                                           (pwb-user-turn-with-image prompt image)
-                                         (pwb-user-turn prompt))
-                                       (if system
-                                              (pwb-system-turn system)
-                                            nil)
-                                       (pwb-assistant-turn response-text)))
-           (when response-thinking
-             (message "thinking: %s" response-thinking))
-           (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
-           (pwb-render-response response-text)
-           (display-buffer pwb-response-buffer)
-           t)
+        (let ((response-text (pwb-get-content-text response))
+              (response-thinking (pwb-get-content-thinking response))
+              (response-stop-reason (pwb-get-stop-reason response))
+              (response-usage (pwb-get-usage response)))
+          (setf (pwb-messages-turns pwb-messages)
+                (pwb-add-conversation turns
+                                      (if image
+                                          (pwb-user-turn-with-image prompt image)
+                                        (pwb-user-turn prompt))
+                                      (if system
+                                          (pwb-system-turn system)
+                                        nil)
+                                      (pwb-assistant-turn response-text)))
+          (when response-thinking
+            (message "thinking: %s" response-thinking))
+          (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
+          (pwb-render-response response-text)
+          (display-buffer pwb-response-buffer)
+          t)
       (pwb-render-error-response response)
       (message "pwb: error; %S" response)
       nil)))
@@ -492,7 +492,7 @@ process, return the response."
   (setf pwb-messages (make-pwb-messages)))
 
 (defmacro pwb-with-response-buffer (&rest body)
-    "Execute BODY with `pwb-response-buffer' as the current buffer.
+  "Execute BODY with `pwb-response-buffer' as the current buffer.
 Point is moved to the end of the buffer and `pwb-response-before-hook'
 is run before BODY."
   (declare (indent defun))
@@ -508,14 +508,14 @@ is run before BODY."
   (interactive)
   (let ((cbuf (current-buffer)))
     (pwb-with-response-buffer
-     (insert (seq-reduce
-              (lambda (acc x)
-                (if (equal (alist-get 'role x) "assistant")
-                    (concat acc (alist-get 'content x))
-                  acc))
-              (with-current-buffer cbuf
-                (pwb-messages-turns pwb-messages))
-              "")))))
+      (insert (seq-reduce
+               (lambda (acc x)
+                 (if (equal (alist-get 'role x) "assistant")
+                     (concat acc (alist-get 'content x))
+                   acc))
+               (with-current-buffer cbuf
+                 (pwb-messages-turns pwb-messages))
+               "")))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
@@ -551,11 +551,11 @@ Then insert STRING and newline in this buffer."
 RESPONSE is an alist parsed from the API's JSON error body."
   (let ((json (json-serialize response)))
     (pwb-with-response-buffer
-     (let ((marker (make-marker)))
-       (newline 2)
-       (set-marker marker (point))
-       (insert json)
-       (json-pretty-print marker (point))))))
+      (let ((marker (make-marker)))
+        (newline 2)
+        (set-marker marker (point))
+        (insert json)
+        (json-pretty-print marker (point))))))
 
 (defun pwb-response-ok-p (response)
   "Test whether the RESPONSE is error or not."

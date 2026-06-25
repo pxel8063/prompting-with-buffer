@@ -414,17 +414,18 @@ has done."
 process, return the response."
   (let ((config (pwb-make-curl-config-file payload))
         (response))
-    (with-temp-buffer
-      (let ((status (call-process "curl" nil t nil "--no-progress-meter"
-                                  "--config"
-                                  config)))
-        (unless (zerop status)
-          (error "Curl failed with status %d: %s" status (buffer-string))))
-      (goto-char (point-min))
-      (setq response (json-parse-buffer :object-type 'alist))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((status (call-process "curl" nil t nil "--no-progress-meter"
+                                      "--config"
+                                      config)))
+            (unless (zerop status)
+              (error "Curl failed with status %d: %s" status (buffer-string))))
+          (goto-char (point-min))
+          (setq response (json-parse-buffer :object-type 'alist)))
       (when (file-exists-p config)
-        (delete-file config))
-      response)))
+        (delete-file config)))
+    response))
 
 ;;;###autoload
 (defun pwb-large-current-buffer (&optional arg)

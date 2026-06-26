@@ -230,7 +230,7 @@ if narrowed, one in the narrowed part."
     (unless api-key
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (with-temp-buffer
-      (let ((status (call-process "curl" nil t nil url "-s"
+      (let ((status (call-process "curl" nil t nil url "--silent"
                                   "-H" (concat "x-api-key: " api-key)
                                   "-H" (concat "anthropic-version: " anthropic-version)
                                   "-H" application-json
@@ -416,7 +416,7 @@ process, return the response."
         (response))
     (unwind-protect
         (with-temp-buffer
-          (let ((status (call-process "curl" nil t nil "--no-progress-meter"
+          (let ((status (call-process "curl" nil t nil "--silent"
                                       "--config"
                                       config)))
             (unless (zerop status)
@@ -544,7 +544,7 @@ process finishes.  On failure, an error is signaled."
          (proc (make-process
                 :name "pwb-curl"
                 :buffer buf
-                :command (list "curl" "-s" "--no-progress-meter"
+                :command (list "curl" "--silent"
                                "--config" config)
                 :sentinel
                 (lambda (process event)

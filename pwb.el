@@ -185,7 +185,7 @@ These params are essential for the query."
                                   (list (cons 'type "image")
                                         (list 'source
                                               (cons 'type "base64")
-                                              (cons 'media_type "image/jpeg")
+                                              (cons 'media_type "image/png")
                                               (cons 'data ibase64))))
                                  (list
                                   (list (cons 'type "text")
@@ -253,7 +253,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                    nil))
          (image (if (equal arg '(4))
                     (let* ((image-file
-                            (read-file-name "Image jpeg file: ")))
+                            (read-file-name "Image png file: ")))
                       (pwb-convert-file-base64 image-file))
                   nil))
          (turns (pwb-messages-turns pwb-messages))
@@ -346,7 +346,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                    nil))
          (image (if (equal arg '(4))
                     (let* ((image-file
-                            (read-file-name "Image jpeg file: ")))
+                            (read-file-name "Image png file: ")))
                       (pwb-convert-file-base64 image-file))
                   nil))
          (turns (pwb-messages-turns pwb-messages))
@@ -440,7 +440,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                    nil))
          (image (if (equal arg '(4))
                     (let* ((image-file
-                            (read-file-name "Image jpeg file: ")))
+                            (read-file-name "Image png file: ")))
                       (pwb-convert-file-base64 image-file))
                   nil))
          (turns (pwb-messages-turns pwb-messages))
@@ -492,7 +492,7 @@ With one \\[universal-argument], prompt for an image file.  With two
                    nil))
          (image (if (equal arg '(4))
                     (let* ((image-file
-                            (read-file-name "Image jpeg file: ")))
+                            (read-file-name "Image png file: ")))
                       (pwb-convert-file-base64 image-file))
                   nil))
          (turns (pwb-messages-turns pwb-messages))

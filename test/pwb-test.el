@@ -163,7 +163,7 @@ pwb-concat-turns are also tested."
         (let ((error-json (buffer-substring-no-properties
                            (point)
                            (point-max))))
-          (should (equal "{\n  \"type\": \"error\",\n  \"error\": {\n    \"type\": \"invalid_request_error\",\n    \"message\": \"Input does not match the expected shape.\"\n  },\n  \"request_id\": \"req_011CWsDcj4HTJuWosWP8djPz\"\n}"
+          (should (equal "{\n  \"type\": \"error\",\n  \"error\": {\n    \"type\": \"invalid_request_error\",\n    \"message\": \"Input does not match the expected shape.\"\n  },\n  \"request_id\": \"req_011CWsDcj4HTJuWosWP8djPz\"\n}\n\f\n"
                          error-json)))))))
 
 (ert-deftest pwb-success-or-error ()
@@ -204,7 +204,7 @@ pwb-concat-turns are also tested."
    (equal [((role . "user")
             (content
              . [((type . "image")
-                 (source (type . "base64") (media_type . "image/jpeg")
+                 (source (type . "base64") (media_type . "image/png")
                          (data . "IMAGE_BASE64")))
                 ((type . "text") (text . "What is in the above image?"))]))]
           (pwb-user-turn-with-image "What is in the above image?" "IMAGE_BASE64"))))

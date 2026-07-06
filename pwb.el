@@ -643,7 +643,8 @@ is run before BODY."
                    acc))
                (with-current-buffer cbuf
                  (pwb-messages-turns pwb-messages))
-               "")))))
+               ""))
+      (insert "\n\C-l\n"))))
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
@@ -671,8 +672,8 @@ The CONTENT argument must be STRING."
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."
   (pwb-with-response-buffer
-    (newline 2)
-    (insert string)))
+    (insert string)
+    (insert "\n\C-l\n")))
 
 (defun pwb-render-error-response (response)
   "Render error RESPONSE in the response buffer.
@@ -680,10 +681,10 @@ RESPONSE is an alist parsed from the API's JSON error body."
   (let ((json (json-serialize response)))
     (pwb-with-response-buffer
       (let ((marker (make-marker)))
-        (newline 2)
         (set-marker marker (point))
         (insert json)
-        (json-pretty-print marker (point))))))
+        (json-pretty-print marker (point))
+        (insert "\n\C-l\n")))))
 
 (defun pwb-response-ok-p (response)
   "Test whether the RESPONSE is error or not."

@@ -194,7 +194,7 @@ These params are essential for the query."
 (defun pwb-user-turn-with-image-1 (content ibase64)
   "Construct the user turn from CONTENT and image string IBASE64.
 The alternative implementation."
-  (pwb-make-messages
+  (vector
    (pwb-make-message-param
     "user"
     (pwb-make-message-param-content (pwb-image-block-param ibase64)

@@ -700,5 +700,38 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
+(defun pwb-text-block-param (text)
+  "TextBlock Param {text, type, cache_control, citations}."
+  `((type . "text")
+    (text . ,text)))
+
+(defun pwb-image-block-param (data)
+  "ImageBlockParam {source, type, cache_control}."
+  `((type . "image")
+    (source (type . "base64")
+            (media_type . "image/png")
+            (data . ,data))))
+
+(defun pwb-make-message-param-content (&rest content-block-params)
+  "Return the content of MessageParam.
+The content is array of ContentBlockParam."
+  `(content . ,(vconcat content-block-params)))
+
+(defun pwb-make-message-param (role message-param-content)
+  ""
+  `((role . ,role)
+    ,message-param-content))
+
+(defun pwb-make-messages (&rest message-params)
+  (vconcat message-params))
+
+;; messages is an array of MessageParam
+;;   MessageParam is {array of ContentBlockParam, role}
+;;         ContentBlockParam is one of following:
+;;         TextBlockParam
+;;         ImageBlockParam
+;; max_tokens is integer.
+;; model is string
+
 (provide 'pwb)
 ;;; pwb.el ends here

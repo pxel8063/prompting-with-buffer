@@ -734,15 +734,19 @@ The content is array of ContentBlockParam."
 
 ;;; The payload top level These are called Body Parameters.
 (defun pwb-make-body-param-max-tokens (int)
+  "Constructor for max_tokens body parameter."
   `(max_tokens . ,int))
 
 (defun pwb-make-body-param-messages (&rest message-params)
+  "Constructor for messages body parameter."
   `(messages . ,(vconcat message-params)))
 
 (defun pwb-make-body-param-model (model)
+  "Constructor for model body parameter."
   `(model . ,model))
 
 (defun pwb-make-body-param-system (&rest text-block-params)
+  "Constructor for system body parameter."
   `(system . ,(vconcat text-block-params)))
 
 ;;; The constructor payload

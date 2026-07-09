@@ -762,5 +762,9 @@ The content is array of ContentBlockParam."
 ;; max_tokens is integer.
 ;; model is string
 
+;; turns is a vector of content block params
+;; (pwb-messages-turns pwb-messages) => [((role . "user")(content . "foo bar"))
+;;                                       ((role . "assistant") (content . "May I help you?"))]
+
 (provide 'pwb)
 ;;; pwb.el ends here

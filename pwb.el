@@ -745,9 +745,9 @@ The content is array of ContentBlockParam."
   "Constructor for model body parameter."
   `(model . ,model))
 
-(defun pwb-make-body-param-system (&rest text-block-params)
+(defun pwb-make-body-param-system (string)
   "Constructor for system body parameter."
-  `(system . ,(vconcat text-block-params)))
+  `(system . ,string))
 
 ;;; The constructor payload
 (defun pwb-make-payload (&rest body-params)

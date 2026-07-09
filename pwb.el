@@ -752,7 +752,7 @@ The content is array of ContentBlockParam."
 ;;; The constructor payload
 (defun pwb-make-payload (&rest body-params)
   "Construct payload from body-params."
-  (mapcan #'list body-params))
+  body-params)
 
 ;; messages is an array of MessageParam
 ;;   MessageParam is {array of ContentBlockParam, role}

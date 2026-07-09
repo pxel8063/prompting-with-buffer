@@ -739,6 +739,12 @@ The content is array of ContentBlockParam."
 (defun pwb-make-body-param-messages (&rest message-params)
   `(messages . ,(vconcat message-params)))
 
+(defun pwb-make-body-param-model (model)
+  `(model . ,model))
+
+(defun pwb-make-body-param-system (&rest text-block-params)
+  `(system . ,(vconcat text-block-params)))
+
 ;;; The constructor payload
 (defun pwb-make-payload (&rest body-params)
   "Construct payload from body-params."

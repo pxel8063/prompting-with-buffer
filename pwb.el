@@ -191,6 +191,16 @@ These params are essential for the query."
                                   (list (cons 'type "text")
                                         (cons 'text content))))))))
 
+(defun pwb-user-turn-with-image-1 (content ibase64)
+  "Construct the user turn from CONTENT and image string IBASE64.
+The alternative implementation."
+  (pwb-make-messages
+   (pwb-make-message-param
+    "user"
+    (pwb-make-message-param-content (pwb-image-block-param ibase64)
+                                    (pwb-text-block-param content)))))
+
+
 (defun pwb-assistant-turn (content)
   "Construct the assistant turn from CONTENT."
   (vector (list (cons 'role "assistant") (cons 'content content))))

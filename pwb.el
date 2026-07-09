@@ -732,8 +732,17 @@ The content is array of ContentBlockParam."
   `((role . ,role)
     ,message-param-content))
 
-(defun pwb-make-messages (&rest message-params)
-  (vconcat message-params))
+;;; The payload top level These are called Body Parameters.
+(defun pwb-make-body-param-max-tokens (int)
+  `(max_tokens . ,int))
+
+(defun pwb-make-body-param-messages (&rest message-params)
+  `(messages . ,(vconcat message-params)))
+
+;;; The constructor payload
+(defun pwb-make-payload (&rest body-params)
+  "Construct payload from body-params."
+  (mapcan #'list body-params))
 
 ;; messages is an array of MessageParam
 ;;   MessageParam is {array of ContentBlockParam, role}

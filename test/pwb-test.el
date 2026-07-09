@@ -251,6 +251,9 @@ pwb-concat-turns are also tested."
   (should (equal '(model . "claude-haiku-4-5")
                  (pwb-make-body-param-model "claude-haiku-4-5"))))
 
+(ert-deftest pwb-make-body-param-system-test ()
+  (should (equal '(system . "The system prompt.")
+                 (pwb-make-body-param-system "The system prompt."))))
 
 (provide 'pwb-test)
 

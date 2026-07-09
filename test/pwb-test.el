@@ -243,6 +243,15 @@ pwb-concat-turns are also tested."
 -H \"content-type: application/json\"
 -d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Hello?\\\"}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"\\\"}\"")))))
 
+(ert-deftest pwb-make-body-param-max-tokens-test ()
+  (should (equal '(max_tokens . 1024)
+                 (pwb-make-body-param-max-tokens 1024))))
+
+(ert-deftest pwb-make-body-param-model-test ()
+  (should (equal '(model . "claude-haiku-4-5")
+                 (pwb-make-body-param-model "claude-haiku-4-5"))))
+
+
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here

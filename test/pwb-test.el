@@ -255,6 +255,47 @@ pwb-concat-turns are also tested."
   (should (equal '(system . "The system prompt.")
                  (pwb-make-body-param-system "The system prompt."))))
 
+(defun pwb-alist-test-case (arg)
+  "Return several test cases for the test of payload."
+  (let* ((prompt "* prompt")
+         (system (if (equal arg '(16))
+                     "mid system prompt"
+                   nil))
+         (image (if (equal arg '(4))
+                    "BASE64Image"
+                  nil))
+         (turns (pwb-messages-turns pwb-messages))
+         (msgs
+          (pwb-messages-param
+           (pwb-concat-turns turns
+                             (if image
+                                 (pwb-user-turn-with-image prompt image)
+                               (pwb-user-turn prompt))
+                             (pwb-system-turn system))))
+         (alst (pwb-merge-params msgs
+                                 (pwb-build-alist-from-custom)
+                                 pwb-body-params)))
+    alst))
+
+(ert-deftest pwb-build-payload-prompt-only-test ()
+  (pwb-with-custom
+   (let ((pwb-messages (make-pwb-messages))
+         (pwb-body-params '((cache_control (type . "ephemeral")))))
+     (should (equal (pwb-alist-test-case '())
+                    (pwb-payload-with-parameter "* prompt"))))))
+
+(defun pwb-payload-with-parameter (prompt)
+  (append
+   (pwb-make-payload
+    (pwb-make-body-param-messages
+     (pwb-make-message-param "user"
+                             (pwb-make-message-param-content
+                              (pwb-text-block-param prompt))))
+    (pwb-make-body-param-max-tokens 256)
+    (pwb-make-body-param-model "claude-haiku-4-5")
+    (pwb-make-body-param-system ""))
+   pwb-body-params))
+
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here

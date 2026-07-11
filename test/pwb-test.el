@@ -290,11 +290,23 @@ pwb-concat-turns are also tested."
     (pwb-make-body-param-messages
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
-                              (pwb-text-block-param prompt))))
+                              ;; Use a shorthand version.
+                              (pwb-text-block-param-sh prompt))))
     (pwb-make-body-param-max-tokens 256)
     (pwb-make-body-param-model "claude-haiku-4-5")
     (pwb-make-body-param-system ""))
    pwb-body-params))
+
+(ert-deftest pwb-concat-turns-2-test ()
+  (pwb-with-custom
+   (should (equal
+            (setf (pwb-messages-turns pwb-messages)
+                  (pwb-concat-turns-2
+                   (pwb-messages-turns pwb-messages)
+                   (pwb-make-message-param
+                    "user"
+                    (pwb-text-block-param "* prompt"))))
+            [((role . "user") ((type . "text") (text . "* prompt")))]))))
 
 (provide 'pwb-test)
 

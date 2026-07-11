@@ -710,8 +710,12 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
+(defun pwb-text-block-param-sh (text)
+  "TextBlockParam. shorthand of text block param."
+  text)
+
 (defun pwb-text-block-param (text)
-  "TextBlock Param {text, type, cache_control, citations}."
+  "TextBlockParam {text, type, cache_control, citations}."
   `((type . "text")
     (text . ,text)))
 
@@ -725,7 +729,9 @@ RESPONSE is an alist parsed from the API's JSON error body."
 (defun pwb-make-message-param-content (&rest content-block-params)
   "Return the content of MessageParam.
 The content is array of ContentBlockParam."
-  `(content . ,(vconcat content-block-params)))
+  `(content . ,(if (stringp (car content-block-params))
+                   (car content-block-params) ; For the shorthand TextBlockParam
+                   (vconcat content-block-params))))
 
 (defun pwb-make-message-param (role message-param-content)
   ""
@@ -754,11 +760,53 @@ The content is array of ContentBlockParam."
   "Construct payload from body-params."
   body-params)
 
-;; messages is an array of MessageParam
+(defun pwb-concat-turns-2 (history current)
+  "Concatenate HISTORY of turns, a.k.a Messages,
+and CURRENT MessageParam. This function can be used to add conversation."
+  (vconcat history (vector current)))
+
+(defun pwb-payload-with-prompt (previous-message-content prompt)
+  "Fromthe "  (append
+               (pwb-make-payload
+                (pwb-make-body-param-messages
+                 (pwb-make-message-param "user"
+                                         (pwb-make-message-param-content
+                                          (pwb-text-block-param prompt))))
+                (pwb-make-body-param-max-tokens 256)
+                (pwb-make-body-param-model "claude-haiku-4-5")
+                (pwb-make-body-param-system ""))
+               pwb-body-params))
+;; Body Param are messages, model, max_tokens, system, etc.
+;; 
+;; Messages is an array of MessageParam
 ;;   MessageParam is {array of ContentBlockParam, role}
+
+;; {"role": "user", "content": "Hello, Claude"} <= MessageParam
+;;
+;; messages: [
+;;  {"role": "user", "content": "Hello, Claude"} <= MessageParam
+;;  {"role": "assistant", "content": "May I help you?"} <= MessageParam
+;; ] <= Message body param
+;;
+;; 
 ;;         ContentBlockParam is one of following:
 ;;         TextBlockParam
 ;;         ImageBlockParam
+
+;; ImageBlockParam
+;; "messages": [
+;;    { "role": "user", "content": [
+;;       { "type": "image", "source": {
+;;              "type": "base64",
+;;              "media_type": "'$IMAGE_MEDIA_TYPE'",
+;;              "data": "'$IMAGE_BASE64'"
+;;       }}, <= ImageBlockParam(ContentBlockParam)
+;;       { "type": "text", "text": "What is in the above image?"} <= TextBlockParam(ContentBlockParam)
+;;    ]}
+;;  ]
+        
+;;                                                                                                                                          { "type": "text", "text": "What is in the above image?"}]}]
+;; { "content": "Hello, Claude"} <= MessageParam
 ;; max_tokens is integer.
 ;; model is string
 

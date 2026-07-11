@@ -305,8 +305,9 @@ pwb-concat-turns are also tested."
                    (pwb-messages-turns pwb-messages)
                    (pwb-make-message-param
                     "user"
-                    (pwb-text-block-param "* prompt"))))
-            [((role . "user") ((type . "text") (text . "* prompt")))]))))
+                    (pwb-make-message-param-content
+                     (pwb-text-block-param "* prompt")))))
+            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))))
 
 (provide 'pwb-test)
 

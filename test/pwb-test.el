@@ -31,7 +31,8 @@
     (let ((pwb-messages (make-pwb-messages))
           (pwb-system-prompt "")
           (pwb-model "claude-haiku-4-5")
-          (pwb-max-tokens 256))
+          (pwb-max-tokens 256)
+          (pwb-body-params '((cache_control (type . "ephemeral")))))
       (funcall body))))
 
 (defvar pwb-buffer-org-file "Hello?")

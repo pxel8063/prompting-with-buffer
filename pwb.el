@@ -765,7 +765,7 @@ The content is array of ContentBlockParam."
 and CURRENT MessageParam. This function can be used to add conversation."
   (vconcat history (vector current)))
 
-(defun pwb-payload-with-prompt (messages prompt optional-body-params)
+(defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Fromthe "
   (pwb-make-payload
    optional-body-params
@@ -775,9 +775,9 @@ and CURRENT MessageParam. This function can be used to add conversation."
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
                               (pwb-text-block-param prompt)))))
-   (pwb-make-body-param-max-tokens 256)
-   (pwb-make-body-param-model "claude-haiku-4-5")
-   (pwb-make-body-param-system "")))
+   (pwb-make-body-param-max-tokens max-tokens)
+   (pwb-make-body-param-model model)
+   (pwb-make-body-param-system system)))
 ;; Body Param are messages, model, max_tokens, system, etc.
 ;; 
 ;; Messages is an array of MessageParam

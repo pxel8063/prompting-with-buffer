@@ -307,7 +307,17 @@ pwb-concat-turns are also tested."
                     "user"
                     (pwb-make-message-param-content
                      (pwb-text-block-param "* prompt")))))
-            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))))
+            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))
+   (should (equal
+            (setf (pwb-messages-turns pwb-messages)
+                  (pwb-concat-turns-2
+                   (pwb-messages-turns pwb-messages)
+                   (pwb-make-message-param
+                    "user"
+                    (pwb-make-message-param-content
+                     (pwb-text-block-param "* prompt 2")))))
+            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))
+             ((role . "user") (content . [((type . "text") (text . "* prompt 2"))]))]))))
 
 (provide 'pwb-test)
 

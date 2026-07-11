@@ -280,23 +280,12 @@ pwb-concat-turns are also tested."
 
 (ert-deftest pwb-build-payload-prompt-only-test ()
   (pwb-with-custom
-   (let ((pwb-messages (make-pwb-messages))
-         (pwb-body-params '((cache_control (type . "ephemeral")))))
-     (should (equal (pwb-alist-test-case '())
-                    (pwb-payload-with-parameter "* prompt"))))))
-
-(defun pwb-payload-with-parameter (prompt)
-  (append
-   (pwb-make-payload
-    (pwb-make-body-param-messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              ;; Use a shorthand version.
-                              (pwb-text-block-param-sh prompt))))
-    (pwb-make-body-param-max-tokens 256)
-    (pwb-make-body-param-model "claude-haiku-4-5")
-    (pwb-make-body-param-system ""))
-   pwb-body-params))
+   (should (equal (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
+                                           "Hello."
+                                           pwb-body-params)
+                  '((messages . [[((role . "user") (content . [((type . "text") (text . "Hello."))]))]])
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
+                    (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-concat-turns-2-test ()
   (pwb-with-custom

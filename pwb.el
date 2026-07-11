@@ -756,26 +756,28 @@ The content is array of ContentBlockParam."
   `(system . ,string))
 
 ;;; The constructor payload
-(defun pwb-make-payload (&rest body-params)
-  "Construct payload from body-params."
-  body-params)
+(defun pwb-make-payload (optional-body-params &rest body-params)
+  "Construct payload from OPTIONAL-BODY-PARAMS and BODY-PARAMS."
+  (append body-params optional-body-params))
 
 (defun pwb-concat-turns-2 (history current)
   "Concatenate HISTORY of turns, a.k.a Messages,
 and CURRENT MessageParam. This function can be used to add conversation."
   (vconcat history (vector current)))
 
-(defun pwb-payload-with-prompt (previous-message-content prompt)
-  "Fromthe "  (append
-               (pwb-make-payload
-                (pwb-make-body-param-messages
-                 (pwb-make-message-param "user"
-                                         (pwb-make-message-param-content
-                                          (pwb-text-block-param prompt))))
-                (pwb-make-body-param-max-tokens 256)
-                (pwb-make-body-param-model "claude-haiku-4-5")
-                (pwb-make-body-param-system ""))
-               pwb-body-params))
+(defun pwb-payload-with-prompt (messages prompt optional-body-params)
+  "Fromthe "
+  (pwb-make-payload
+   optional-body-params
+   (pwb-make-body-param-messages
+    (pwb-concat-turns-2
+     messages
+     (pwb-make-message-param "user"
+                             (pwb-make-message-param-content
+                              (pwb-text-block-param prompt)))))
+   (pwb-make-body-param-max-tokens 256)
+   (pwb-make-body-param-model "claude-haiku-4-5")
+   (pwb-make-body-param-system "")))
 ;; Body Param are messages, model, max_tokens, system, etc.
 ;; 
 ;; Messages is an array of MessageParam

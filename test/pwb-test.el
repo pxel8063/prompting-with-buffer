@@ -316,6 +316,23 @@ pwb-concat-turns are also tested."
                                  pwb-body-params)))
     alst))
 
+(ert-deftest pwb-build-payload-prompt-and-image-test ()
+  (pwb-with-custom
+   (should (equal (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
+                                                     "Hello."
+                                                     "IMAGE_BASE64"
+                                                     pwb-max-tokens
+                                                     pwb-model
+                                                     pwb-system-prompt
+                                                     pwb-body-params)
+                  '((messages . [((role . "user") (content . [((type . "image")
+                                                               (source (type . "base64")
+                                                                       (media_type . "image/png")
+                                                                       (data . "IMAGE_BASE64")))
+                                                              ((type . "text") (text . "Hello."))]))])
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
+                    (cache_control (type . "ephemeral")))))))
+
 (ert-deftest pwb-build-payload-prompt-only-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)

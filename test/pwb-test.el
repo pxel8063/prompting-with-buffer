@@ -286,7 +286,7 @@ pwb-concat-turns are also tested."
                                            pwb-model
                                            pwb-system-prompt
                                            pwb-body-params)
-                  '((messages . [[((role . "user") (content . [((type . "text") (text . "Hello."))]))]])
+                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
                     (cache_control (type . "ephemeral")))))))
 

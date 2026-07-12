@@ -743,9 +743,9 @@ The content is array of ContentBlockParam."
   "Constructor for max_tokens body parameter."
   `(max_tokens . ,int))
 
-(defun pwb-make-body-param-messages (&rest message-params)
+(defun pwb-make-body-param-messages (message-param)
   "Constructor for messages body parameter."
-  `(messages . ,(vconcat message-params)))
+  `(messages . ,message-param))
 
 (defun pwb-make-body-param-model (model)
   "Constructor for model body parameter."

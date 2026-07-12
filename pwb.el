@@ -734,7 +734,7 @@ The content is array of ContentBlockParam."
                    (vconcat content-block-params))))
 
 (defun pwb-make-message-param (role message-param-content)
-  ""
+  "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONENT."
   `((role . ,role)
     ,message-param-content))
 
@@ -766,7 +766,13 @@ and CURRENT MessageParam. This function can be used to add conversation."
   (vconcat history (vector current)))
 
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
-  "Fromthe "
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
   (pwb-make-payload
    optional-body-params
    (pwb-make-body-param-messages

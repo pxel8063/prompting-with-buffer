@@ -277,7 +277,7 @@ With one \\[universal-argument], prompt for an image file.  With two
          (alst (pwb-merge-params msgs
                                  pwb-body-params
                                  (pwb-build-alist-from-custom)))
-         (response (pwb-curl (json-serialize alst))))
+         (response (pwb-curl-with-config alst)))
     (if (pwb-response-ok-p response)
         (let ((response-text (pwb-get-content-text response))
               (response-thinking (pwb-get-content-thinking response))

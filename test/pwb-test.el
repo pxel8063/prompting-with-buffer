@@ -244,6 +244,18 @@ pwb-concat-turns are also tested."
 -H \"content-type: application/json\"
 -d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Hello?\\\"}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"\\\"}\"")))))
 
+(ert-deftest pwb-text-block-param-test ()
+  (should (equal (pwb-text-block-param "*prompt")
+                 '((type . "text")
+                   (text . "*prompt")))))
+
+(ert-deftest pwb-image-block-param-test ()
+  (should (equal (pwb-image-block-param "IMAGE_BASE64")
+                 '((type . "image")
+                   (source (type . "base64")
+                           (media_type . "image/png")
+                           (data . "IMAGE_BASE64"))))))
+
 (ert-deftest pwb-make-body-param-max-tokens-test ()
   (should (equal '(max_tokens . 1024)
                  (pwb-make-body-param-max-tokens 1024))))

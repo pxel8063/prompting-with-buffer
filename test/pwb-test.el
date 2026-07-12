@@ -268,6 +268,17 @@ pwb-concat-turns are also tested."
   (should (equal '(system . "The system prompt.")
                  (pwb-make-body-param-system "The system prompt."))))
 
+(ert-deftest pwb-make-message-param-content-with-image-test ()
+  (should (equal (pwb-make-message-param-content
+                  (pwb-image-block-param "IMAGE_BASE64")
+                  (pwb-text-block-param "Hello."))
+                 '(content . [((type . "image")
+                               (source (type . "base64")
+                                       (media_type . "image/png")
+                                       (data . "IMAGE_BASE64")))
+                              ((type . "text")
+                               (text . "Hello."))]))))
+
 (defun pwb-alist-test-case (arg)
   "Return several test cases for the test of payload."
   (let* ((prompt "* prompt")

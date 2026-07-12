@@ -268,6 +268,21 @@ pwb-concat-turns are also tested."
   (should (equal '(system . "The system prompt.")
                  (pwb-make-body-param-system "The system prompt."))))
 
+(ert-deftest pwb-make-message-param-content-with-system-test ()
+  (should (equal (pwb-concat-turns-2
+                  (pwb-concat-turns-2
+                   []
+                   (pwb-make-message-param
+                    "user"
+                    (pwb-make-message-param-content
+                     (pwb-text-block-param "Hello."))))
+                  (pwb-make-message-param
+                    "system"
+                    (pwb-make-message-param-content
+                     (pwb-text-block-param "system"))))
+                 [((role . "user") (content . [((type . "text") (text . "Hello."))]))
+                  ((role . "system") (content . [((type . "text") (text . "system"))]))])))
+
 (ert-deftest pwb-make-message-param-content-with-image-test ()
   (should (equal (pwb-make-message-param-content
                   (pwb-image-block-param "IMAGE_BASE64")

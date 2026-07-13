@@ -706,7 +706,7 @@ RESPONSE is an alist parsed from the API's JSON error body."
 The content is array of ContentBlockParam."
   `(content . ,(if (stringp (car content-block-params))
                    (car content-block-params) ; For the shorthand TextBlockParam
-                   (vconcat content-block-params))))
+                 (vconcat content-block-params))))
 
 (defun pwb-make-message-param (role message-param-content)
   "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONENT."
@@ -809,7 +809,7 @@ OPTIONAL-BODY-PARAMS: alist."
 ;;       { "type": "text", "text": "What is in the above image?"} <= TextBlockParam(ContentBlockParam)
 ;;    ]}
 ;;  ]
-        
+
 ;;                                                                                                                                          { "type": "text", "text": "What is in the above image?"}]}]
 ;; { "content": "Hello, Claude"} <= MessageParam
 ;; max_tokens is integer.

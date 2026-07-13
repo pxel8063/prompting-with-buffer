@@ -257,7 +257,16 @@ if narrowed, one in the narrowed part."
 (defun pwb-prepare-payload (arg)
   "Return payload alist. ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
-    (cond ((equal arg '(4))
+    (cond ((equal arg '(16))
+           (let* ((system (read-string "Enter mid-conversation system message.")))
+             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
+                                                 prompt
+                                                 system
+                                                 pwb-max-tokens
+                                                 pwb-model
+                                                 pwb-system-prompt
+                                                 pwb-body-params )))
+          ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
@@ -781,6 +790,32 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
+
+(defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MID-SYSTEM: string mid conversation system message
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
+  (pwb-make-payload
+   optional-body-params
+   (pwb-make-body-param-messages
+    (pwb-concat-turns-2
+     (pwb-concat-turns-2
+      messages
+      (pwb-make-message-param "user"
+                              (pwb-make-message-param-content
+                               (pwb-text-block-param prompt))))
+     (pwb-make-message-param "system"
+                             (pwb-make-message-param-content
+                              (pwb-text-block-param mid-system)))))
+   (pwb-make-body-param-max-tokens max-tokens)
+   (pwb-make-body-param-model model)
+   (pwb-make-body-param-system system)))
+
 ;; Body Param are messages, model, max_tokens, system, etc.
 ;; 
 ;; Messages is an array of MessageParam

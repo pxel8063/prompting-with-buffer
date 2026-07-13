@@ -234,7 +234,11 @@ pwb-concat-turns are also tested."
              (beginning-of-line)
              (kill-whole-line))
            (funcall body (buffer-substring-no-properties (point-min) (point-max))))
-       (delete-file filename)))))
+       (progn
+         (set-buffer-modified-p nil)
+         (kill-buffer (current-buffer))
+         (when (file-exists-p filename)
+           (delete-file filename)))))))
 
 (ert-deftest pwb-make-curl-config-file-test ()
   (pwb-make-curl-config-file-test-fn

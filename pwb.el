@@ -205,6 +205,10 @@ The alternative implementation."
   "Construct the assistant turn from CONTENT."
   (vector (list (cons 'role "assistant") (cons 'content content))))
 
+(defun pwb-assistant-turn-2 (content)
+  "Construct the assistant turn from CONTENT."
+  (list (cons 'role "assistant") (cons 'content content)))
+
 (defun pwb-system-turn (content)
   "Construct the system turn from CONTENT."
   (if content
@@ -250,6 +254,28 @@ if narrowed, one in the narrowed part."
       (goto-char (point-min))
       (json-parse-buffer :object-type 'alist))))
 
+(defun pwb-prepare-payload (arg)
+  "Return payload alist. ARG is the unversal argument."
+  (let ((prompt (pwb-buffer-string)))
+    (cond ((equal arg '(4))
+           (let* ((image-file
+                   (read-file-name "Image png file: "))
+                  (image (pwb-convert-file-base64 image-file)))
+             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
+                                                prompt
+                                                image
+                                                pwb-max-tokens
+                                                pwb-model
+                                                pwb-system-prompt
+                                                pwb-body-params )))
+          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
+                                      prompt
+                                      pwb-max-tokens
+                                      pwb-model
+                                      pwb-system-prompt
+                                      pwb-body-params)))))
+
+
 ;;;###autoload
 (defun pwb-current-buffer (&optional arg)
   "Send a prompt based on the current buffer to api.
@@ -257,26 +283,7 @@ With one \\[universal-argument], prompt for an image file.  With two
 \\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
-  (let* ((prompt (pwb-buffer-string))
-         (system (if (equal arg '(16))
-                     (read-string "Enter mid-conversation system message: ")
-                   nil))
-         (image (if (equal arg '(4))
-                    (let* ((image-file
-                            (read-file-name "Image png file: ")))
-                      (pwb-convert-file-base64 image-file))
-                  nil))
-         (turns (pwb-messages-turns pwb-messages))
-         (msgs
-          (pwb-messages-param
-           (pwb-concat-turns turns
-                             (if image
-                                 (pwb-user-turn-with-image prompt image)
-                               (pwb-user-turn prompt))
-                             (pwb-system-turn system))))
-         (alst (pwb-merge-params msgs
-                                 pwb-body-params
-                                 (pwb-build-alist-from-custom)))
+  (let* ((alst (pwb-prepare-payload arg))
          (response (pwb-curl-with-config alst)))
     (if (pwb-response-ok-p response)
         (let ((response-text (pwb-get-content-text response))
@@ -284,14 +291,8 @@ With one \\[universal-argument], prompt for an image file.  With two
               (response-stop-reason (pwb-get-stop-reason response))
               (response-usage (pwb-get-usage response)))
           (setf (pwb-messages-turns pwb-messages)
-                (pwb-add-conversation turns
-                                      (if image
-                                          (pwb-user-turn-with-image prompt image)
-                                        (pwb-user-turn prompt))
-                                      (if system
-                                          (pwb-system-turn system)
-                                        nil)
-                                      (pwb-assistant-turn response-text)))
+                (pwb-concat-turns-2 (alist-get 'messages alst)
+                                    (pwb-assistant-turn-2 response-text)))
           (when response-thinking
             (message "thinking: %s" response-thinking))
           (message "stop reason: %s, usage: %s" response-stop-reason response-usage)

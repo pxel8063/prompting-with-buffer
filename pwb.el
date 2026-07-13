@@ -351,30 +351,10 @@ With one \\[universal-argument], prompt for an image file.  With two
 \\[universal-argument], prompt for a mid-conversation system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
-  (let* ((prompt (pwb-buffer-string))
-         (system (if (equal arg '(16))
-                     (read-string "Enter mid-conversation system message: ")
-                   nil))
-         (image (if (equal arg '(4))
-                    (let* ((image-file
-                            (read-file-name "Image png file: ")))
-                      (pwb-convert-file-base64 image-file))
-                  nil))
-         (turns (pwb-messages-turns pwb-messages))
-         (msgs
-          (pwb-messages-param
-           (pwb-concat-turns turns
-                             (if image
-                                 (pwb-user-turn-with-image prompt image)
-                               (pwb-user-turn prompt))
-                             (pwb-system-turn system))))
-         (alst (pwb-merge-params msgs
-                                 pwb-body-params
-                                 (pwb-build-alist-from-custom)))
-         (payload (json-serialize alst)))
+  (let* ((alst (pwb-prepare-payload arg)))
     (message "pwb: sending request...")
-    (pwb-curl-async
-     payload
+    (pwb-async-curl-with-config
+     alst
      (lambda (response)
        (if (pwb-response-ok-p response)
            (let ((response-text (pwb-get-content-text response))
@@ -382,14 +362,8 @@ With one \\[universal-argument], prompt for an image file.  With two
                  (response-stop-reason (pwb-get-stop-reason response))
                  (response-usage (pwb-get-usage response)))
              (setf (pwb-messages-turns pwb-messages)
-                   (pwb-add-conversation turns
-                                         (if image
-                                             (pwb-user-turn-with-image prompt image)
-                                           (pwb-user-turn prompt))
-                                         (if system
-                                             (pwb-system-turn system)
-                                           nil)
-                                         (pwb-assistant-turn response-text)))
+                   (pwb-concat-turns-2 (alist-get 'messages alst)
+                                       (pwb-assistant-turn-2 response-text)))
              (when response-thinking
                (message "thinking: %s" response-thinking))
              (pwb-render-response response-text)

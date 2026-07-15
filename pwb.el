@@ -415,6 +415,23 @@ is run before BODY."
   "Return a stop reason in the RESPONSE."
   (alist-get 'usage response))
 
+(defun pwb-get-content (response)
+  "Return an array of ContentBlock."
+  (alist-get 'content response))
+
+(defun pwb-content-block-type (content-block)
+  "Return the type, i.e. string, of the CONTENT-BLOCK."
+  (alist-get 'type content-block))
+
+(defun pwb-content-block-type-predicate (type)
+  (lambda (content-block)
+    (equal (pwb-content-block-type content-block) type)))
+
+(defun pwb-find-content-block-by-type (type content-blocks)
+  "Return the content-block whose type is TYPE from an array of
+CONTENT-BLOCKS."
+  (seq-find (pwb-content-block-type-predicate type) content-blocks))
+
 (defun pwb-find-type-from-content (type content)
   "Return the text that belongs to TYPE.
 The CONTENT argument must be STRING."

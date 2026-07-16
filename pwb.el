@@ -403,10 +403,19 @@ is run before BODY."
   "Return content text in the RESPONSE."
   (pwb-find-type-from-content "text" (alist-get 'content response)))
 
+(defun pwb-find-type-from-content (type content)
+  "Return the text that belongs to TYPE.
+The CONTENT argument must be STRING."
+  (alist-get (intern type)
+             (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
+
 (defun pwb-get-content-thinking (response)
   "Return content thinking in the RESPONSE."
   (pwb-find-type-from-content "thinking" (alist-get 'content response)))
 
+;;;
+;;; The accessor functions for the response parameters
+;;;
 (defun pwb-get-stop-reason (response)
   "Return a stop reason in the RESPONSE."
   (alist-get 'stop_reason response))
@@ -419,25 +428,28 @@ is run before BODY."
   "Return an array of ContentBlock."
   (alist-get 'content response))
 
-(defun pwb-content-block-type (content-block)
-  "Return the type, i.e. string, of the CONTENT-BLOCK."
-  (alist-get 'type content-block))
+;;;
+;;; The accessor functions for the CONTENTBLOCK
+;;;
+(defun pwb-content-block-type (contentblock)
+  "Return the type of the CONTENTBLOCK. Type are such as
+\"text\", \"thinking\" etc."
+  (alist-get 'type contentblock))
 
 (defun pwb-content-block-type-predicate (type)
-  (lambda (content-block)
-    (equal (pwb-content-block-type content-block) type)))
+  (lambda (contentblock)
+    (equal (pwb-content-block-type contentblock) type)))
 
-(defun pwb-find-content-block-by-type (type content-blocks)
+(defun pwb-find-content-block-by-type (type contentblocks)
   "Return the content-block whose type is TYPE from an array of
-CONTENT-BLOCKS."
-  (seq-find (pwb-content-block-type-predicate type) content-blocks))
+CONTENTBLOCKS."
+  (seq-find (pwb-content-block-type-predicate type) contentblocks))
 
-(defun pwb-find-type-from-content (type content)
-  "Return the text that belongs to TYPE.
-The CONTENT argument must be STRING."
-  (alist-get (intern type)
-             (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
 
+
+;;;
+;;; Render response
+;;;
 (defun pwb-render-response (string)
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."
@@ -593,7 +605,7 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-system system)))
 
 ;; Body Param are messages, model, max_tokens, system, etc.
-;; 
+;;
 ;; Messages is an array of MessageParam
 ;;   MessageParam is {array of ContentBlockParam, role}
 
@@ -604,7 +616,7 @@ OPTIONAL-BODY-PARAMS: alist."
 ;;  {"role": "assistant", "content": "May I help you?"} <= MessageParam
 ;; ] <= Message body param
 ;;
-;; 
+;;
 ;;         ContentBlockParam is one of following:
 ;;         TextBlockParam
 ;;         ImageBlockParam

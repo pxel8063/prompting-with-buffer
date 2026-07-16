@@ -410,8 +410,9 @@ The CONTENT argument must be STRING."
              (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
 
 (defun pwb-get-content-thinking (response)
-  "Return content thinking in the RESPONSE."
-  (pwb-find-type-from-content "thinking" (alist-get 'content response)))
+  (alist-get 'thinking (pwb-find-content-block-by-type
+                        "thinking"
+                        (pwb-get-content response))))
 
 ;;;
 ;;; The accessor functions for the response parameters

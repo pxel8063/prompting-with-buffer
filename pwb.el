@@ -201,24 +201,13 @@ With one \\[universal-argument], prompt for an image file.  With two
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((alst (pwb-prepare-payload arg))
-         (response (pwb-curl-with-config alst)))
-    (if (pwb-response-ok-p response)
-        (let ((response-text (pwb-get-content-text response))
-              (response-thinking (pwb-get-content-thinking response))
-              (response-stop-reason (pwb-get-stop-reason response))
-              (response-usage (pwb-get-usage response)))
-          (setf (pwb-messages-turns pwb-messages)
-                (pwb-concat-turns-2 (alist-get 'messages alst)
-                                    (pwb-assistant-turn-2 response-text)))
-          (when response-thinking
-            (message "thinking: %s" response-thinking))
-          (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
-          (pwb-render-response response-text)
-          (display-buffer pwb-response-buffer)
-          t)
-      (pwb-render-error-response response)
-      (message "pwb: error; %S" response)
-      nil)))
+         (response (pwb-curl-with-config alst))
+         (assistant-turn
+          (pwb-response-to-assistant-turn response)))
+    (if assistant-turn ; If an error is returned, do nothing
+        (setf (pwb-messages-turns pwb-messages)
+              (pwb-concat-turns-2 (alist-get 'messages alst)
+                                  assistant-turn)))))
 
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)
@@ -232,24 +221,33 @@ With one \\[universal-argument], prompt for an image file.  With two
     (pwb-async-curl-with-config
      alst
      (lambda (response)
-       (if (pwb-response-ok-p response)
-           (let ((response-text (pwb-get-content-text response))
-                 (response-thinking (pwb-get-content-thinking response))
-                 (response-stop-reason (pwb-get-stop-reason response))
-                 (response-usage (pwb-get-usage response)))
+       (let ((assistant-turn
+              (pwb-response-to-assistant-turn response)))
+         (if assistant-turn ; If an error is returned, do nothing
              (setf (pwb-messages-turns pwb-messages)
                    (pwb-concat-turns-2 (alist-get 'messages alst)
-                                       (pwb-assistant-turn-2 response-text)))
-             (when response-thinking
-               (message "thinking: %s" response-thinking))
-             (pwb-render-response response-text)
-             (display-buffer pwb-response-buffer)
-             (message "pwb: response received.")
-             (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
-             t)
-         (pwb-render-error-response response)
-         (message "pwb: error; %S" response)
-         (message "pwb: response received."))))))
+                                       assistant-turn))))))))
+
+(defun pwb-response-to-assistant-turn (response)
+  "Return assistant turn from RESPONSE.
+Render response in `pwb-response-buffer'.  If the RESPONSE is error,
+render the error in `pwb-response-buffer' and return nil."
+  (if (pwb-response-ok-p response)
+      (let ((response-text (pwb-get-content-text response))
+            (response-thinking (pwb-get-content-thinking response))
+            (response-stop-reason (pwb-get-stop-reason response))
+            (response-usage (pwb-get-usage response)))
+        (when response-thinking
+          (message "thinking: %s" response-thinking))
+        (pwb-render-response response-text)
+        (display-buffer pwb-response-buffer)
+        (message "pwb: response received.")
+        (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
+        (pwb-assistant-turn-2 response-text))
+    (pwb-render-error-response response)
+    (message "pwb: error; %S" response)
+    (message "pwb: response received.")
+    nil))
 
 (defun pwb-make-curl-config-file (payload)
   "Make a temporary curl config file and return its filename. PAYLOAD is

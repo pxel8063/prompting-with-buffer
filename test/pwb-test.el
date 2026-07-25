@@ -99,6 +99,26 @@
           (should (equal "{\n  \"type\": \"error\",\n  \"error\": {\n    \"type\": \"invalid_request_error\",\n    \"message\": \"Input does not match the expected shape.\"\n  },\n  \"request_id\": \"req_011CWsDcj4HTJuWosWP8djPz\"\n}\n\n\f\n\n"
                          error-json)))))))
 
+(ert-deftest pwb-response-to-assistant-turn-test ()
+  "Test whether to return correct assistant turn"
+  (should (equal nil (pwb-response-to-assistant-turn
+		      (list (cons 'type "error")
+			    (cons 'error
+			          (list (cons 'type "invalid_request_error")
+				        (cons 'message "Input does not match the expected shape.")))
+			    (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz")))))
+  (should (equal '((role . "assistant")
+                  (content . "Hello! How can I help you today?"))
+                 (pwb-response-to-assistant-turn
+		  (list (cons 'model "claude-haiku-4-5-20251001")
+			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+			(cons 'type "message")
+			(cons 'role "assistant")
+			(cons 'content [((type . "text") (text . "Hello! How can I help you today?"))])
+			(cons 'stop_reason "end_turn")
+			(cons 'stop_sequence 'null)
+			(cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))))
+
 (ert-deftest pwb-success-or-error ()
   "Test response.  Return nil if error."
   (should (equal nil (pwb-response-ok-p
@@ -128,10 +148,10 @@
     (should (equal
              (pwb-get-content response)
              [((type . "thinking")
-                          (thinking . "Let me analyze this step by step...")
-                          (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
-                         ((type . "text")
-                          (text . "Hello! How can I help you today?"))]))))
+               (thinking . "Let me analyze this step by step...")
+               (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
+              ((type . "text")
+               (text . "Hello! How can I help you today?"))]))))
 
 (ert-deftest pwb-get-content-block-find-by-type-test ()
   (let ((content-blocks

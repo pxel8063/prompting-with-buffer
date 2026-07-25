@@ -41,9 +41,10 @@
   "Test to whether the API response."
   (skip-unless nil)
   (pwb-with-custom
-   (should (eq (with-temp-buffer
-                 (insert pwb-buffer-org-file)
-                 (pwb-current-buffer))
+   (should (eq (vectorp
+                (with-temp-buffer
+                  (insert pwb-buffer-org-file)
+                  (pwb-current-buffer)))
                t))))
 
 (defvar pwb-buffer-with-local-variables "Hello?

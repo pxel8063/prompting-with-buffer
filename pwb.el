@@ -212,14 +212,17 @@ file.  With two \\[universal-argument], prompt for a mid-conversation
 system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
-  (let* ((alst (pwb-prepare-payload arg))
-         (response (pwb-curl-with-config alst))
-         (assistant-turn
-          (pwb-response-to-assistant-turn response)))
-    (if assistant-turn ; If an error is returned, do nothing
-        (setf (pwb-messages-turns pwb-messages)
-              (pwb-concat-turns-2 (alist-get 'messages alst)
-                                  assistant-turn)))))
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let* ((alst (pwb-prepare-payload arg))
+           (response (pwb-curl-with-config alst key))
+           (assistant-turn
+            (pwb-response-to-assistant-turn response)))
+      (if assistant-turn                ; If an error is returned, do nothing
+          (setf (pwb-messages-turns pwb-messages)
+                (pwb-concat-turns-2 (alist-get 'messages alst)
+                                    assistant-turn))))))
 
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)
@@ -229,17 +232,21 @@ file.  With two \\[universal-argument], prompt for a mid-conversation
 system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
-  (let* ((alst (pwb-prepare-payload arg)))
-    (message "pwb: sending request...")
-    (pwb-async-curl-with-config
-     alst
-     (lambda (response)
-       (let ((assistant-turn
-              (pwb-response-to-assistant-turn response)))
-         (if assistant-turn ; If an error is returned, do nothing
-             (setf (pwb-messages-turns pwb-messages)
-                   (pwb-concat-turns-2 (alist-get 'messages alst)
-                                       assistant-turn))))))))
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let* ((alst (pwb-prepare-payload arg)))
+      (message "pwb: sending request...")
+      (pwb-async-curl-with-config
+       alst
+       (lambda (response)
+         (let ((assistant-turn
+                (pwb-response-to-assistant-turn response)))
+           (if assistant-turn           ; If an error is returned, do nothing
+               (setf (pwb-messages-turns pwb-messages)
+                     (pwb-concat-turns-2 (alist-get 'messages alst)
+                                         assistant-turn)))))
+       key))))
 
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
@@ -262,31 +269,26 @@ render the error in `pwb-response-buffer' and return nil."
     (message "pwb: response received.")
     nil))
 
-(defun pwb-make-curl-config-file (payload)
-  "Make a temporary curl config file and return its filename.
-PAYLOAD is
-alist.  The caller is responsible to delete the temporary file after it
+(defun pwb-make-curl-config-file (payload key)
+  "Make a temporary curl config file and return its filename. PAYLOAD is
+alist. The caller is responsible to delete the temporary file after it
 has done."
   (let ((tmpfile (make-temp-file "pwb-"))
         (coding-system-for-write 'utf-8))
     (with-temp-file tmpfile
-      (let ((key (pwb-credential pwb-api-host)))
-        (unless key
-          (error "%s can not be found in `auth-source'" pwb-api-host))
-        (insert "url " pwb-api-url "\n")
+      (insert "url " pwb-api-url "\n")
         (insert "-H " "\"x-api-key: " key "\"\n")
         (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
         (insert "-H " "\"content-type: application/json\"\n")
         (insert "-d " (prin1-to-string (decode-coding-string
                                         (json-serialize payload)
-                                        'utf-8)))))
+                                        'utf-8))))
     tmpfile))
 
-(defun pwb-curl-with-config (payload)
-  "Make a curl config file based on PAYLOAD.
-The external curl program called by `'call-process', return the
-response."
-  (let ((config (pwb-make-curl-config-file payload))
+(defun pwb-curl-with-config (payload key)
+  "Make a curl config file based on PAYLOAD, invoke curl by calling
+process, return the response."
+  (let ((config (pwb-make-curl-config-file payload key))
         (response))
     (unwind-protect
         (with-temp-buffer
@@ -301,11 +303,11 @@ response."
         (delete-file config)))
     response))
 
-(defun pwb-async-curl-with-config (payload callback)
+(defun pwb-async-curl-with-config (payload callback key)
   "Invoke curl with PAYLOAD asynchronously with large file.
 CALLBACK is called with the parsed response alist when the
 process finishes.  On failure, an error is signaled."
-  (let* ((config (pwb-make-curl-config-file payload))
+  (let* ((config (pwb-make-curl-config-file payload key))
          (buf (generate-new-buffer " *pwb-curl*"))
          (proc (make-process
                 :name "pwb-curl"

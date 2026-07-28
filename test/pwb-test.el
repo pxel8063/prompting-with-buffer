@@ -226,7 +226,7 @@
                       pwb-model
                       pwb-system-prompt
                       pwb-body-params)))
-           (setq filename (pwb-make-curl-config-file alst))
+           (setq filename (pwb-make-curl-config-file alst "MYSECRET"))
            (find-file-literally filename)
 
            ;; Delete the line containing "x-api-key"

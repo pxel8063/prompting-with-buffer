@@ -34,6 +34,7 @@
 ;;
 ;;   - Synchronous and asynchronous request commands.
 ;;   - Per-buffer conversation history (buffer-local `pwb-messages').
+;;   - Optional image (PNG) input via a prefix argument.
 ;;   - Optional mid-conversation system messages via a prefix
 ;;     argument.
 ;;   - Save and restore conversations to disk.
@@ -47,10 +48,19 @@
 ;;
 ;; This sends the current buffer to Claude (synchronously) and
 ;; appends the response to the buffer named by `pwb-response-buffer'
-;; (default: *Claude*).  For non-blocking requests, use
-;; `pwb-async-current-buffer' instead.  With a prefix argument
-;; (\\[universal-argument]), either command prompts for a
-;; mid-conversation system message.
+;; (default: *Claude*).  If the region is active, only the region is
+;; sent; if the buffer is narrowed, only the narrowed portion is
+;; sent.  For non-blocking requests, use `pwb-async-current-buffer'
+;; instead.
+;;
+;; Both commands accept a prefix argument:
+;;
+;;   - With one prefix argument (\\[universal-argument]), you are
+;;     prompted for a PNG image file to include alongside the buffer
+;;     text.
+;;   - With two prefix arguments
+;;     (\\[universal-argument] \\[universal-argument]), you are
+;;     prompted for a mid-conversation system message.
 ;;
 ;; Authentication:
 ;;
@@ -76,15 +86,16 @@
 ;;
 ;; See the `pwb' customization group.  Key variables include
 ;; `pwb-model', `pwb-max-tokens', `pwb-system-prompt',
-;; `pwb-api-url', `pwb-anthropic-version', `pwb-response-buffer',
-;; `pwb-response-before-hook', and `pwb-body-params'.  Parameters
-;; in `pwb-body-params' take precedence over the dedicated
-;; customization variables and may be used to enable features such
-;; as extended thinking or prompt caching.
+;; `pwb-api-url', `pwb-api-host', `pwb-anthropic-version',
+;; `pwb-response-buffer', `pwb-response-before-hook', and
+;; `pwb-body-params'.  Parameters in `pwb-body-params' take
+;; precedence over the dedicated customization variables and may be
+;; used to enable features such as extended thinking or prompt
+;; caching.
 ;;
 ;; Requirements:
 ;;
-;; Emacs 29.1 or later and the `curl' command-line tool on PATH.
+;; Emacs 30.1 or later and the `curl' command-line tool on PATH.
 
 ;;; Code:
 (require 'cl-lib)

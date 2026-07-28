@@ -120,14 +120,12 @@
   :type 'string)
 
 (defcustom pwb-anthropic-version "2023-06-01"
-  "Anthropic API version string sent in the
-`anthropic-version` header."
+  "Anthropic API version string sent in the `anthropic-version` header."
   :group 'pwb
   :type 'string)
 
 (defcustom pwb-response-before-hook nil
-  "Hook run just before writing `pwb-response-buffer'
-as the current buffer with the response from the API."
+  "Run this hook just before writing `pwb-response-buffer'."
   :group 'pwb
   :type 'hook)
 
@@ -140,10 +138,10 @@ as the current buffer with the response from the API."
 (defvar pwb-messages (make-pwb-messages)
   "Conversation history holding multiple turns.")
 
-(defcustom pwb-body-params nil "Alist of additional parameters to include in API requests.
+(defcustom pwb-body-params nil "The additional parameters for API.
 These take precedence over `pwb-model', `pwb-max-tokens', and
-`pwb-system-prompt'.  See the Anthropic Messages API documentation
-for available parameters."
+`pwb-system-prompt'.  See the Anthropic Messages API documentation for
+available parameters."
   :group 'pwb
   :type 'sexp)
 
@@ -156,14 +154,16 @@ for available parameters."
   (auth-source-pick-first-password :host host))
 
 (defun pwb-buffer-string ()
-  "Return prompt string, which is,  if the region is active, one in the region,
-if narrowed, one in the narrowed part."
+  "Return prompt string from current buffer.
+If the region is active, one in the region, if narrowed, one in the
+narrowed part."
   (if (use-region-p)
       (buffer-substring-no-properties (region-beginning) (region-end))
     (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun pwb-prepare-payload (arg)
-  "Return payload alist. ARG is the unversal argument."
+  "Return payload alist.
+ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
            (let* ((system (read-string "Enter mid-conversation system message.")))
@@ -196,8 +196,9 @@ if narrowed, one in the narrowed part."
 ;;;###autoload
 (defun pwb-current-buffer (&optional arg)
   "Send a prompt based on the current buffer to api.
-With one \\[universal-argument], prompt for an image file.  With two
-\\[universal-argument], prompt for a mid-conversation system message."
+By taking ARG, with one \\[universal-argument], prompt for an image
+file.  With two \\[universal-argument], prompt for a mid-conversation
+system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((alst (pwb-prepare-payload arg))
@@ -212,8 +213,9 @@ With one \\[universal-argument], prompt for an image file.  With two
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)
   "Send a prompt based on the current buffer to api.
-With one \\[universal-argument], prompt for an image file.  With two
-\\[universal-argument], prompt for a mid-conversation system message."
+By taking ARG, with one \\[universal-argument], prompt for an image
+file.  With two \\[universal-argument], prompt for a mid-conversation
+system message."
   (interactive "P")
   (make-local-variable 'pwb-messages)
   (let* ((alst (pwb-prepare-payload arg)))
@@ -250,8 +252,9 @@ render the error in `pwb-response-buffer' and return nil."
     nil))
 
 (defun pwb-make-curl-config-file (payload)
-  "Make a temporary curl config file and return its filename. PAYLOAD is
-alist. The caller is responsible to delete the temporary file after it
+  "Make a temporary curl config file and return its filename.
+PAYLOAD is
+alist.  The caller is responsible to delete the temporary file after it
 has done."
   (let ((tmpfile (make-temp-file "pwb-"))
         (coding-system-for-write 'utf-8))
@@ -269,8 +272,9 @@ has done."
     tmpfile))
 
 (defun pwb-curl-with-config (payload)
-  "Make a curl config file based on PAYLOAD, invoke curl by calling
-process, return the response."
+  "Make a curl config file based on PAYLOAD.
+The external curl program called by `'call-process', return the
+response."
   (let ((config (pwb-make-curl-config-file payload))
         (response))
     (unwind-protect
@@ -408,6 +412,7 @@ The CONTENT argument must be STRING."
              (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
 
 (defun pwb-get-content-thinking (response)
+  "Get the content of thinking from RESPONSE."
   (alist-get 'thinking (pwb-find-content-block-by-type
                         "thinking"
                         (pwb-get-content response))))
@@ -424,24 +429,24 @@ The CONTENT argument must be STRING."
   (alist-get 'usage response))
 
 (defun pwb-get-content (response)
-  "Return an array of ContentBlock."
+  "Return an array of ContentBlock from RESPONSE."
   (alist-get 'content response))
 
 ;;;
 ;;; The accessor functions for the CONTENTBLOCK
 ;;;
 (defun pwb-content-block-type (contentblock)
-  "Return the type of the CONTENTBLOCK. Type are such as
-\"text\", \"thinking\" etc."
+  "Return the type of the CONTENTBLOCK.
+Type are such as \"text\", \"thinking\" etc."
   (alist-get 'type contentblock))
 
 (defun pwb-content-block-type-predicate (type)
+  "Return the fucntion to check whether the contentblock is TYPE."
   (lambda (contentblock)
     (equal (pwb-content-block-type contentblock) type)))
 
 (defun pwb-find-content-block-by-type (type contentblocks)
-  "Return the content-block whose type is TYPE from an array of
-CONTENTBLOCKS."
+  "Return the content-block whose type is TYPE from an array of CONTENTBLOCKS."
   (seq-find (pwb-content-block-type-predicate type) contentblocks))
 
 
@@ -482,16 +487,17 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun pwb-text-block-param-sh (text)
-  "TextBlockParam. shorthand of text block param."
+  "TextBlockParam with TEXT.
+The shorthand of text block param."
   text)
 
 (defun pwb-text-block-param (text)
-  "TextBlockParam {text, type, cache_control, citations}."
+  "TextBlockParam {TEXT, type, cache_control, citations}."
   `((type . "text")
     (text . ,text)))
 
 (defun pwb-image-block-param (data)
-  "ImageBlockParam {source, type, cache_control}."
+  "ImageBlockParam with DATA {source, type, cache_control}."
   `((type . "image")
     (source (type . "base64")
             (media_type . "image/png")
@@ -499,31 +505,31 @@ RESPONSE is an alist parsed from the API's JSON error body."
 
 (defun pwb-make-message-param-content (&rest content-block-params)
   "Return the content of MessageParam.
-The content is array of ContentBlockParam."
+The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS)."
   `(content . ,(if (stringp (car content-block-params))
                    (car content-block-params) ; For the shorthand TextBlockParam
                  (vconcat content-block-params))))
 
 (defun pwb-make-message-param (role message-param-content)
-  "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONENT."
+  "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."
   `((role . ,role)
     ,message-param-content))
 
 ;;; The payload top level These are called Body Parameters.
 (defun pwb-make-body-param-max-tokens (int)
-  "Constructor for max_tokens body parameter."
+  "Constructor for max_tokens body parameter by INT."
   `(max_tokens . ,int))
 
 (defun pwb-make-body-param-messages (message-param)
-  "Constructor for messages body parameter."
+  "Constructor for messages body parameter(MESSAGE-PARAM)."
   `(messages . ,message-param))
 
 (defun pwb-make-body-param-model (model)
-  "Constructor for model body parameter."
+  "Constructor for model body parameter by MODEL."
   `(model . ,model))
 
 (defun pwb-make-body-param-system (string)
-  "Constructor for system body parameter."
+  "Constructor for system body parameter by STRING."
   `(system . ,string))
 
 ;;; The constructor payload
@@ -532,8 +538,8 @@ The content is array of ContentBlockParam."
   (append body-params optional-body-params))
 
 (defun pwb-concat-turns-2 (history current)
-  "Concatenate HISTORY of turns, a.k.a Messages,
-and CURRENT MessageParam. This function can be used to add conversation."
+  "Concatenate HISTORY of turn, a.k.a Messages and CURRENT MessageParam.
+This function can be used to add conversation."
   (vconcat history (vector current)))
 
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)

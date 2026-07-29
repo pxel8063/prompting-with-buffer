@@ -7,20 +7,24 @@
 
 =pwb= (Prompting with Buffer) is a lightweight Emacs client for Anthropic's
 Claude API. It sends buffer contents as prompts and displays responses in a
-dedicated =*Claude*= buffer. Conversation history is maintained per buffer, so
-you can carry on multi-turn dialogues without leaving Emacs.
+dedicated response buffer (=*Claude*= by default). Conversation history is
+maintained per source buffer, so you can carry on multi-turn dialogues without
+leaving Emacs.
 
 * Features
 
-- Send the current buffer (or its narrowed region) as a prompt
+- Send the current buffer, the active region, or the narrowed portion as a prompt
 - Synchronous and asynchronous request modes
+- Optional PNG image input via a prefix argument
+- Optional mid-conversation system messages via a prefix argument
 - Per-buffer conversation history with save and restore
 - Customizable model, token limit, and system prompt
 - Fine-grained parameter control via =pwb-body-params=
+- API key retrieval through =auth-source=
 
 * Prerequisites
 
-- GNU Emacs 29.1 or later
+- GNU Emacs 30.1 or later
 - =curl= command-line tool installed and on your =PATH=
 - An Anthropic API key (obtain one from [[https://console.anthropic.com][Anthropic Console]])
 
@@ -59,33 +63,48 @@ The =machine= value must match =pwb-api-host=, which defaults to
 2. Run =M-x pwb-current-buffer=.
 3. View Claude's response in the =*Claude*= buffer.
 
+If the region is active, only the region is sent; if the buffer is narrowed,
+only the narrowed portion is sent; otherwise the whole buffer is sent.
+
 If you want the buffer to remain responsive while waiting, use
 =M-x pwb-async-current-buffer= instead.
 
+** Prefix arguments
+
+Both =pwb-current-buffer= and =pwb-async-current-buffer= accept a prefix
+argument:
+
+- With one prefix argument (=C-u=), you are prompted for a PNG image file to
+  include alongside the buffer text.
+- With two prefix arguments (=C-u C-u=), you are prompted for a
+  mid-conversation system message.
+
 ** Commands
 
-| Command                       | Description                                                  |
-|-------------------------------+--------------------------------------------------------------|
-| =pwb-current-buffer=          | Send the buffer (narrowed region if active) to Claude        |
-| =pwb-async-current-buffer=    | Same as above, but asynchronous                              |
-| =pwb-set-system-prompt=       | Set the system prompt to the current buffer's content        |
-| =pwb-clear-system-prompt=     | Reset the system prompt to an empty string                   |
-| =pwb-clear-conversation=      | Discard conversation history for the current buffer          |
-| =pwb-save-conversation=       | Save conversation history to a file                          |
-| =pwb-restore-conversation=    | Restore conversation history from a file                     |
-| =pwb-print-assistant-turns=   | Re-print all assistant responses into the =*Claude*= buffer |
+| Command                     | Description                                                    |
+|-----------------------------+----------------------------------------------------------------|
+| =pwb-current-buffer=        | Send the buffer (region or narrowed portion if active) to Claude |
+| =pwb-async-current-buffer=  | Same as above, but asynchronous                                |
+| =pwb-set-system-prompt=     | Set the system prompt to the current buffer's content          |
+| =pwb-clear-system-prompt=   | Reset the system prompt to an empty string                     |
+| =pwb-clear-conversation=    | Discard conversation history for the current buffer            |
+| =pwb-save-conversation=     | Save conversation history to a file                            |
+| =pwb-restore-conversation=  | Restore conversation history from a file                       |
+| =pwb-print-assistant-turns= | Insert all assistant replies from the history into the response buffer |
 
 ** Customizable variables
 
-| Variable                 | Default                                   | Description                                |
-|--------------------------+-------------------------------------------+--------------------------------------------|
-| =pwb-model=              | ="claude-haiku-4-5"=                      | Claude model identifier                    |
-| =pwb-max-tokens=         | =1024=                                    | Maximum tokens in the response             |
-| =pwb-system-prompt=      | ="When possible, use org-mode syntax."=   | System prompt sent with every request      |
-| =pwb-api-url=            | ="https://api.anthropic.com/v1/messages"= | Messages API endpoint URL                  |
-| =pwb-api-host=           | ="api.anthropic.com"=                     | Machine name used for =auth-source= lookup |
-| =pwb-anthropic-version=  | ="2023-06-01"=                            | Anthropic API version header               |
-| pwb-response-before-hook | nil                                       | Hook before writing *Claude* buffer        |
+| Variable                   | Default                                   | Description                                |
+|----------------------------+-------------------------------------------+--------------------------------------------|
+| =pwb-model=                | ="claude-opus-4-8"=                       | Claude model identifier                    |
+| =pwb-max-tokens=           | =1024=                                    | Maximum tokens in the response             |
+| =pwb-system-prompt=        | ="When possible, use org-mode syntax."=   | System prompt sent with every request      |
+| =pwb-api-url=              | ="https://api.anthropic.com/v1/messages"= | Messages API endpoint URL                  |
+| =pwb-api-host=             | ="api.anthropic.com"=                     | Machine name used for =auth-source= lookup |
+| =pwb-anthropic-version=    | ="2023-06-01"=                            | Anthropic API version header               |
+| =pwb-response-buffer=      | ="*Claude*"=                              | Name of the buffer holding responses       |
+| =pwb-response-before-hook= | =nil=                                     | Hook run before writing the response buffer |
+| =pwb-body-params=          | =nil=                                     | Additional request parameters (alist)      |
 
 You can customise these interactively with =M-x customize-group RET pwb RET=,
 or set them in your init file:
@@ -126,12 +145,24 @@ efficient code with clear explanations.
 Run =M-x pwb-set-system-prompt=. All subsequent requests will include this
 system prompt until you change or clear it.
 
+** Sending an image
+
+Open a buffer with a question about an image, then run
+=C-u M-x pwb-current-buffer=. You will be prompted for a PNG file, which is
+sent to Claude alongside the buffer text.
+
+** Mid-conversation system message
+
+Run =C-u C-u M-x pwb-current-buffer=. You will be prompted for a
+mid-conversation system message, which is inserted into the conversation
+following your buffer prompt.
+
 ** Multi-turn conversation
 
 1. Write your first prompt and run =pwb-current-buffer=.
 2. Read the response in =*Claude*=.
 3. In the same buffer, write a follow-up prompt below the original.
-4. Narrow the buffer to only the follow-up text (=C-x n n=).
+4. Narrow the buffer to only the follow-up text (=C-x n n=), or select it as a region.
 5. Run =pwb-current-buffer= again.
 
 The conversation history from the first exchange is included automatically, so
@@ -141,21 +172,22 @@ Claude has full context.
 
 The variable =pwb-body-params= lets you pass additional parameters to the
 Claude Messages API. It is an alist that takes precedence over the customized
-variables.
+variables =pwb-model=, =pwb-max-tokens=, and =pwb-system-prompt=. It may be
+used to enable features such as extended thinking or prompt caching.
 
 For example, to enable adaptive thinking, set up your buffer with file-local
 variables:
 
 #+begin_src org
-  Explain why the sum of two even numbers is always even.
+Explain why the sum of two even numbers is always even.
 
 
-  # Local Variables:
-  # pwb-model: "claude-opus-4-7"
-  # pwb-max-tokens: 16000
-  # pwb-body-params: ((thinking (type . "adaptive")))
-  # pwb-system-prompt: ""
-  # End:
+# Local Variables:
+# pwb-model: "claude-opus-4-7"
+# pwb-max-tokens: 16000
+# pwb-body-params: ((thinking (type . "adaptive")))
+# pwb-system-prompt: ""
+# End:
 #+end_src
 
 Running =pwb-current-buffer= in this buffer produces a request equivalent to:

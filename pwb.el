@@ -4,7 +4,7 @@
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; Author:     pxel8063 <pxel8063@gmail.com>
-;; Version:    0.0.26
+;; Version:    0.0.27
 ;; Keywords:   comm, convenience
 ;; Package-Requires: ((emacs "30.1"))
 ;; URL:        https://github.com/pxel8063/prompting-with-buffer

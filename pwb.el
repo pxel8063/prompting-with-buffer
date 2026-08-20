@@ -125,6 +125,11 @@
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-api-file-url "https://api.anthropic.com/v1/files"
+  "Specifying the Claude File API host."
+  :group 'pwb
+  :type 'string)
+
 (defcustom pwb-api-host "api.anthropic.com"
   "Machine name of the api in `auth-source'."
   :group 'pwb
@@ -283,6 +288,40 @@ has done."
         (insert "-d " (prin1-to-string (decode-coding-string
                                         (json-serialize payload)
                                         'utf-8))))
+    tmpfile))
+
+
+
+
+(defun pwb-make-curl-config-file-upload-file (path key)
+  "Make a curl config file for file uploading and return its filename.
+Uploading the file with PATH.  The caller is responsible to delete the
+ temporary file after it has done."
+  (let ((tmpfile (make-temp-file "pwb-"))
+        (coding-system-for-write 'utf-8)
+        (form-option (concat "file=@" path)))
+    (with-temp-file tmpfile
+      (insert "url " pwb-api-file-url "\n")
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"anthropic-beta: files-api-2025-04-14\"\n")
+      (insert "-F " "\"" form-option "\"")) ;;file=@/path/to/file
+    tmpfile))
+;;{"type":"file","id":"file_011CeD2P9vhVeHdkaFXqh36v","size_bytes":243515,"created_at":"2026-08-20T00:06:12.902000Z","filename":"33-L.png","mime_type ":"image/png ","downloadable ":false}
+
+(defun pwb-make-curl-config-file-delete-file (file-id key)
+  "Make a curl config file for file uploading and return its filename.
+Uploading the file with PATH.  The caller is responsible to delete the
+ temporary file after it has done."
+  (let ((tmpfile (make-temp-file "pwb-"))
+        (coding-system-for-write 'utf-8)
+        (delete-url (concat pwb-api-file-url "/" file-id)))
+    (with-temp-file tmpfile
+      (insert "url " delete-url "\n")
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"anthropic-beta: files-api-2025-04-14\"\n")
+      (insert "-X " "\"DELETE\"\n"))
     tmpfile))
 
 (defun pwb-curl-with-config (payload key)

@@ -32,7 +32,10 @@
           (pwb-system-prompt "")
           (pwb-model "claude-haiku-4-5")
           (pwb-max-tokens 256)
-          (pwb-body-params '((cache_control (type . "ephemeral")))))
+          (pwb-body-params '((cache_control (type . "ephemeral"))))
+          (pwb-api-url "https://api.anthropic.com/v1/messages")
+          (pwb-api-file-url "https://api.anthropic.com/v1/files")
+          (pwb-api-host "api.anthropic.com"))
       (funcall body))))
 
 (defvar pwb-buffer-org-file "Hello?")
@@ -249,6 +252,63 @@
 -H \"anthropic-version: 2023-06-01\"
 -H \"content-type: application/json\"
 -d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello.\\\"}]}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"\\\",\\\"cache_control\\\":{\\\"type\\\":\\\"ephemeral\\\"}}\"")))))
+
+(defun pwb-make-curl-config-file-upload-file-test-fn (body)
+  (pwb-with-custom
+   (let (filename)
+     (unwind-protect
+         (progn
+           (setq filename (pwb-make-curl-config-file-upload-file "/tmp/image.png" "MYSECRET"))
+           (find-file-literally filename)
+
+           ;; Delete the line containing "x-api-key"
+           (goto-char (point-min))
+           (when (search-forward "x-api-key" nil t)
+             (beginning-of-line)
+             (kill-whole-line))
+           (funcall body (buffer-substring-no-properties (point-min) (point-max))))
+       (progn
+         (set-buffer-modified-p nil)
+         (kill-buffer (current-buffer))
+         (when (file-exists-p filename)
+           (delete-file filename)))))))
+
+(ert-deftest pwb-make-curl-config-file-upload-file-test ()
+  (pwb-make-curl-config-file-upload-file-test-fn
+   (lambda (x)
+     (should (equal x "url https://api.anthropic.com/v1/files
+-H \"anthropic-version: 2023-06-01\"
+-H \"anthropic-beta: files-api-2025-04-14\"
+-F \"file=@/tmp/image.png\"")))))
+
+(defun pwb-make-curl-config-file-delete-file-test-fn (body)
+  (pwb-with-custom
+   (let (filename)
+     (unwind-protect
+         (progn
+           (setq filename (pwb-make-curl-config-file-delete-file "file_011CeD2P9vhVeHdkaFXqh36v" "MYSECRET"))
+           (find-file-literally filename)
+
+           ;; Delete the line containing "x-api-key"
+           (goto-char (point-min))
+           (when (search-forward "x-api-key" nil t)
+             (beginning-of-line)
+             (kill-whole-line))
+           (funcall body (buffer-substring-no-properties (point-min) (point-max))))
+       (progn
+         (set-buffer-modified-p nil)
+         (kill-buffer (current-buffer))
+         (when (file-exists-p filename)
+           (delete-file filename)))))))
+
+(ert-deftest pwb-make-curl-config-file-delete-file-test ()
+  (pwb-make-curl-config-file-delete-file-test-fn
+   (lambda (x)
+     (should (equal x "url https://api.anthropic.com/v1/files/file_011CeD2P9vhVeHdkaFXqh36v
+-H \"anthropic-version: 2023-06-01\"
+-H \"anthropic-beta: files-api-2025-04-14\"
+-X \"DELETE\"
+")))))
 
 (ert-deftest pwb-text-block-param-test ()
   (should (equal (pwb-text-block-param "*prompt")

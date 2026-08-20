@@ -228,6 +228,25 @@ system message."
           (setf (pwb-messages-turns pwb-messages)
                 (pwb-concat-turns-2 (alist-get 'messages alst)
                                     assistant-turn))))))
+;;;###autoload
+(defun pwb-upload-file (&optional path)
+  "Send a file in the PATH to the api host."
+  (interactive "f")
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let ((response (pwb-curl-with-config-upload-file path key)))
+      (pwb-response-to-file-id response))))
+
+;;;###autoload
+(defun pwb-delete-file (&optional file-id)
+  "Delete a file with FILE-ID on the api host."
+  (interactive "s")
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let ((response (pwb-curl-with-config-delete-file file-id key)))
+      (pwb-response-to-delete-id response))))
 
 ;;;###autoload
 (defun pwb-async-current-buffer (&optional arg)
@@ -328,6 +347,42 @@ Uploading the file with PATH.  The caller is responsible to delete the
   "Make a curl config file based on PAYLOAD, invoke curl by calling
 process, return the response."
   (let ((config (pwb-make-curl-config-file payload key))
+        (response))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((status (call-process "curl" nil t nil "--silent"
+                                      "--config"
+                                      config)))
+            (unless (zerop status)
+              (error "Curl failed with status %d: %s" status (buffer-string))))
+          (goto-char (point-min))
+          (setq response (json-parse-buffer :object-type 'alist)))
+      (when (file-exists-p config)
+        (delete-file config)))
+    response))
+
+(defun pwb-curl-with-config-upload-file (path key)
+  "Make a curl config file based on PAYLOAD, invoke curl by calling
+process, return the response."
+  (let ((config (pwb-make-curl-config-file-upload-file path key))
+        (response))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((status (call-process "curl" nil t nil "--silent"
+                                      "--config"
+                                      config)))
+            (unless (zerop status)
+              (error "Curl failed with status %d: %s" status (buffer-string))))
+          (goto-char (point-min))
+          (setq response (json-parse-buffer :object-type 'alist)))
+      (when (file-exists-p config)
+        (delete-file config)))
+    response))
+
+(defun pwb-curl-with-config-delete-file (file-id key)
+  "Make a curl config file to delete a file with FILE-ID.
+Used by curl process, return the response."
+  (let ((config (pwb-make-curl-config-file-delete-file file-id key))
         (response))
     (unwind-protect
         (with-temp-buffer
@@ -530,6 +585,27 @@ RESPONSE is an alist parsed from the API's JSON error body."
     ("error" nil)
     ("message" t)
     (other (message "pwb: unexpected response type: %S" other) nil)))
+
+(defun pwb-response-to-file-id (response)
+  (let ((id (alist-get 'id response)))
+   (if id
+       (progn
+         (message "pwb: file accepted: %s" id)
+         id)
+       (progn
+         (message "pwb: not accepted.")
+         nil))))
+
+(defun pwb-response-to-delete-id (response)
+  (let ((id (alist-get 'id response))
+        (type (alist-get 'type response)))
+   (if id
+       (progn
+         (message "pwb: %s %s" id type)
+         id)
+       (progn
+         (message "pwb: not accepted.")
+         nil))))
 
 (defun pwb-convert-file-base64 (file)
   "Return the base 64 string of the image FILE."

@@ -278,7 +278,7 @@
    (lambda (x)
      (should (equal x "url https://api.anthropic.com/v1/files
 -H \"anthropic-version: 2023-06-01\"
--H \"anthropic-beta: files-api-2025-04-14\"
+-H \"Content-Type: multipart/form-data\"
 -F \"file=@/tmp/image.png\"")))))
 
 (defun pwb-make-curl-config-file-delete-file-test-fn (body)
@@ -306,7 +306,6 @@
    (lambda (x)
      (should (equal x "url https://api.anthropic.com/v1/files/file_011CeD2P9vhVeHdkaFXqh36v
 -H \"anthropic-version: 2023-06-01\"
--H \"anthropic-beta: files-api-2025-04-14\"
 -X \"DELETE\"
 ")))))
 
@@ -321,6 +320,12 @@
                    (source (type . "base64")
                            (media_type . "image/png")
                            (data . "IMAGE_BASE64"))))))
+
+(ert-deftest pwb-file-block-param-test ()
+  (should (equal (pwb-file-block-param "file_011A1zQEgJqRFP2t2o7MoGr1")
+                 '((type . "image")
+                   (source (type . "file")
+                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1"))))))
 
 (ert-deftest pwb-make-body-param-max-tokens-test ()
   (should (equal '(max_tokens . 1024)

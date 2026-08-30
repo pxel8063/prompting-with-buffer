@@ -323,7 +323,7 @@ Uploading the file with PATH.  The caller is responsible to delete the
       (insert "url " pwb-api-file-url "\n")
       (insert "-H " "\"x-api-key: " key "\"\n")
       (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
-      (insert "-H " "\"anthropic-beta: files-api-2025-04-14\"\n")
+      (insert "-H " "\"Content-Type: multipart/form-data\"\n")
       (insert "-F " "\"" form-option "\"")) ;;file=@/path/to/file
     tmpfile))
 ;;{"type":"file","id":"file_011CeD2P9vhVeHdkaFXqh36v","size_bytes":243515,"created_at":"2026-08-20T00:06:12.902000Z","filename":"33-L.png","mime_type ":"image/png ","downloadable ":false}
@@ -339,7 +339,6 @@ Uploading the file with PATH.  The caller is responsible to delete the
       (insert "url " delete-url "\n")
       (insert "-H " "\"x-api-key: " key "\"\n")
       (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
-      (insert "-H " "\"anthropic-beta: files-api-2025-04-14\"\n")
       (insert "-X " "\"DELETE\"\n"))
     tmpfile))
 
@@ -630,6 +629,12 @@ The shorthand of text block param."
     (source (type . "base64")
             (media_type . "image/png")
             (data . ,data))))
+
+(defun pwb-file-block-param (file-id)
+  "FileBlockParam with FILE-ID {source, type, cache_control}."
+  `((type . "image")
+    (source (type . "file")
+            (file_id . ,file-id))))
 
 (defun pwb-make-message-param-content (&rest content-block-params)
   "Return the content of MessageParam.

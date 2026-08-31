@@ -201,12 +201,13 @@ ARG is the unversal argument."
                                                 pwb-model
                                                 pwb-system-prompt
                                                 pwb-body-params )))
-          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
+          (t (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
                                       prompt
                                       pwb-max-tokens
                                       pwb-model
                                       pwb-system-prompt
-                                      pwb-body-params)))))
+                                      pwb-body-params
+                                      '("file_01LXhX215zstD6kWoD622oFP"))))))
 
 
 ;;;###autoload
@@ -586,11 +587,12 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (other (message "pwb: unexpected response type: %S" other) nil)))
 
 (defun pwb-response-to-file-id (response)
-  (let ((id (alist-get 'id response)))
+  (let ((id (alist-get 'id response))
+        (mime-type (alist-get 'mime_type response)))
    (if id
        (progn
          (message "pwb: file accepted: %s" id)
-         id)
+         (cons id mime-type))
        (progn
          (message "pwb: not accepted.")
          nil))))

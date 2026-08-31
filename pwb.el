@@ -236,7 +236,7 @@ system message."
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let ((response (pwb-curl-with-config-upload-file path key)))
-      (pwb-response-to-file-id response))))
+      (cons (pwb-response-to-file-id response) path))))
 
 ;;;###autoload
 (defun pwb-delete-file (&optional file-id)

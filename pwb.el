@@ -697,7 +697,7 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
-(defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-id)
+(defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string
@@ -705,7 +705,7 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
-FILE-ID: string."
+FILE-IDS: a list of id strings."
   (pwb-make-payload
    optional-body-params
    (pwb-make-body-param-messages
@@ -714,7 +714,7 @@ FILE-ID: string."
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
                               (list (pwb-text-block-param prompt))
-                              (list (pwb-file-block-param file-id))))))
+                              (mapcar #'pwb-file-block-param file-ids)))))
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))

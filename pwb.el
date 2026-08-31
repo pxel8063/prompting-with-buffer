@@ -600,10 +600,10 @@ RESPONSE is an alist parsed from the API's JSON error body."
         (type (alist-get 'type response)))
    (if id
        (progn
-         (message "pwb: %s %s" id type)
+         (message "pwb: %s: %s" type id)
          id)
        (progn
-         (message "pwb: not accepted.")
+         (message "pwb: not deleted.")
          nil))))
 
 (defun pwb-convert-file-base64 (file)

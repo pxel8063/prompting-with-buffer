@@ -586,11 +586,12 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (other (message "pwb: unexpected response type: %S" other) nil)))
 
 (defun pwb-response-to-file-id (response)
-  (let ((id (alist-get 'id response)))
+  (let ((id (alist-get 'id response))
+        (mime-type (alist-get 'mime_type response)))
    (if id
        (progn
          (message "pwb: file accepted: %s" id)
-         id)
+         (cons id mime-type))
        (progn
          (message "pwb: not accepted.")
          nil))))

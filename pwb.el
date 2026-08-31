@@ -697,7 +697,7 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
-(defun pwb-payload-with-prompt-and-upload-files (messages prompt max-tokens model system optional-body-params file-id)
+(defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-id)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string

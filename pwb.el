@@ -637,14 +637,21 @@ The shorthand of text block param."
     (source (type . "file")
             (file_id . ,file-id))))
 
+(defun pwb-mime-type->block-type (mime-type)
+  "Transform MIME-TYPE to the contents block type."
+  (pcase mime-type
+    ("application/pdf" "document")
+    ("text/plain" "document")
+    ("image/png" "image")))
+
 (defun pwb-make-message-param-content (&rest content-block-params)
   "Return the content of MessageParam.
 The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS).
 The arguments are the list of alist."
   (let ((params (apply #'append content-block-params)))
     `(content . ,(if (stringp (car content-block-params))
-                   (car content-block-params) ; For the shorthand TextBlockParam
-                 (vconcat params)))))
+                     (car content-block-params) ; For the shorthand TextBlockParam
+                   (vconcat params)))))
 
 (defun pwb-make-message-param (role message-param-content)
   "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."

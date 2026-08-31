@@ -346,18 +346,18 @@
                    (pwb-make-message-param
                     "user"
                     (pwb-make-message-param-content
-                     (pwb-text-block-param "Hello."))))
+                     (list (pwb-text-block-param "Hello.")))))
                   (pwb-make-message-param
                     "system"
                     (pwb-make-message-param-content
-                     (pwb-text-block-param "system"))))
+                     (list (pwb-text-block-param "system")))))
                  [((role . "user") (content . [((type . "text") (text . "Hello."))]))
                   ((role . "system") (content . [((type . "text") (text . "system"))]))])))
 
 (ert-deftest pwb-make-message-param-content-with-image-test ()
   (should (equal (pwb-make-message-param-content
-                  (pwb-image-block-param "IMAGE_BASE64")
-                  (pwb-text-block-param "Hello."))
+                  (list (pwb-image-block-param "IMAGE_BASE64"))
+                  (list (pwb-text-block-param "Hello.")))
                  '(content . [((type . "image")
                                (source (type . "base64")
                                        (media_type . "image/png")
@@ -417,7 +417,7 @@
                    (pwb-make-message-param
                     "user"
                     (pwb-make-message-param-content
-                     (pwb-text-block-param "* prompt")))))
+                     (list (pwb-text-block-param "* prompt"))))))
             [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))
    (should (equal
             (setf (pwb-messages-turns pwb-messages)
@@ -426,7 +426,7 @@
                    (pwb-make-message-param
                     "user"
                     (pwb-make-message-param-content
-                     (pwb-text-block-param "* prompt 2")))))
+                     (list (pwb-text-block-param "* prompt 2"))))))
             [((role . "user") (content . [((type . "text") (text . "* prompt"))]))
              ((role . "user") (content . [((type . "text") (text . "* prompt 2"))]))]))))
 

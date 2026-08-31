@@ -638,10 +638,12 @@ The shorthand of text block param."
 
 (defun pwb-make-message-param-content (&rest content-block-params)
   "Return the content of MessageParam.
-The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS)."
-  `(content . ,(if (stringp (car content-block-params))
+The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS).
+The arguments are the list of alist."
+  (let ((params (apply #'append content-block-params)))
+    `(content . ,(if (stringp (car content-block-params))
                    (car content-block-params) ; For the shorthand TextBlockParam
-                 (vconcat content-block-params))))
+                 (vconcat params)))))
 
 (defun pwb-make-message-param (role message-param-content)
   "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."
@@ -690,7 +692,7 @@ OPTIONAL-BODY-PARAMS: alist."
      messages
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
-                              (pwb-text-block-param prompt)))))
+                              (list (pwb-text-block-param prompt))))))
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
@@ -711,8 +713,8 @@ FILE-ID: string."
      messages
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
-                              (pwb-text-block-param prompt)
-                              (pwb-file-block-param file-id)))))
+                              (list (pwb-text-block-param prompt))
+                              (list (pwb-file-block-param file-id))))))
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
@@ -733,8 +735,8 @@ OPTIONAL-BODY-PARAMS: alist."
      messages
      (pwb-make-message-param "user"
                              (pwb-make-message-param-content
-                              (pwb-image-block-param data)
-                              (pwb-text-block-param prompt)))))
+                              (list (pwb-image-block-param data))
+                              (list (pwb-text-block-param prompt))))))
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
@@ -756,10 +758,10 @@ OPTIONAL-BODY-PARAMS: alist."
       messages
       (pwb-make-message-param "user"
                               (pwb-make-message-param-content
-                               (pwb-text-block-param prompt))))
+                               (list (pwb-text-block-param prompt)))))
      (pwb-make-message-param "system"
                              (pwb-make-message-param-content
-                              (pwb-text-block-param mid-system)))))
+                              (list (pwb-text-block-param mid-system))))))
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))

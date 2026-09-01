@@ -272,6 +272,29 @@ system message."
                                          assistant-turn)))))
        key))))
 
+(defun pwb-request-prompt-and-files (prompt system file-ids)
+  "An Experimental function PROMPT SYSTEM FILE-IDS."
+  (make-local-variable 'pwb-messages)
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
+                                                             prompt
+                                                             pwb-max-tokens
+                                                             "claude-sonnet-5"
+                                                             system
+                                                             pwb-body-params
+                                                             file-ids))
+           (response (pwb-curl-with-config alst key))
+           (assistant-turn
+            (pwb-response-to-assistant-turn response)))
+      (if assistant-turn                ; If an error is returned, do nothing
+          (setf (pwb-messages-turns pwb-messages)
+                (pwb-concat-turns-2 (alist-get 'messages alst)
+                                    assistant-turn))))))
+
+
+
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
 Render response in `pwb-response-buffer'.  If the RESPONSE is error,

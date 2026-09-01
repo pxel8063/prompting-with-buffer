@@ -631,11 +631,12 @@ The shorthand of text block param."
             (media_type . "image/png")
             (data . ,data))))
 
-(defun pwb-file-block-param (file-id)
-  "FileBlockParam with FILE-ID {source, type, cache_control}."
-  `((type . "image")
-    (source (type . "file")
-            (file_id . ,file-id))))
+(defun pwb-file-block-param (file-id-pair)
+  "FileBlockParam with FILE-ID-PAIR."
+  (let ((content-block-type (pwb-mime-type->block-type (cdr file-id-pair))))
+   `((type . ,content-block-type)
+     (source (type . "file")
+             (file_id . ,(car file-id-pair))))))
 
 (defun pwb-mime-type->block-type (mime-type)
   "Transform MIME-TYPE to the contents block type."
@@ -713,7 +714,8 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
-FILE-IDS: a list of id strings."
+FILE-IDS: a list of the cons of
+id strings and content block type (\"file_01\" . \"image/png\")."
   (pwb-make-payload
    optional-body-params
    (pwb-make-body-param-messages

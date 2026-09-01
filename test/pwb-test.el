@@ -322,7 +322,15 @@
                            (data . "IMAGE_BASE64"))))))
 
 (ert-deftest pwb-file-block-param-test ()
-  (should (equal (pwb-file-block-param "file_011A1zQEgJqRFP2t2o7MoGr1")
+  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
+                 '((type . "document")
+                   (source (type . "file")
+                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
+  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "text/plain"))
+                 '((type . "document")
+                   (source (type . "file")
+                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
+  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
                  '((type . "image")
                    (source (type . "file")
                            (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1"))))))
@@ -429,6 +437,17 @@
                      (list (pwb-text-block-param "* prompt 2"))))))
             [((role . "user") (content . [((type . "text") (text . "* prompt"))]))
              ((role . "user") (content . [((type . "text") (text . "* prompt 2"))]))]))))
+
+(ert-deftest pwb-mime-type->block-type-test ()
+  (should (equal
+           "document"
+           (pwb-mime-type->block-type "application/pdf")))
+  (should (equal
+           "document"
+           (pwb-mime-type->block-type "text/plain")))
+  (should (equal
+           "image"
+           (pwb-mime-type->block-type "image/png"))))
 
 (provide 'pwb-test)
 

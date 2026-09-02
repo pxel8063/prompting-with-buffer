@@ -281,7 +281,7 @@ system message."
     (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
                                                              prompt
                                                              pwb-max-tokens
-                                                             "claude-sonnet-5"
+                                                             pwb-model
                                                              system
                                                              pwb-body-params
                                                              file-ids))

@@ -1,0 +1,208 @@
+#+title: API document
+#+date: [2026-09-08 Tue]
+
+* Top Level
+| top level     |                              |          |
+|---------------+------------------------------+----------|
+| max_tokens    | number                       |          |
+| messages      | array of MessageParam        |          |
+| model         | string                       |          |
+|---------------+------------------------------+----------|
+| cache_control | CacheControlEphemeral        | optional |
+| container     | MessageCreateParamsContainer | optional |
+| inference_geo | string                       | optional |
+| output_config | OutputConfig                 | optional |
+| service_tier  | "auto" or "standard only"    | optional |
+| stop_sequence | array of string              | optional |
+| stream        | boolean                      | optional |
+| system        | array of TextBlockParam      | optional |
+| thinking      | ThinkingConfigParam          | optional |
+| tool_choice   | ToolChoice                   | optional |
+| tools         | array of ToolUnion           | optional |
+
+#+begin_src emacs-lisp
+  (json-serialize (list (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))))))
+#+end_src
+
+#+RESULTS:
+: {"messages":[{"role":"user","content":[{"type":"text","text":"foo bar"}]}]}
+
+#+begin_src emacs-lisp
+  (json-serialize (cons (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))) '()))
+#+end_src
+
+#+RESULTS:
+: {"messages":[{"role":"user","content":[{"type":"text","text":"foo bar"}]}]}
+
+
+#+begin_src emacs-lisp
+  '(cache_control (type . "ephemeral"))
+  (json-serialize '((cache_control (type . "ephemeral"))))
+#+end_src
+
+#+RESULTS:
+: {"cache_control":{"type":"ephemeral"}}
+
+#+begin_src emacs-lisp
+  '(system . [((text . "echo") (type . "text"))])
+  (json-serialize '((system  .  [((text . "echo") (type . "text"))])))
+#+end_src
+
+#+RESULTS:
+: {"system":[{"text":"echo","type":"text"}]}
+
+#+begin_src emacs-lisp
+  '(thinking (type . "adaptive"))
+  (json-serialize '((thinking (type . "adaptive"))))
+#+end_src
+
+#+RESULTS:
+: {"thinking":{"type":"adaptive"}}
+
+* Second Level
+** MessageParam
+| content | arrary of ContentBlockParam      |
+| role    | "user" or "assistant" or "system |
+#+begin_src emacs-lisp
+  (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))
+  (json-serialize (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))
+#+end_src
+
+#+RESULTS:
+: {"role":"user","content":[{"type":"text","text":"foo bar"}]}
+
+#+begin_src emacs-lisp
+  (json-serialize (vconcat (vector (pwb-text-block-param "foo bar")) (vconcat (vector (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))) [])))
+#+end_src
+
+#+RESULTS:
+: [{"type":"text","text":"foo bar"},{"type":"image","source":{"type":"file","file_id":"file_011A1zQEgJqRFP2t2o7MoGr1"}}]
+
+** CacheControlEphemeral
+| type | "ephemeral"  |          |
+| ttl  | "5m" or "1h" | optional |
+
+#+begin_src emacs-lisp
+  '(type . "ephemeral")
+#+end_src
+** MessageCreateParamsContainer
+** OutputConfig
+** TextBlockParam(not for the mid system message)
+| text          | string                |          |
+| type          | "text"                |          |
+| cache_control | CacheControlEphemeral | optional |
+| citations     | CitationConfigParam   | optional |
+#+begin_src emacs-lisp
+  ((text . "echo") (type . "text"))
+#+end_src
+
+** ThikingConfigParam
+| thinking | ThinkingConfigEnabled or ThinkingConfigDisabled or ThinkingConfigAdaptive |
+*** ThinkingConfigEnabled
+| budget_tokens |                                   |          |
+| type          | "enabled"                         |          |
+| display       | "summerized" or "omitted" or null | optional |
+*** ThinkingConfigDisabled
+| type | "disabled" |
+*** ThinkingConfigAdaptive
+| type    | "adaptive"                        |          |
+| display | "summerized" or "omitted" or null | optional |
+#+begin_src emacs-lisp
+  '(thinking (type . "adaptive"))
+#+end_src
+
+** ToolChoice
+** ToolUnion
+
+* Third Level
+** ContentBlockParam
+| ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
+
+*** TextBlockParam
+| text          | "foo bar"                          |          |
+| type          | "text"                             |          |
+| cache_control | array of CacheControlEphemeral     | optional |
+| citations     | array of TextCitationParam or null | optional |
+
+#+begin_src emacs-lisp
+  (pwb-text-block-param "foo bar")
+#+end_src
+
+#+RESULTS:
+: ((type . text) (text . foo bar))
+
+*** ImageBlockParam
+| source          | Base64ImageSource or URLImageSource or FileImageSource |          |
+| type            | "image"                                                | optional |
+| cache_control   | CacheControlEphemeral                                  | optional |
+| transformations | ImageTransformationsParam                              | optional |
+**** Base64ImageSource
+| type       | "base64"                                                  |
+| media_type | "image/jpeg" or "image/png" or "image/gif" or image/webp" |
+| data       |  data                                                     |
+#+begin_src emacs-lisp
+  (pwb-image-block-param "IMAGE_BASE64")
+#+end_src
+
+#+RESULTS:
+: ((type . image) (source (type . base64) (media_type . image/png) (data . IMAGE_BASE64)))
+
+**** URLImageSource
+**** FileImageSource
+| type    | "file" |
+| file_id | string |
+#+begin_src emacs-lisp
+  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
+#+end_src
+
+#+RESULTS:
+: ((type . image) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
+
+*** DocumentBlockParam
+| source        | Base64PDFSource or PlainTextSource or ContentBlockSource or FileDocumentSource |          |
+| type          | "document"                                                                     |          |
+| cache_control | CacheControlEphemeral                                                          | optional |
+| citations     | CitationConfigParam                                                            | optional |
+| context       | string or null                                                                 | optional |
+| title         | string or null                                                                 | optional |
+**** Base64PDFSource
+**** PlainTextSource
+**** ContentBlockSource
+**** FileDocumentSource
+| type    | "document" |
+| file_id | string     |
+
+#+begin_src emacs-lisp
+  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
+#+end_src
+
+#+RESULTS:
+: ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
+
+#+begin_src emacs-lisp
+  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "text/plain"))
+#+end_src
+
+#+RESULTS:
+: ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
+
+* Fourth Level
+
+* Fifth Level
+
+#+begin_src emacs-lisp
+  (cons (pwb-make-body-param-model "claude-sonnet-5")
+        (cons (pwb-make-body-param-max-tokens 1024)
+              '()))
+#+end_src
+
+#+RESULTS:
+: ((model . claude-sonnet-5) (max_tokens . 1024))
+
+#+begin_src emacs-lisp
+  (list (pwb-make-body-param-model "claude-sonnet-5")
+        (pwb-make-body-param-max-tokens 1024))
+#+end_src
+
+#+RESULTS:
+: ((model . claude-sonnet-5) (max_tokens . 1024))

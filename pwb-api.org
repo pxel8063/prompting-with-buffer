@@ -1,6 +1,14 @@
 #+title: API document
 #+date: [2026-09-08 Tue]
+#+property: header-args    :tangle yes
+#+startup: show2levels
 
+
+
+* Preamble
+#+begin_src emacs-lisp
+  ;;; pwb-api.el --- Prompting with buffer  -*- lexical-binding: t; -*-
+#+end_src
 * Top Level
 | top level     |                              |          |
 |---------------+------------------------------+----------|
@@ -19,7 +27,27 @@
 | thinking      | ThinkingConfigParam          | optional |
 | tool_choice   | ToolChoice                   | optional |
 | tools         | array of ToolUnion           | optional |
+** max_tokens
+#+begin_src emacs-lisp
+  (defun pwb-max-tokens (num)
+      `((max_tokens . ,num)))
+#+end_src
 
+#+RESULTS:
+: ((max_tokens . 1024))
+
+** messages
+** model
+** cache_control(optional)
+** container(optional)
+** inference_geo(optional)
+** service_tier(optional)
+** sopt_sequence(optional)
+** stream(optional)
+** system(optional)
+** thinking(optional)
+** tool_choice(optional)
+** tools(optional)
 #+begin_src emacs-lisp
   (json-serialize (list (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))))))
 #+end_src
@@ -60,7 +88,7 @@
 : {"thinking":{"type":"adaptive"}}
 
 * Second Level
-** MessageParam
+** Array of MessageParam
 | content | arrary of ContentBlockParam      |
 | role    | "user" or "assistant" or "system |
 #+begin_src emacs-lisp
@@ -87,7 +115,7 @@
 #+end_src
 ** MessageCreateParamsContainer
 ** OutputConfig
-** TextBlockParam(not for the mid system message)
+** Arrary of TextBlockParam(not for the mid system message)
 | text          | string                |          |
 | type          | "text"                |          |
 | cache_control | CacheControlEphemeral | optional |
@@ -115,7 +143,7 @@
 ** ToolUnion
 
 * Third Level
-** ContentBlockParam
+** Arrary of ContentBlockParam
 | ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
 
 *** TextBlockParam

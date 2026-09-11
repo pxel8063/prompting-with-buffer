@@ -28,24 +28,52 @@
 | tool_choice   | ToolChoice                   | optional |
 | tools         | array of ToolUnion           | optional |
 ** max_tokens
+
 #+begin_src emacs-lisp
   (defun pwb-max-tokens (num)
-      `((max_tokens . ,num)))
+    "Constructor for max_tokens body parameter by INT."
+    `((max_tokens . ,num)))
+#+end_src
+
+This implementation obsoletes =pwb-make-body-param-max-tokens=.
+** messages
+** model
+#+begin_src emacs-lisp
+  (defun pwb-model (model)
+    "Constructor for model body parameter by MODEL."
+    `((model . ,model)))
+#+end_src
+
+** cache_control(optional)
+#+begin_src emacs-lisp
+  (defun pwb-cache-control (ttl)
+    "Cache control \"5m\" or \"1h\"."
+    `((cache_control . ,(pwb-cache-control-ephemeral ttl))))
 #+end_src
 
 #+RESULTS:
-: ((max_tokens . 1024))
+: pwb-cache-control
 
-** messages
-** model
-** cache_control(optional)
 ** container(optional)
 ** inference_geo(optional)
 ** service_tier(optional)
 ** sopt_sequence(optional)
 ** stream(optional)
 ** system(optional)
+#+begin_src emacs-lisp
+  (defun pwb-system (string)
+    "Constructor for system body parameter from STRING."
+    `((system . ,(pwb-array-text-block-param string)))
+#+end_src
+
 ** thinking(optional)
+#+begin_src emacs-lisp
+  (defun pwb-thinking (display)
+    "Constructor for system body parameter from DISPLAY.
+  DISPLAY should be either \"summerized\" or \"omitted\"."
+    `((thiking . ((type . "adaptive") (display . ,ttl)))))
+#+end_src
+
 ** tool_choice(optional)
 ** tools(optional)
 #+begin_src emacs-lisp
@@ -111,8 +139,14 @@
 | ttl  | "5m" or "1h" | optional |
 
 #+begin_src emacs-lisp
-  '(type . "ephemeral")
+  (defun pwb-cache-control-ephemeral (ttl)
+    "Cache control ephemeral."
+    `((type . "ephemeral") (ttl . ,ttl)))
 #+end_src
+
+#+RESULTS:
+: pwb-cache-control-ephemeral
+
 ** MessageCreateParamsContainer
 ** OutputConfig
 ** Arrary of TextBlockParam(not for the mid system message)
@@ -120,9 +154,9 @@
 | type          | "text"                |          |
 | cache_control | CacheControlEphemeral | optional |
 | citations     | CitationConfigParam   | optional |
-#+begin_src emacs-lisp
-  ((text . "echo") (type . "text"))
-#+end_src
+
+see TextBlockParam.
+
 
 ** ThikingConfigParam
 | thinking | ThinkingConfigEnabled or ThinkingConfigDisabled or ThinkingConfigAdaptive |
@@ -147,28 +181,50 @@
 | ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
 
 *** TextBlockParam
-| text          | "foo bar"                          |          |
+| text          | "string"                           |          |
 | type          | "text"                             |          |
 | cache_control | array of CacheControlEphemeral     | optional |
 | citations     | array of TextCitationParam or null | optional |
 
 #+begin_src emacs-lisp
-  (pwb-text-block-param "foo bar")
+  (defun pwb-text-block-param (text)
+    "TextBlockParam {TEXT, type, cache_control, citations}."
+    `((text . ,string) (type . "text")))
+
+  (defun pwb-array-text-block-param (text)
+    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+    `[((text . ,text) (type . "text"))])
 #+end_src
 
 #+RESULTS:
-: ((type . text) (text . foo bar))
+: pwb-array-text-block-param
 
 *** ImageBlockParam
 | source          | Base64ImageSource or URLImageSource or FileImageSource |          |
 | type            | "image"                                                | optional |
 | cache_control   | CacheControlEphemeral                                  | optional |
 | transformations | ImageTransformationsParam                              | optional |
+#+begin_src emacs-lisp
+  (defun pwb-image-block-param-new (data)
+    `((type . "image") ,(pwb-base64-image-source data)))
+
+  (defun pwb-array-image-block-param-new (data)
+    `[((type . "image") ,(pwb-base64-image-source data))])
+
+#+end_src
+
+#+RESULTS:
+: pwb-array-image-block-param-new
+
 **** Base64ImageSource
 | type       | "base64"                                                  |
 | media_type | "image/jpeg" or "image/png" or "image/gif" or image/webp" |
 | data       |  data                                                     |
 #+begin_src emacs-lisp
+  (defun pwb-base64-image-source (data)
+    `(source (type . "base64")
+             (media_type . "image/png")
+             (data . ,data)))
   (pwb-image-block-param "IMAGE_BASE64")
 #+end_src
 
@@ -201,6 +257,9 @@
 | file_id | string     |
 
 #+begin_src emacs-lisp
+  (defun pwb-file-document-source (id)
+    `(source (type . "file")
+             (file_id . ,id)))
   (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
 #+end_src
 

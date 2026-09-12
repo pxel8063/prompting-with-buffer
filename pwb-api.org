@@ -117,7 +117,7 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 
 * Second Level
 ** Array of MessageParam
-| content | arrary of ContentBlockParam      |
+| content | array of ContentBlockParam       |
 | role    | "user" or "assistant" or "system |
 #+begin_src emacs-lisp
   (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))
@@ -155,8 +155,7 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 | cache_control | CacheControlEphemeral | optional |
 | citations     | CitationConfigParam   | optional |
 
-see TextBlockParam.
-
+See Array of TextBlockParam.
 
 ** ThikingConfigParam
 | thinking | ThinkingConfigEnabled or ThinkingConfigDisabled or ThinkingConfigAdaptive |
@@ -179,6 +178,26 @@ see TextBlockParam.
 * Third Level
 ** Array of ContentBlockParam
 | ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
+
+#+begin_src emacs-lisp
+(defun pwb-array-test-pcase (data)
+  (pcase data
+    ;; for pdf file on File API
+    (`("application/pdf" . ,file-id) (pwb-array-document-block-param-file file-id))
+    ;; for png file on File API
+    (`("image/png" . ,file-id) (pwb-array-image-block-param-file file-id))
+    ;; for text file on File API
+    (`("text/plain" . ,file-id) (error "not implemented"))
+    ;; for base64 png image
+    (`("base64" . ,data) (pwb-array-image-block-param-base64 data))
+    ;; for text
+    ((and (pred stringp) text) (pwb-array-text-block-param text))
+    (code (error "%S: not implemented" code))))
+#+end_src
+
+#+RESULTS:
+: test-pcase
+
 *** Source
 **** Base64ImageSource
 | type       | "base64"                                                  |
@@ -196,8 +215,7 @@ see TextBlockParam.
 : (source (type . base64) (media_type . image/png) (data . IMAGE_BASE64))
 
 **** URLImageSource (Not implemented)
-
-**** FileImageSource  FileDocumentSource
+**** FileImageSource  or FileDocumentSource
 | type    | "file" |
 | file_id | string |
 #+begin_src emacs-lisp
@@ -210,9 +228,10 @@ see TextBlockParam.
 
 #+RESULTS:
 : (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1))
-**** Base64PDFSource
-**** PlainTextSource
-**** ContentBlockSource
+
+**** Base64PDFSource (Not implemented)
+**** PlainTextSource (Not implemented)
+**** ContentBlockSource (Not implemented)
 
 *** Array of TextBlockParam
 | text          | "string"                           |          |

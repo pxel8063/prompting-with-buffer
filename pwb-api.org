@@ -177,10 +177,44 @@ see TextBlockParam.
 ** ToolUnion
 
 * Third Level
-** Arrary of ContentBlockParam
+** Array of ContentBlockParam
 | ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
+*** Source
+**** Base64ImageSource
+| type       | "base64"                                                  |
+| media_type | "image/jpeg" or "image/png" or "image/gif" or image/webp" |
+| data       | data                                                      |
+#+begin_src emacs-lisp
+  (defun pwb-base64-image-source (data)
+    `(source (type . "base64")
+             (media_type . "image/png")
+             (data . ,data)))
+  (pwb-base64-image-source "IMAGE_BASE64")
+#+end_src
 
-*** TextBlockParam
+#+RESULTS:
+: (source (type . base64) (media_type . image/png) (data . IMAGE_BASE64))
+
+**** URLImageSource (Not implemented)
+
+**** FileImageSource  FileDocumentSource
+| type    | "file" |
+| file_id | string |
+#+begin_src emacs-lisp
+  (defun pwb-file-source (file-id)
+    `(source (type . "file")
+             (file_id . ,file-id)))
+  (pwb-file-source "file_011A1zQEgJqRFP2t2o7MoGr1")
+  ;;  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
+#+end_src
+
+#+RESULTS:
+: (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1))
+**** Base64PDFSource
+**** PlainTextSource
+**** ContentBlockSource
+
+*** Array of TextBlockParam
 | text          | "string"                           |          |
 | type          | "text"                             |          |
 | cache_control | array of CacheControlEphemeral     | optional |
@@ -199,16 +233,16 @@ see TextBlockParam.
 #+RESULTS:
 : pwb-array-text-block-param
 
-*** ImageBlockParam
+*** Array of ImageBlockParam
 | source          | Base64ImageSource or URLImageSource or FileImageSource |          |
 | type            | "image"                                                | optional |
 | cache_control   | CacheControlEphemeral                                  | optional |
 | transformations | ImageTransformationsParam                              | optional |
 #+begin_src emacs-lisp
-  (defun pwb-image-block-param-new (data)
+  (defun pwb-image-block-param-base64 (data)
     `((type . "image") ,(pwb-base64-image-source data)))
 
-  (defun pwb-array-image-block-param-new (data)
+  (defun pwb-array-image-block-param-base64 (data)
     `[((type . "image") ,(pwb-base64-image-source data))])
 
 #+end_src
@@ -216,62 +250,34 @@ see TextBlockParam.
 #+RESULTS:
 : pwb-array-image-block-param-new
 
-**** Base64ImageSource
-| type       | "base64"                                                  |
-| media_type | "image/jpeg" or "image/png" or "image/gif" or image/webp" |
-| data       |  data                                                     |
 #+begin_src emacs-lisp
-  (defun pwb-base64-image-source (data)
-    `(source (type . "base64")
-             (media_type . "image/png")
-             (data . ,data)))
-  (pwb-image-block-param "IMAGE_BASE64")
+  (defun pwb-image-block-param-file (file-id)
+    `((type . "image") ,(pwb-file-source file-id)))
+
+  (defun pwb-array-image-block-param-file (file-id)
+    `[((type . "image") ,(pwb-file-source file-id))])
+
 #+end_src
 
-#+RESULTS:
-: ((type . image) (source (type . base64) (media_type . image/png) (data . IMAGE_BASE64)))
-
-**** URLImageSource
-**** FileImageSource
-| type    | "file" |
-| file_id | string |
-#+begin_src emacs-lisp
-  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
-#+end_src
-
-#+RESULTS:
-: ((type . image) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
-
-*** DocumentBlockParam
+*** Array of DocumentBlockParam
 | source        | Base64PDFSource or PlainTextSource or ContentBlockSource or FileDocumentSource |          |
 | type          | "document"                                                                     |          |
 | cache_control | CacheControlEphemeral                                                          | optional |
 | citations     | CitationConfigParam                                                            | optional |
 | context       | string or null                                                                 | optional |
 | title         | string or null                                                                 | optional |
-**** Base64PDFSource
-**** PlainTextSource
-**** ContentBlockSource
-**** FileDocumentSource
-| type    | "document" |
-| file_id | string     |
 
 #+begin_src emacs-lisp
-  (defun pwb-file-document-source (id)
-    `(source (type . "file")
-             (file_id . ,id)))
-  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
+  (defun pwb-document-block-param-file (file-id)
+    `((type . "document") ,(pwb-file-source file-id)))
+  (defun pwb-array-document-block-param-file (file-id)
+    `[((type . "document") ,(pwb-file-source file-id))])
 #+end_src
 
 #+RESULTS:
 : ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
 
-#+begin_src emacs-lisp
-  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "text/plain"))
-#+end_src
 
-#+RESULTS:
-: ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
 
 * Fourth Level
 

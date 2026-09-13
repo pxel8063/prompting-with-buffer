@@ -202,7 +202,7 @@ See Array of TextBlockParam.
 | ContentBlockParam | TextBlockParam  or ImageBlockParam or DocumentBlockParam or 13 more |
 
 #+begin_src emacs-lisp
-(defun pwb-array-test-pcase (data)
+(defun pwb-array-content-block-param (data)
   (pcase data
     ;; for pdf file on File API
     (`("application/pdf" . ,file-id) (pwb-array-document-block-param-file file-id))

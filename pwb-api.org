@@ -211,7 +211,7 @@ See Array of TextBlockParam.
     ;; for text file on File API
     (`("text/plain" . ,file-id) (error "not implemented"))
     ;; for base64 png image
-    (`("base64" . ,data) (pwb-array-image-block-param-base64 data))
+    (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
     ;; for text
     ((and (pred stringp) text) (pwb-array-text-block-param text))
     (code (error "%S: not implemented" code))))

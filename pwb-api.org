@@ -52,25 +52,25 @@
 ** max_tokens
 
 #+begin_src emacs-lisp
-  (defun pwb-max-tokens (num)
-    "Constructor for max_tokens body parameter by INT."
-    `((max_tokens . ,num)))
+(defun pwb-max-tokens (num)
+  "Constructor for max_tokens body parameter by INT."
+  `((max_tokens . ,num)))
 #+end_src
 
 This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** messages
 ** model
 #+begin_src emacs-lisp
-  (defun pwb-model (model)
-    "Constructor for model body parameter by MODEL."
-    `((model . ,model)))
+(defun pwb-model (model)
+  "Constructor for model body parameter by MODEL."
+  `((model . ,model)))
 #+end_src
 
 ** cache_control(optional)
 #+begin_src emacs-lisp
-  (defun pwb-cache-control (ttl)
-    "Cache control \"5m\" or \"1h\"."
-    `((cache_control . ,(pwb-cache-control-ephemeral ttl))))
+(defun pwb-cache-control (ttl)
+  "Cache control \"5m\" or \"1h\"."
+  `((cache_control . ,(pwb-cache-control-ephemeral ttl))))
 #+end_src
 
 #+RESULTS:
@@ -83,55 +83,55 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** stream(optional)
 ** system(optional)
 #+begin_src emacs-lisp
-  (defun pwb-system (string)
-    "Constructor for system body parameter from STRING."
-    `((system . ,(pwb-array-text-block-param string)))
+(defun pwb-system (string)
+  "Constructor for system body parameter from STRING."
+  `((system . ,(pwb-array-text-block-param string))))
 #+end_src
 
 ** thinking(optional)
 #+begin_src emacs-lisp
-  (defun pwb-thinking (display)
-    "Constructor for system body parameter from DISPLAY.
-  DISPLAY should be either \"summerized\" or \"omitted\"."
-    `((thiking . ((type . "adaptive") (display . ,ttl)))))
+(defun pwb-thinking (display)
+  "Constructor for system body parameter from DISPLAY.
+DISPLAY should be either \"summerized\" or \"omitted\"."
+  `((thiking . ((type . "adaptive") (display . ,ttl)))))
 #+end_src
 
 ** tool_choice(optional)
 ** tools(optional)
-#+begin_src emacs-lisp
-  (json-serialize (list (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))))))
+#+begin_src emacs-lisp :tangle no
+(json-serialize (list (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))))))
 #+end_src
 
 #+RESULTS:
 : {"messages":[{"role":"user","content":[{"type":"text","text":"foo bar"}]}]}
 
-#+begin_src emacs-lisp
-  (json-serialize (cons (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))) '()))
+#+begin_src emacs-lisp :tangle no
+(json-serialize (cons (cons 'messages (vector (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))) '()))
 #+end_src
 
 #+RESULTS:
 : {"messages":[{"role":"user","content":[{"type":"text","text":"foo bar"}]}]}
 
 
-#+begin_src emacs-lisp
-  '(cache_control (type . "ephemeral"))
-  (json-serialize '((cache_control (type . "ephemeral"))))
+#+begin_src emacs-lisp :tangle no
+'(cache_control (type . "ephemeral"))
+(json-serialize '((cache_control (type . "ephemeral"))))
 #+end_src
 
 #+RESULTS:
 : {"cache_control":{"type":"ephemeral"}}
 
-#+begin_src emacs-lisp
-  '(system . [((text . "echo") (type . "text"))])
-  (json-serialize '((system  .  [((text . "echo") (type . "text"))])))
+#+begin_src emacs-lisp :tangle no
+'(system . [((text . "echo") (type . "text"))])
+(json-serialize '((system  .  [((text . "echo") (type . "text"))])))
 #+end_src
 
 #+RESULTS:
 : {"system":[{"text":"echo","type":"text"}]}
 
-#+begin_src emacs-lisp
-  '(thinking (type . "adaptive"))
-  (json-serialize '((thinking (type . "adaptive"))))
+#+begin_src emacs-lisp :tangle no
+'(thinking (type . "adaptive"))
+(json-serialize '((thinking (type . "adaptive"))))
 #+end_src
 
 #+RESULTS:
@@ -141,16 +141,16 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** Array of MessageParam
 | content | array of ContentBlockParam       |
 | role    | "user" or "assistant" or "system |
-#+begin_src emacs-lisp
-  (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))
-  (json-serialize (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))
+#+begin_src emacs-lisp :tangle no
+(list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))
+(json-serialize (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))
 #+end_src
 
 #+RESULTS:
 : {"role":"user","content":[{"type":"text","text":"foo bar"}]}
 
-#+begin_src emacs-lisp
-  (json-serialize (vconcat (vector (pwb-text-block-param "foo bar")) (vconcat (vector (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))) [])))
+#+begin_src emacs-lisp :tangle no
+(json-serialize (vconcat (vector (pwb-text-block-param "foo bar")) (vconcat (vector (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))) [])))
 #+end_src
 
 #+RESULTS:
@@ -161,9 +161,9 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 | ttl  | "5m" or "1h" | optional |
 
 #+begin_src emacs-lisp
-  (defun pwb-cache-control-ephemeral (ttl)
-    "Cache control ephemeral."
-    `((type . "ephemeral") (ttl . ,ttl)))
+(defun pwb-cache-control-ephemeral (ttl)
+  "Cache control ephemeral."
+  `((type . "ephemeral") (ttl . ,ttl)))
 #+end_src
 
 #+RESULTS:
@@ -190,8 +190,8 @@ See Array of TextBlockParam.
 *** ThinkingConfigAdaptive
 | type    | "adaptive"                        |          |
 | display | "summerized" or "omitted" or null | optional |
-#+begin_src emacs-lisp
-  '(thinking (type . "adaptive"))
+#+begin_src emacs-lisp :tangle no
+'(thinking (type . "adaptive"))
 #+end_src
 
 ** ToolChoice
@@ -226,11 +226,11 @@ See Array of TextBlockParam.
 | media_type | "image/jpeg" or "image/png" or "image/gif" or image/webp" |
 | data       | data                                                      |
 #+begin_src emacs-lisp
-  (defun pwb-base64-image-source (data)
-    `(source (type . "base64")
-             (media_type . "image/png")
-             (data . ,data)))
-  (pwb-base64-image-source "IMAGE_BASE64")
+(defun pwb-base64-image-source (data)
+  `(source (type . "base64")
+           (media_type . "image/png")
+           (data . ,data)))
+(pwb-base64-image-source "IMAGE_BASE64")
 #+end_src
 
 #+RESULTS:
@@ -241,11 +241,11 @@ See Array of TextBlockParam.
 | type    | "file" |
 | file_id | string |
 #+begin_src emacs-lisp
-  (defun pwb-file-source (file-id)
-    `(source (type . "file")
-             (file_id . ,file-id)))
-  (pwb-file-source "file_011A1zQEgJqRFP2t2o7MoGr1")
-  ;;  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
+(defun pwb-file-source (file-id)
+  `(source (type . "file")
+           (file_id . ,file-id)))
+(pwb-file-source "file_011A1zQEgJqRFP2t2o7MoGr1")
+;;  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
 #+end_src
 
 #+RESULTS:
@@ -262,13 +262,13 @@ See Array of TextBlockParam.
 | citations     | array of TextCitationParam or null | optional |
 
 #+begin_src emacs-lisp
-  (defun pwb-text-block-param (text)
-    "TextBlockParam {TEXT, type, cache_control, citations}."
-    `((text . ,string) (type . "text")))
+(defun pwb-text-block-param (text)
+  "TextBlockParam {TEXT, type, cache_control, citations}."
+  `((text . ,string) (type . "text")))
 
-  (defun pwb-array-text-block-param (text)
-    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-    `[((text . ,text) (type . "text"))])
+(defun pwb-array-text-block-param (text)
+  "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+  `[((text . ,text) (type . "text"))])
 #+end_src
 
 #+RESULTS:
@@ -280,24 +280,22 @@ See Array of TextBlockParam.
 | cache_control   | CacheControlEphemeral                                  | optional |
 | transformations | ImageTransformationsParam                              | optional |
 #+begin_src emacs-lisp
-  (defun pwb-image-block-param-base64 (data)
-    `((type . "image") ,(pwb-base64-image-source data)))
+(defun pwb-image-block-param-base64 (data)
+  `((type . "image") ,(pwb-base64-image-source data)))
 
-  (defun pwb-array-image-block-param-base64 (data)
-    `[((type . "image") ,(pwb-base64-image-source data))])
-
+(defun pwb-array-image-block-param-base64 (data)
+  `[((type . "image") ,(pwb-base64-image-source data))])
 #+end_src
 
 #+RESULTS:
 : pwb-array-image-block-param-new
 
 #+begin_src emacs-lisp
-  (defun pwb-image-block-param-file (file-id)
-    `((type . "image") ,(pwb-file-source file-id)))
+(defun pwb-image-block-param-file (file-id)
+  `((type . "image") ,(pwb-file-source file-id)))
 
-  (defun pwb-array-image-block-param-file (file-id)
-    `[((type . "image") ,(pwb-file-source file-id))])
-
+(defun pwb-array-image-block-param-file (file-id)
+  `[((type . "image") ,(pwb-file-source file-id))])
 #+end_src
 
 *** Array of DocumentBlockParam
@@ -309,10 +307,11 @@ See Array of TextBlockParam.
 | title         | string or null                                                                 | optional |
 
 #+begin_src emacs-lisp
-  (defun pwb-document-block-param-file (file-id)
-    `((type . "document") ,(pwb-file-source file-id)))
-  (defun pwb-array-document-block-param-file (file-id)
-    `[((type . "document") ,(pwb-file-source file-id))])
+(defun pwb-document-block-param-file (file-id)
+  `((type . "document") ,(pwb-file-source file-id)))
+
+(defun pwb-array-document-block-param-file (file-id)
+  `[((type . "document") ,(pwb-file-source file-id))])
 #+end_src
 
 #+RESULTS:
@@ -324,18 +323,18 @@ See Array of TextBlockParam.
 
 * Fifth Level
 
-#+begin_src emacs-lisp
-  (cons (pwb-make-body-param-model "claude-sonnet-5")
-        (cons (pwb-make-body-param-max-tokens 1024)
-              '()))
+#+begin_src emacs-lisp :tangle no
+(cons (pwb-make-body-param-model "claude-sonnet-5")
+      (cons (pwb-make-body-param-max-tokens 1024)
+            '()))
 #+end_src
 
 #+RESULTS:
 : ((model . claude-sonnet-5) (max_tokens . 1024))
 
-#+begin_src emacs-lisp
-  (list (pwb-make-body-param-model "claude-sonnet-5")
-        (pwb-make-body-param-max-tokens 1024))
+#+begin_src emacs-lisp :tangle no
+(list (pwb-make-body-param-model "claude-sonnet-5")
+      (pwb-make-body-param-max-tokens 1024))
 #+end_src
 
 #+RESULTS:

@@ -339,3 +339,9 @@ See Array of TextBlockParam.
 
 #+RESULTS:
 : ((model . claude-sonnet-5) (max_tokens . 1024))
+
+* postamble
+#+begin_src emacs-lisp
+(provide 'pwb-api)
+;;; pwb-api.el ends here
+#+end_src

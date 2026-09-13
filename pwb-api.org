@@ -59,6 +59,15 @@
 
 This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** messages
+#+begin_src emacs-lisp
+(defun pwb-messages (array-message-param)
+  "Constructor for pwb-messages body parameter."
+  `((messages . ,array-message-param)))
+#+end_src
+
+#+RESULTS:
+: pwb-messages
+
 ** model
 #+begin_src emacs-lisp
 (defun pwb-model (model)
@@ -142,19 +151,12 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 | content | array of ContentBlockParam       |
 | role    | "user" or "assistant" or "system |
 #+begin_src emacs-lisp :tangle no
-(list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar"))))
-(json-serialize (list (cons 'role "user") (cons 'content (vector (pwb-text-block-param "foo bar")))))
+(defun pwb-array-message-param (role data)
+  `[((role . ,role) (content . ,(pwb-array-content-block-param data)))])
 #+end_src
 
 #+RESULTS:
-: {"role":"user","content":[{"type":"text","text":"foo bar"}]}
-
-#+begin_src emacs-lisp :tangle no
-(json-serialize (vconcat (vector (pwb-text-block-param "foo bar")) (vconcat (vector (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))) [])))
-#+end_src
-
-#+RESULTS:
-: [{"type":"text","text":"foo bar"},{"type":"image","source":{"type":"file","file_id":"file_011A1zQEgJqRFP2t2o7MoGr1"}}]
+: pwb-array-message-param
 
 ** CacheControlEphemeral
 | type | "ephemeral"  |          |
@@ -218,7 +220,7 @@ See Array of TextBlockParam.
 #+end_src
 
 #+RESULTS:
-: test-pcase
+: pwb-array-content-block-param
 
 *** Source
 **** Base64ImageSource

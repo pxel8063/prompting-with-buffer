@@ -30,6 +30,8 @@
 ;;; Commentary:
 ;; This file is a part of prompting-with-buffer package
 
+;;; Code:
+(require 'pwb)
 #+end_src
 * Top Level
 | top level     |                              |          |
@@ -53,16 +55,18 @@
 
 #+begin_src emacs-lisp
 (defun pwb-max-tokens (num)
-  "Constructor for max_tokens body parameter by INT."
+  "Constructor a max_tokens body parameter.
+NUM is to specify the max tokens."
   `((max_tokens . ,num)))
 #+end_src
 
-This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** messages
 #+begin_src emacs-lisp
-(defun pwb-messages (array-message-param)
-  "Constructor for pwb-messages body parameter."
-  `((messages . ,array-message-param)))
+(defun pwb-messages (array)
+  "Construct a message body parameter.
+ARRAY is an array (vector) of Message Params.  For an array of Message
+Params, see `pwb-array-message-param'"
+  `((messages . ,array)))
 #+end_src
 
 #+RESULTS:
@@ -71,14 +75,16 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** model
 #+begin_src emacs-lisp
 (defun pwb-model (model)
-  "Constructor for model body parameter by MODEL."
+  "Construct a model message body parameter.
+MODEL is to specify model."
   `((model . ,model)))
 #+end_src
 
 ** cache_control(optional)
 #+begin_src emacs-lisp
 (defun pwb-cache-control (ttl)
-  "Cache control \"5m\" or \"1h\"."
+  "Construct a cache control message body parameter.
+TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
   `((cache_control . ,(pwb-cache-control-ephemeral ttl))))
 #+end_src
 
@@ -93,16 +99,18 @@ This implementation obsoletes =pwb-make-body-param-max-tokens=.
 ** system(optional)
 #+begin_src emacs-lisp
 (defun pwb-system (string)
-  "Constructor for system body parameter from STRING."
+  "Construct a system message body parameter.
+STRING is a system prompt string."
   `((system . ,(pwb-array-text-block-param string))))
 #+end_src
 
 ** thinking(optional)
 #+begin_src emacs-lisp
 (defun pwb-thinking (display)
-  "Constructor for system body parameter from DISPLAY.
+  "Construct a thinking message body parameter.
+Type is always \"adaptive\".
 DISPLAY should be either \"summerized\" or \"omitted\"."
-  `((thiking . ((type . "adaptive") (display . ,ttl)))))
+  `((thiking . ((type . "adaptive") (display . ,display)))))
 #+end_src
 
 ** tool_choice(optional)
@@ -152,6 +160,10 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 | role    | "user" or "assistant" or "system |
 #+begin_src emacs-lisp :tangle no
 (defun pwb-array-message-param (role data)
+  "Construct a array of message-param.
+ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
+a string or cons. For more information about cons, see
+`pwb-array-content-block-param'."
   `[((role . ,role) (content . ,(pwb-array-content-block-param data)))])
 #+end_src
 
@@ -164,7 +176,8 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 
 #+begin_src emacs-lisp
 (defun pwb-cache-control-ephemeral (ttl)
-  "Cache control ephemeral."
+  "construct a cache control ephemeral.
+TTL is either \"5m\" or \"1h\"."
   `((type . "ephemeral") (ttl . ,ttl)))
 #+end_src
 
@@ -205,6 +218,7 @@ See Array of TextBlockParam.
 
 #+begin_src emacs-lisp
 (defun pwb-array-content-block-param (data)
+  "Return an array of content block param based on DATA."
   (pcase data
     ;; for pdf file on File API
     (`("application/pdf" . ,file-id) (pwb-array-document-block-param-file file-id))
@@ -229,10 +243,11 @@ See Array of TextBlockParam.
 | data       | data                                                      |
 #+begin_src emacs-lisp
 (defun pwb-base64-image-source (data)
+  "Construct an source parameter.
+DATA is a png image data in terms of base64 string."
   `(source (type . "base64")
            (media_type . "image/png")
            (data . ,data)))
-(pwb-base64-image-source "IMAGE_BASE64")
 #+end_src
 
 #+RESULTS:
@@ -244,10 +259,10 @@ See Array of TextBlockParam.
 | file_id | string |
 #+begin_src emacs-lisp
 (defun pwb-file-source (file-id)
+  "Construct source file parameter.
+FILE-ID is obtained from Files API."
   `(source (type . "file")
            (file_id . ,file-id)))
-(pwb-file-source "file_011A1zQEgJqRFP2t2o7MoGr1")
-;;  (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
 #+end_src
 
 #+RESULTS:
@@ -264,17 +279,19 @@ See Array of TextBlockParam.
 | citations     | array of TextCitationParam or null | optional |
 
 #+begin_src emacs-lisp
-(defun pwb-text-block-param (text)
-  "TextBlockParam {TEXT, type, cache_control, citations}."
-  `((text . ,string) (type . "text")))
-
-(defun pwb-array-text-block-param (text)
-  "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-  `[((text . ,text) (type . "text"))])
+  (defun pwb-array-text-block-param (text)
+    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+    `[((type . "text") (text . ,text))])
 #+end_src
 
 #+RESULTS:
 : pwb-array-text-block-param
+**** Only for the reference purpose (not used)
+#+begin_src emacs-lisp :tangle no
+  (defun pwb-text-block-param (text)
+    "TextBlockParam {TEXT, type, cache_control, citations}."
+    `((type . "text") (text . ,string)))
+#+end_src
 
 *** Array of ImageBlockParam
 | source          | Base64ImageSource or URLImageSource or FileImageSource |          |
@@ -282,24 +299,32 @@ See Array of TextBlockParam.
 | cache_control   | CacheControlEphemeral                                  | optional |
 | transformations | ImageTransformationsParam                              | optional |
 #+begin_src emacs-lisp
-(defun pwb-image-block-param-base64 (data)
-  `((type . "image") ,(pwb-base64-image-source data)))
-
 (defun pwb-array-image-block-param-base64 (data)
+  "Construct an array of image block param based on base64.
+DATA is base64"
   `[((type . "image") ,(pwb-base64-image-source data))])
 #+end_src
 
 #+RESULTS:
 : pwb-array-image-block-param-new
+**** Only for the reference purpose (not used)
+#+begin_src emacs-lisp :tangle no
+(defun pwb-image-block-param-base64 (data)
+  `((type . "image") ,(pwb-base64-image-source data)))
+#+end_src
 
 #+begin_src emacs-lisp
-(defun pwb-image-block-param-file (file-id)
-  `((type . "image") ,(pwb-file-source file-id)))
-
 (defun pwb-array-image-block-param-file (file-id)
+  "Construct an array of image block param
+FILE_ID is obtained from Files API."
   `[((type . "image") ,(pwb-file-source file-id))])
 #+end_src
 
+**** Only for the reference purpose (not used)
+#+begin_src emacs-lisp :tangle no
+(defun pwb-image-block-param-file (file-id)
+  `((type . "image") ,(pwb-file-source file-id)))
+#+end_src
 *** Array of DocumentBlockParam
 | source        | Base64PDFSource or PlainTextSource or ContentBlockSource or FileDocumentSource |          |
 | type          | "document"                                                                     |          |
@@ -309,38 +334,20 @@ See Array of TextBlockParam.
 | title         | string or null                                                                 | optional |
 
 #+begin_src emacs-lisp
-(defun pwb-document-block-param-file (file-id)
-  `((type . "document") ,(pwb-file-source file-id)))
-
 (defun pwb-array-document-block-param-file (file-id)
+  "Construct an array of document block param.
+FILE-ID is obtained from Files API."
   `[((type . "document") ,(pwb-file-source file-id))])
 #+end_src
 
 #+RESULTS:
 : ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
 
-
-
-* Fourth Level
-
-* Fifth Level
-
+**** Only for the reference purpose (not used)
 #+begin_src emacs-lisp :tangle no
-(cons (pwb-make-body-param-model "claude-sonnet-5")
-      (cons (pwb-make-body-param-max-tokens 1024)
-            '()))
+(defun pwb-document-block-param-file (file-id)
+  `((type . "document") ,(pwb-file-source file-id)))
 #+end_src
-
-#+RESULTS:
-: ((model . claude-sonnet-5) (max_tokens . 1024))
-
-#+begin_src emacs-lisp :tangle no
-(list (pwb-make-body-param-model "claude-sonnet-5")
-      (pwb-make-body-param-max-tokens 1024))
-#+end_src
-
-#+RESULTS:
-: ((model . claude-sonnet-5) (max_tokens . 1024))
 
 * postamble
 #+begin_src emacs-lisp

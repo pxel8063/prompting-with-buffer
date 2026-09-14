@@ -57,7 +57,7 @@
 (defun pwb-max-tokens (num)
   "Constructor a max_tokens body parameter.
 NUM is to specify the max tokens."
-  `((max_tokens . ,num)))
+  (list (cons max_tokens num)))
 #+end_src
 
 ** messages
@@ -66,7 +66,7 @@ NUM is to specify the max tokens."
   "Construct a message body parameter.
 ARRAY is an array (vector) of Message Params.  For an array of Message
 Params, see `pwb-array-message-param'"
-  `((messages . ,array)))
+  (list (cons 'messages array)))
 #+end_src
 
 #+RESULTS:
@@ -77,7 +77,7 @@ Params, see `pwb-array-message-param'"
 (defun pwb-model (model)
   "Construct a model message body parameter.
 MODEL is to specify model."
-  `((model . ,model)))
+  (list (cons 'model model)))
 #+end_src
 
 ** cache_control(optional)
@@ -85,7 +85,8 @@ MODEL is to specify model."
 (defun pwb-cache-control (ttl)
   "Construct a cache control message body parameter.
 TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
-  `((cache_control . ,(pwb-cache-control-ephemeral ttl))))
+  (list (cons 'cache_control
+              (pwb-cache-control-ephemeral ttl))))
 #+end_src
 
 #+RESULTS:
@@ -101,7 +102,7 @@ TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
 (defun pwb-system (string)
   "Construct a system message body parameter.
 STRING is a system prompt string."
-  `((system . ,(pwb-array-text-block-param string))))
+  (list (cons 'system (pwb-array-text-block-param string))))
 #+end_src
 
 ** thinking(optional)
@@ -110,7 +111,9 @@ STRING is a system prompt string."
   "Construct a thinking message body parameter.
 Type is always \"adaptive\".
 DISPLAY should be either \"summerized\" or \"omitted\"."
-  `((thiking . ((type . "adaptive") (display . ,display)))))
+  (list (cons 'thiking
+              (list (cons 'type "adaptive")
+                    (cons 'display display)))))
 #+end_src
 
 ** tool_choice(optional)
@@ -158,13 +161,15 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 ** Array of MessageParam
 | content | array of ContentBlockParam       |
 | role    | "user" or "assistant" or "system |
+#+TBLFM: 
 #+begin_src emacs-lisp :tangle no
 (defun pwb-array-message-param (role data)
   "Construct a array of message-param.
 ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
 a string or cons. For more information about cons, see
 `pwb-array-content-block-param'."
-  `[((role . ,role) (content . ,(pwb-array-content-block-param data)))])
+  (vector (list (cons 'role role)
+                (cons 'content (pwb-array-content-block-param data)))))
 #+end_src
 
 #+RESULTS:
@@ -178,7 +183,8 @@ a string or cons. For more information about cons, see
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.
 TTL is either \"5m\" or \"1h\"."
-  `((type . "ephemeral") (ttl . ,ttl)))
+  (list (cons 'type "ephemeral")
+        (cons 'ttl ttl)))
 #+end_src
 
 #+RESULTS:
@@ -245,9 +251,10 @@ See Array of TextBlockParam.
 (defun pwb-base64-image-source (data)
   "Construct an source parameter.
 DATA is a png image data in terms of base64 string."
-  `(source (type . "base64")
-           (media_type . "image/png")
-           (data . ,data)))
+  (list 'source
+        (cons 'type "base64")
+        (cons 'media_type "image/png")
+        (cons 'data data)))
 #+end_src
 
 #+RESULTS:
@@ -261,8 +268,9 @@ DATA is a png image data in terms of base64 string."
 (defun pwb-file-source (file-id)
   "Construct source file parameter.
 FILE-ID is obtained from Files API."
-  `(source (type . "file")
-           (file_id . ,file-id)))
+  (list 'source
+        (cons 'type "file")
+        (cons 'file_id file-id)))
 #+end_src
 
 #+RESULTS:
@@ -281,7 +289,8 @@ FILE-ID is obtained from Files API."
 #+begin_src emacs-lisp
   (defun pwb-array-text-block-param (text)
     "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-    `[((type . "text") (text . ,text))])
+    (vector (list (cons 'type "text")
+                  (cons 'text text))))
 #+end_src
 
 #+RESULTS:
@@ -302,14 +311,16 @@ FILE-ID is obtained from Files API."
 (defun pwb-array-image-block-param-base64 (data)
   "Construct an array of image block param based on base64.
 DATA is base64"
-  `[((type . "image") ,(pwb-base64-image-source data))])
+  (vector (list (cons 'type "image")
+                (pwb-base64-image-source data))))
 #+end_src
 
 #+begin_src emacs-lisp
 (defun pwb-array-image-block-param-file (file-id)
   "Construct an array of image block param
 FILE_ID is obtained from Files API."
-  `[((type . "image") ,(pwb-file-source file-id))])
+  (vector (list (cons 'type "image")
+                (pwb-file-source file-id))))
 #+end_src
 
 #+RESULTS:
@@ -336,11 +347,12 @@ FILE_ID is obtained from Files API."
 (defun pwb-array-document-block-param-file (file-id)
   "Construct an array of document block param.
 FILE-ID is obtained from Files API."
-  `[((type . "document") ,(pwb-file-source file-id))])
+  (vector (list (cons 'type "document")
+                (pwb-file-source file-id))))
 #+end_src
 
 #+RESULTS:
-: ((type . document) (source (type . file) (file_id . file_011A1zQEgJqRFP2t2o7MoGr1)))
+: pwb-array-document-block-param-file
 
 **** Only for the reference purpose (not used)                   :ARCHIVE:
 #+begin_src emacs-lisp :tangle no

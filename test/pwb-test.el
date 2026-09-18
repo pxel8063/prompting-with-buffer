@@ -449,6 +449,22 @@
            "image"
            (pwb-mime-type->block-type "image/png"))))
 
+;;; The Claude API test
+(ert-deftest pwb-api-test ()
+  "Test primitive functions for the api"
+  (should (equal
+           (pwb-max-tokens 128)
+           '((max_tokens . 128))))
+  (should (equal
+           (pwb-model "claude-sonnet-5")
+           '((model . "claude-sonnet-5"))))
+  (should (equal
+           (pwb-cache-control "5m")
+           '((cache_control (type . "ephemeral") (ttl . "5m")))))
+  (should (equal
+           (pwb-system "The system prompt")
+           '((system . [((type . "text") (text . "The system prompt"))])))))
+
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here

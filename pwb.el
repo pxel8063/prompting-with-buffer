@@ -799,5 +799,100 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
+;;; The Claude API
+(defun pwb-max-tokens (num)
+  "Constructor a max_tokens body parameter.
+NUM is to specify the max tokens."
+  (list (cons 'max_tokens num)))
+
+(defun pwb-messages (array)
+  "Construct a message body parameter.
+ARRAY is an array (vector) of Message Params.  For an array of Message
+Params, see `pwb-array-message-param'"
+  (list (cons 'messages array)))
+
+(defun pwb-model (model)
+  "Construct a model message body parameter.
+MODEL is to specify model."
+  (list (cons 'model model)))
+
+(defun pwb-cache-control (ttl)
+  "Construct a cache control message body parameter.
+TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
+  (list (cons 'cache_control
+              (pwb-cache-control-ephemeral ttl))))
+
+(defun pwb-system (string)
+  "Construct a system message body parameter.
+STRING is a system prompt string."
+  (list (cons 'system (pwb-array-text-block-param string))))
+
+(defun pwb-thinking (display)
+  "Construct a thinking message body parameter.
+Type is always \"adaptive\".
+DISPLAY should be either \"summerized\" or \"omitted\"."
+  (list (cons 'thiking
+              (list (cons 'type "adaptive")
+                    (cons 'display display)))))
+
+(defun pwb-cache-control-ephemeral (ttl)
+  "construct a cache control ephemeral.
+TTL is either \"5m\" or \"1h\"."
+  (list (cons 'type "ephemeral")
+        (cons 'ttl ttl)))
+
+(defun pwb-array-content-block-param (data)
+  "Return an array of content block param based on DATA."
+  (pcase data
+    ;; for pdf file on File API
+    (`("application/pdf" . ,file-id) (pwb-array-document-block-param-file file-id))
+    ;; for png file on File API
+    (`("image/png" . ,file-id) (pwb-array-image-block-param-file file-id))
+    ;; for text file on File API
+    (`("text/plain" . ,file-id) (error "Not implemented"))
+    ;; for base64 png image
+    (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
+    ;; for text
+    ((and (pred stringp) text) (pwb-array-text-block-param text))
+    (code (error "%S: not implemented" code))))
+
+(defun pwb-base64-image-source (data)
+  "Construct an source parameter.
+DATA is a png image data in terms of base64 string."
+  (list 'source
+        (cons 'type "base64")
+        (cons 'media_type "image/png")
+        (cons 'data data)))
+
+(defun pwb-file-source (file-id)
+  "Construct source file parameter.
+FILE-ID is obtained from Files API."
+  (list 'source
+        (cons 'type "file")
+        (cons 'file_id file-id)))
+
+  (defun pwb-array-text-block-param (text)
+    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+    (vector (list (cons 'type "text")
+                  (cons 'text text))))
+
+(defun pwb-array-image-block-param-base64 (data)
+  "Construct an array of image block param based on base64.
+DATA is base64"
+  (vector (list (cons 'type "image")
+                (pwb-base64-image-source data))))
+
+(defun pwb-array-image-block-param-file (file-id)
+  "Construct an array of image block param
+FILE_ID is obtained from Files API."
+  (vector (list (cons 'type "image")
+                (pwb-file-source file-id))))
+
+(defun pwb-array-document-block-param-file (file-id)
+  "Construct an array of document block param.
+FILE-ID is obtained from Files API."
+  (vector (list (cons 'type "document")
+                (pwb-file-source file-id))))
+
 (provide 'pwb)
 ;;; pwb.el ends here

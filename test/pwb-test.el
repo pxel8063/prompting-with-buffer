@@ -466,41 +466,52 @@
            '((system . [((type . "text") (text . "The system prompt"))]))))
   (should (equal
            (pwb-thinking "summerized")
-           '((thinking ((type . "adaptive") (display . "summerized")))))))
+           '((thinking (type . "adaptive") (display . "summerized"))))))
 
 (ert-deftest pwb-array-content-block-param-test ()
   "Test block param constructor."
   (should (equal
-           (pwb-array-content-block-param
-            '("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))
-           [((type . "document")
-             (source (type . "file")
-                     (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))
+           (pwb-messages (pwb-array-message-param
+                          "user"
+                          '("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+           '((messages . [((role . "user")
+                           (content . [((type . "document")
+                                        (source (type . "file")
+                                                (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))]))))
   (should (equal
-           (pwb-array-content-block-param
-            '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))
-           [((type . "image")
-             (source (type . "file")
-                     (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))
+           (pwb-messages (pwb-array-message-param
+                          "user"
+                          '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+           '((messages . [((role . "user")
+                           (content . [((type . "image")
+                                        (source (type . "file")
+                                                (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))]))))
   (should (equal
-           (pwb-array-content-block-param
-            '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))
-           [((type . "image")
-             (source (type . "file")
-                     (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))
+           (pwb-messages (pwb-array-message-param
+                          "user"
+                          '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+           '((messages . [((role . "user")
+                           (content . [((type . "image")
+                                        (source (type . "file")
+                                                (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))]))))
   (should (equal
-           (pwb-array-content-block-param
-            '("image/png/base64" . "IMAGE_DATA"))
-           [((type . "image")
-             (source (type . "base64")
-                     (media_type . "image/png")
-                     (data . "IMAGE_DATA")))]))
+           (pwb-messages (pwb-array-message-param
+                          "user"
+                          '("image/png/base64" . "IMAGE_DATA")))
+           '((messages . [((role . "user")
+                           (content . [((type . "image")
+                                        (source (type . "base64")
+                                                (media_type . "image/png")
+                                                (data . "IMAGE_DATA")))]))]))))
   (should-error (pwb-array-content-block-param
                  '("text/plain" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
   (should (equal
-           (pwb-array-content-block-param "Hello, Claude!")
-           [((type . "text")
-             (text . "Hello, Claude!"))])))
+           (pwb-messages (pwb-array-message-param
+                          "user"
+                          "Hello, Claude!"))
+           '((messages . [((role . "user")
+                           (content . [((type . "text")
+                                        (text . "Hello, Claude!"))]))])))))
 
 (provide 'pwb-test)
 

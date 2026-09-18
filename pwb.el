@@ -831,9 +831,17 @@ STRING is a system prompt string."
   "Construct a thinking message body parameter.
 Type is always \"adaptive\".
 DISPLAY should be either \"summerized\" or \"omitted\"."
-  (list (cons 'thiking
+  (list (cons 'thinking
               (list (cons 'type "adaptive")
                     (cons 'display display)))))
+
+(defun pwb-array-message-param (role data)
+  "Construct a array of message-param.
+ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
+a string or cons. For more information about cons, see
+`pwb-array-content-block-param'."
+  (vector (list (cons 'role role)
+                (cons 'content (pwb-array-content-block-param data)))))
 
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.

@@ -463,7 +463,10 @@
            '((cache_control (type . "ephemeral") (ttl . "5m")))))
   (should (equal
            (pwb-system "The system prompt")
-           '((system . [((type . "text") (text . "The system prompt"))])))))
+           '((system . [((type . "text") (text . "The system prompt"))]))))
+  (should (equal
+           (pwb-thinking "summerized")
+           '((thinking ((type . "adaptive") (display . "summerized")))))))
 
 (ert-deftest pwb-array-content-block-param-test ()
   "Test block param constructor."

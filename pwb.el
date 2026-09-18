@@ -799,43 +799,5 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
-;; Body Param are messages, model, max_tokens, system, etc.
-;;
-;; Messages is an array of MessageParam
-;;   MessageParam is {array of ContentBlockParam, role}
-
-;; {"role": "user", "content": "Hello, Claude"} <= MessageParam
-;;
-;; messages: [
-;;  {"role": "user", "content": "Hello, Claude"} <= MessageParam
-;;  {"role": "assistant", "content": "May I help you?"} <= MessageParam
-;; ] <= Message body param
-;;
-;;
-;;         ContentBlockParam is one of following:
-;;         TextBlockParam
-;;         ImageBlockParam
-
-;; ImageBlockParam
-;; "messages": [
-;;    { "role": "user", "content": [
-;;       { "type": "image", "source": {
-;;              "type": "base64",
-;;              "media_type": "'$IMAGE_MEDIA_TYPE'",
-;;              "data": "'$IMAGE_BASE64'"
-;;       }}, <= ImageBlockParam(ContentBlockParam)
-;;       { "type": "text", "text": "What is in the above image?"} <= TextBlockParam(ContentBlockParam)
-;;    ]}
-;;  ]
-
-;;                                                                                                                                          { "type": "text", "text": "What is in the above image?"}]}]
-;; { "content": "Hello, Claude"} <= MessageParam
-;; max_tokens is integer.
-;; model is string
-
-;; turns is a vector of ContentBlockParam
-;; (pwb-messages-turns pwb-messages) => [((role . "user")(content . "foo bar"))
-;;                                       ((role . "assistant") (content . "May I help you?"))]
-
 (provide 'pwb)
 ;;; pwb.el ends here

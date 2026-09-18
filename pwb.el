@@ -857,7 +857,7 @@ TTL is either \"5m\" or \"1h\"."
     ;; for png file on File API
     (`("image/png" . ,file-id) (pwb-array-image-block-param-file file-id))
     ;; for text file on File API
-    (`("text/plain" . ,file-id) (error "Not implemented"))
+    (`("text/plain" . _ ) (error "Not implemented"))
     ;; for base64 png image
     (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
     ;; for text

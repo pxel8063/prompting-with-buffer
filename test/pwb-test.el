@@ -416,6 +416,18 @@
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
                     (cache_control (type . "ephemeral")))))))
 
+(ert-deftest pwb-payload-with-prompt-rewrite-test ()
+  (pwb-with-custom
+   (should (equal (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
+                                                   "Hello."
+                                                   pwb-max-tokens
+                                                   pwb-model
+                                                   pwb-system-prompt
+                                                   pwb-body-params)
+                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . ""))])
+                    (cache_control (type . "ephemeral")))))))
+
 (ert-deftest pwb-concat-turns-2-test ()
   (pwb-with-custom
    (should (equal

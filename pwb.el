@@ -729,6 +729,23 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
+(defun pwb-payload-with-prompt-rewrite (messages prompt max-tokens model system optional-body-params)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  prompt)))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+           optional-body-params))
+
 (defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param

@@ -29,7 +29,7 @@
 (defun pwb-with-custom-fn (body)
   (progn
     (let ((pwb-messages (make-pwb-messages))
-          (pwb-system-prompt "")
+          (pwb-system-prompt "Be honest.")
           (pwb-model "claude-haiku-4-5")
           (pwb-max-tokens 256)
           (pwb-body-params '((cache_control (type . "ephemeral"))))
@@ -251,7 +251,7 @@
      (should (equal x "url https://api.anthropic.com/v1/messages
 -H \"anthropic-version: 2023-06-01\"
 -H \"content-type: application/json\"
--d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello.\\\"}]}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"\\\",\\\"cache_control\\\":{\\\"type\\\":\\\"ephemeral\\\"}}\"")))))
+-d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello.\\\"}]}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"Be honest.\\\",\\\"cache_control\\\":{\\\"type\\\":\\\"ephemeral\\\"}}\"")))))
 
 (defun pwb-make-curl-config-file-upload-file-test-fn (body)
   (pwb-with-custom
@@ -387,7 +387,7 @@
                                                                        (media_type . "image/png")
                                                                        (data . "IMAGE_BASE64")))
                                                               ((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
                     (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-build-payload-prompt-and-system-test ()
@@ -401,7 +401,7 @@
                                                      pwb-body-params)
                   '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))
                                  ((role . "system") (content . [((type . "text") (text . "Mid conversation"))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
                     (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-build-payload-prompt-only-test ()
@@ -413,7 +413,7 @@
                                            pwb-system-prompt
                                            pwb-body-params)
                   '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "")
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
                     (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-payload-with-prompt-rewrite-test ()
@@ -425,7 +425,7 @@
                                                    pwb-system-prompt
                                                    pwb-body-params)
                   '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . ""))])
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-concat-turns-2-test ()

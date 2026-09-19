@@ -902,5 +902,13 @@ FILE-ID is obtained from Files API."
   (vector (list (cons 'type "document")
                 (pwb-file-source file-id))))
 
+;;; Response API
+(defun pwb-get-messages (response)
+  "Get array message param from RESPONSE.
+Return value is the same shape as that of `pwb-array-message-param'."
+  (vector (seq-filter #'(lambda (x) (or (eq 'role (car x))
+                                 (eq 'content (car x))))
+                      response)))
+
 (provide 'pwb)
 ;;; pwb.el ends here

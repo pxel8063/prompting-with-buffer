@@ -251,7 +251,7 @@
      (should (equal x "url https://api.anthropic.com/v1/messages
 -H \"anthropic-version: 2023-06-01\"
 -H \"content-type: application/json\"
--d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello.\\\"}]}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":\\\"Be honest.\\\",\\\"cache_control\\\":{\\\"type\\\":\\\"ephemeral\\\"}}\"")))))
+-d \"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello.\\\"}]}],\\\"max_tokens\\\":256,\\\"model\\\":\\\"claude-haiku-4-5\\\",\\\"system\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Be honest.\\\"}],\\\"cache_control\\\":{\\\"type\\\":\\\"ephemeral\\\"}}\"")))))
 
 (defun pwb-make-curl-config-file-upload-file-test-fn (body)
   (pwb-with-custom
@@ -377,28 +377,11 @@
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
                                                      "Hello."
-                                                     "IMAGE_BASE64"
+                                                     (list (cons "image/png/base64" "IMAGE_BASE64"))
                                                      pwb-max-tokens
                                                      pwb-model
                                                      pwb-system-prompt
                                                      pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "image")
-                                                               (source (type . "base64")
-                                                                       (media_type . "image/png")
-                                                                       (data . "IMAGE_BASE64")))
-                                                              ((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
-                    (cache_control (type . "ephemeral")))))))
-
-(ert-deftest pwb-build-payload-prompt-and-image-rewrite-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-and-image-rewrite (pwb-messages-turns pwb-messages)
-                                                             "Hello."
-                                                             (list (cons "image/png/base64" "IMAGE_BASE64"))
-                                                             pwb-max-tokens
-                                                             pwb-model
-                                                             pwb-system-prompt
-                                                             pwb-body-params)
                   '((messages . [((role . "user") (content . [((type . "image")
                                                                (source (type . "base64")
                                                                        (media_type . "image/png")
@@ -410,20 +393,6 @@
 (ert-deftest pwb-build-payload-prompt-and-system-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                     "Hello."
-                                                     "Mid conversation"
-                                                     pwb-max-tokens
-                                                     pwb-model
-                                                     pwb-system-prompt
-                                                     pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))
-                                 ((role . "system") (content . [((type . "text") (text . "Mid conversation"))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
-                    (cache_control (type . "ephemeral")))))))
-
-(ert-deftest pwb-build-payload-prompt-and-system-rewrite-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-and-system-rewrite (pwb-messages-turns pwb-messages)
                                                       "Hello."
                                                       "Mid conversation"
                                                       pwb-max-tokens
@@ -435,7 +404,7 @@
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
 
-(ert-deftest pwb-build-payload-prompt-only-test ()
+(ert-deftest pwb-payload-with-prompt-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
                                            "Hello."
@@ -443,18 +412,6 @@
                                            pwb-model
                                            pwb-system-prompt
                                            pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
-                    (cache_control (type . "ephemeral")))))))
-
-(ert-deftest pwb-payload-with-prompt-rewrite-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
-                                                   "Hello."
-                                                   pwb-max-tokens
-                                                   pwb-model
-                                                   pwb-system-prompt
-                                                   pwb-body-params)
                   '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))

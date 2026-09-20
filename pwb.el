@@ -183,30 +183,30 @@ ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
            (let* ((system (read-string "Enter mid-conversation system message.")))
-             (pwb-payload-with-prompt-and-system-rewrite (pwb-messages-turns pwb-messages)
-                                                         prompt
-                                                         system
-                                                         pwb-max-tokens
-                                                         pwb-model
-                                                         pwb-system-prompt
-                                                         pwb-body-params )))
+             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
+                                                 prompt
+                                                 system
+                                                 pwb-max-tokens
+                                                 pwb-model
+                                                 pwb-system-prompt
+                                                 pwb-body-params)))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
-             (pwb-payload-with-prompt-and-image-rewrite (pwb-messages-turns pwb-messages)
-                                                        prompt
-                                                        (list (cons "image/png/base64" image))
-                                                        pwb-max-tokens
-                                                        pwb-model
-                                                        pwb-system-prompt
-                                                        pwb-body-params )))
-          (t (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
-                                              prompt
-                                              pwb-max-tokens
-                                              pwb-model
-                                              pwb-system-prompt
-                                              pwb-body-params)))))
+             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
+                                                prompt
+                                                (list (cons "image/png/base64" image))
+                                                pwb-max-tokens
+                                                pwb-model
+                                                pwb-system-prompt
+                                                pwb-body-params )))
+          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
+                                      prompt
+                                      pwb-max-tokens
+                                      pwb-model
+                                      pwb-system-prompt
+                                      pwb-body-params)))))
 
 
 ;;;###autoload
@@ -717,26 +717,6 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param prompt))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
-
-(defun pwb-payload-with-prompt-rewrite (messages prompt max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
@@ -773,28 +753,6 @@ id strings and content block type (\"file_01\" . \"image/png\")."
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string
-DATA: base64 image data
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-image-block-param data))
-                              (list (pwb-text-block-param prompt))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
-
-(defun pwb-payload-with-prompt-and-image-rewrite (messages prompt data max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
 DATA: a list of base64 image data
 MAX-TOKENS: integer
 MODEL: string
@@ -810,31 +768,6 @@ OPTIONAL-BODY-PARAMS: alist."
           optional-body-params))
 
 (defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-MID-SYSTEM: string mid conversation system message
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     (pwb-concat-turns-2
-      messages
-      (pwb-make-message-param "user"
-                              (pwb-make-message-param-content
-                               (list (pwb-text-block-param prompt)))))
-     (pwb-make-message-param "system"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param mid-system))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
-
-(defun pwb-payload-with-prompt-and-system-rewrite (messages prompt mid-system max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string

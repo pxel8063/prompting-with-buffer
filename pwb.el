@@ -866,10 +866,10 @@ FILE-ID is obtained from Files API."
         (cons 'type "file")
         (cons 'file_id file-id)))
 
-  (defun pwb-array-text-block-param (text)
-    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-    (vector (list (cons 'type "text")
-                  (cons 'text text))))
+(defun pwb-array-text-block-param (text)
+  "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+  (vector (list (cons 'type "text")
+                (cons 'text text))))
 
 (defun pwb-array-image-block-param-base64 (data)
   "Construct an array of image block param based on base64.

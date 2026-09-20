@@ -735,19 +735,15 @@ MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
 FILE-IDS: a list of the cons of
-id strings and content block type (\"file_01\" . \"image/png\")."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param prompt))
-                              (mapcar #'pwb-file-block-param file-ids)))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
+content block type and id strings (\"image/png\" . \"file_01\")."
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (cons prompt file-ids))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
 
 (defun pwb-payload-with-prompt-and-image (messages prompt data max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.

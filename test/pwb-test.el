@@ -424,12 +424,12 @@
                                                           pwb-model
                                                           pwb-system-prompt
                                                           pwb-body-params
-                                                          (list (cons "file_011A1zQEgJqRFP2t2o7MoGr1" "image/png")))
+                                                          (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
                   '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))
                                                               ((type . "image")
                                                                (source (type . "file")
                                                                        (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
 
 (ert-deftest pwb-concat-turns-2-test ()

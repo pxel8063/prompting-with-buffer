@@ -189,14 +189,14 @@ ARG is the unversal argument."
                                                  pwb-max-tokens
                                                  pwb-model
                                                  pwb-system-prompt
-                                                 pwb-body-params )))
+                                                 pwb-body-params)))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
              (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
                                                 prompt
-                                                image
+                                                (list (cons "image/png/base64" image))
                                                 pwb-max-tokens
                                                 pwb-model
                                                 pwb-system-prompt
@@ -717,17 +717,14 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param prompt))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (list prompt))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+           optional-body-params))
 
 (defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
@@ -738,41 +735,33 @@ MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
 FILE-IDS: a list of the cons of
-id strings and content block type (\"file_01\" . \"image/png\")."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param prompt))
-                              (mapcar #'pwb-file-block-param file-ids)))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
+content block type and id strings (\"image/png\" . \"file_01\")."
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (cons prompt file-ids))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
 
 (defun pwb-payload-with-prompt-and-image (messages prompt data max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string
-DATA: base64 image data
+DATA: a list of base64 image data
 MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     messages
-     (pwb-make-message-param "user"
-                             (pwb-make-message-param-content
-                              (list (pwb-image-block-param data))
-                              (list (pwb-text-block-param prompt))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (append data (list prompt)))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
 
 (defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
@@ -783,59 +772,130 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-  (pwb-make-payload
-   optional-body-params
-   (pwb-make-body-param-messages
-    (pwb-concat-turns-2
-     (pwb-concat-turns-2
-      messages
-      (pwb-make-message-param "user"
-                              (pwb-make-message-param-content
-                               (list (pwb-text-block-param prompt)))))
-     (pwb-make-message-param "system"
-                             (pwb-make-message-param-content
-                              (list (pwb-text-block-param mid-system))))))
-   (pwb-make-body-param-max-tokens max-tokens)
-   (pwb-make-body-param-model model)
-   (pwb-make-body-param-system system)))
+(append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (list prompt))
+                                 (pwb-array-message-param
+                                  "system"
+                                  (list mid-system))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
 
-;; Body Param are messages, model, max_tokens, system, etc.
-;;
-;; Messages is an array of MessageParam
-;;   MessageParam is {array of ContentBlockParam, role}
+;;; The Claude API
+(defun pwb-max-tokens (num)
+  "Constructor a max_tokens body parameter.
+NUM is to specify the max tokens."
+  (list (cons 'max_tokens num)))
 
-;; {"role": "user", "content": "Hello, Claude"} <= MessageParam
-;;
-;; messages: [
-;;  {"role": "user", "content": "Hello, Claude"} <= MessageParam
-;;  {"role": "assistant", "content": "May I help you?"} <= MessageParam
-;; ] <= Message body param
-;;
-;;
-;;         ContentBlockParam is one of following:
-;;         TextBlockParam
-;;         ImageBlockParam
+(defun pwb-messages (array)
+  "Construct a message body parameter.
+ARRAY is an array (vector) of Message Params.  For an array of Message
+Params, see `pwb-array-message-param'"
+  (list (cons 'messages array)))
 
-;; ImageBlockParam
-;; "messages": [
-;;    { "role": "user", "content": [
-;;       { "type": "image", "source": {
-;;              "type": "base64",
-;;              "media_type": "'$IMAGE_MEDIA_TYPE'",
-;;              "data": "'$IMAGE_BASE64'"
-;;       }}, <= ImageBlockParam(ContentBlockParam)
-;;       { "type": "text", "text": "What is in the above image?"} <= TextBlockParam(ContentBlockParam)
-;;    ]}
-;;  ]
+(defun pwb-model (model)
+  "Construct a model message body parameter.
+MODEL is to specify model."
+  (list (cons 'model model)))
 
-;;                                                                                                                                          { "type": "text", "text": "What is in the above image?"}]}]
-;; { "content": "Hello, Claude"} <= MessageParam
-;; max_tokens is integer.
-;; model is string
+(defun pwb-cache-control (ttl)
+  "Construct a cache control message body parameter.
+TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
+  (list (cons 'cache_control
+              (pwb-cache-control-ephemeral ttl))))
 
-;; turns is a vector of ContentBlockParam
-;; (pwb-messages-turns pwb-messages) => [((role . "user")(content . "foo bar"))
-;;                                       ((role . "assistant") (content . "May I help you?"))]
+(defun pwb-system (string)
+  "Construct a system message body parameter.
+STRING is a system prompt string."
+  (unless (equal string "")
+    (list (cons 'system (pwb-array-text-block-param string)))))
+
+(defun pwb-thinking (display)
+  "Construct a thinking message body parameter.
+Type is always \"adaptive\".
+DISPLAY should be either \"summerized\" or \"omitted\"."
+  (list (cons 'thinking
+              (list (cons 'type "adaptive")
+                    (cons 'display display)))))
+
+(defun pwb-array-message-param (role data)
+  "Construct a array of message-param.
+ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
+a list of strings or cons. For more information about cons, see
+`pwb-array-content-block-param'."
+  (vector (list (cons 'role role)
+                (cons 'content
+                      (apply #'vconcat (mapcar #'pwb-array-content-block-param data))))))
+
+(defun pwb-cache-control-ephemeral (ttl)
+  "construct a cache control ephemeral.
+TTL is either \"5m\" or \"1h\"."
+  (list (cons 'type "ephemeral")
+        (cons 'ttl ttl)))
+
+(defun pwb-array-content-block-param (data)
+  "Return an array of content block param based on DATA."
+  (pcase data
+    ;; for pdf file on File API
+    (`("application/pdf" . ,file-id) (pwb-array-document-block-param-file file-id))
+    ;; for png file on File API
+    (`("image/png" . ,file-id) (pwb-array-image-block-param-file file-id))
+    ;; for text file on File API
+    (`("text/plain" . _ ) (error "Not implemented"))
+    ;; for base64 png image
+    (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
+    ;; for text
+    ((and (pred stringp) text) (pwb-array-text-block-param text))
+    (code (error "%S: not implemented" code))))
+
+(defun pwb-base64-image-source (data)
+  "Construct an source parameter.
+DATA is a png image data in terms of base64 string."
+  (list 'source
+        (cons 'type "base64")
+        (cons 'media_type "image/png")
+        (cons 'data data)))
+
+(defun pwb-file-source (file-id)
+  "Construct source file parameter.
+FILE-ID is obtained from Files API."
+  (list 'source
+        (cons 'type "file")
+        (cons 'file_id file-id)))
+
+  (defun pwb-array-text-block-param (text)
+    "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+    (vector (list (cons 'type "text")
+                  (cons 'text text))))
+
+(defun pwb-array-image-block-param-base64 (data)
+  "Construct an array of image block param based on base64.
+DATA is base64"
+  (vector (list (cons 'type "image")
+                (pwb-base64-image-source data))))
+
+(defun pwb-array-image-block-param-file (file-id)
+  "Construct an array of image block param
+FILE_ID is obtained from Files API."
+  (vector (list (cons 'type "image")
+                (pwb-file-source file-id))))
+
+(defun pwb-array-document-block-param-file (file-id)
+  "Construct an array of document block param.
+FILE-ID is obtained from Files API."
+  (vector (list (cons 'type "document")
+                (pwb-file-source file-id))))
+
+;;; Response API
+(defun pwb-get-messages (response)
+  "Get array message param from RESPONSE.
+Return value is the same shape as that of `pwb-array-message-param'."
+  (vector (seq-filter #'(lambda (x) (or (eq 'role (car x))
+                                 (eq 'content (car x))))
+                      response)))
 
 (provide 'pwb)
 ;;; pwb.el ends here

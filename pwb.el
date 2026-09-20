@@ -810,7 +810,8 @@ TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
 (defun pwb-system (string)
   "Construct a system message body parameter.
 STRING is a system prompt string."
-  (list (cons 'system (pwb-array-text-block-param string))))
+  (unless (equal string "")
+    (list (cons 'system (pwb-array-text-block-param string)))))
 
 (defun pwb-thinking (display)
   "Construct a thinking message body parameter.

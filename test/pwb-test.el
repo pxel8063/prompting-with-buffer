@@ -481,6 +481,9 @@
            (pwb-system "The system prompt")
            '((system . [((type . "text") (text . "The system prompt"))]))))
   (should (equal
+           (pwb-system "")
+           nil))
+  (should (equal
            (pwb-thinking "summerized")
            '((thinking (type . "adaptive") (display . "summerized"))))))
 

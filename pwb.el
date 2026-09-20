@@ -740,7 +740,7 @@ OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  prompt)))
+                                  (list prompt))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)
@@ -855,10 +855,11 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 (defun pwb-array-message-param (role data)
   "Construct a array of message-param.
 ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
-a string or cons. For more information about cons, see
+a list of strings or cons. For more information about cons, see
 `pwb-array-content-block-param'."
   (vector (list (cons 'role role)
-                (cons 'content (pwb-array-content-block-param data)))))
+                (cons 'content
+                      (apply #'vconcat (mapcar #'pwb-array-content-block-param data))))))
 
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.

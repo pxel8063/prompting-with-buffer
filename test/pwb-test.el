@@ -485,7 +485,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                          '(("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "document")
                                         (source (type . "file")
@@ -493,7 +493,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -501,7 +501,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -509,18 +509,18 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '("image/png/base64" . "IMAGE_DATA")))
+                          '(("image/png/base64" . "IMAGE_DATA"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "base64")
                                                 (media_type . "image/png")
                                                 (data . "IMAGE_DATA")))]))]))))
   (should-error (pwb-array-content-block-param
-                 '("text/plain" . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                 '(("text/plain" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          "Hello, Claude!"))
+                          (list "Hello, Claude!")))
            '((messages . [((role . "user")
                            (content . [((type . "text")
                                         (text . "Hello, Claude!"))]))])))))

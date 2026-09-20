@@ -183,30 +183,30 @@ ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
            (let* ((system (read-string "Enter mid-conversation system message.")))
-             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                 prompt
-                                                 system
-                                                 pwb-max-tokens
-                                                 pwb-model
-                                                 pwb-system-prompt
-                                                 pwb-body-params )))
+             (pwb-payload-with-prompt-and-system-rewrite (pwb-messages-turns pwb-messages)
+                                                         prompt
+                                                         system
+                                                         pwb-max-tokens
+                                                         pwb-model
+                                                         pwb-system-prompt
+                                                         pwb-body-params )))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
-             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
-                                                prompt
-                                                image
-                                                pwb-max-tokens
-                                                pwb-model
-                                                pwb-system-prompt
-                                                pwb-body-params )))
-          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
-                                      prompt
-                                      pwb-max-tokens
-                                      pwb-model
-                                      pwb-system-prompt
-                                      pwb-body-params)))))
+             (pwb-payload-with-prompt-and-image-rewrite (pwb-messages-turns pwb-messages)
+                                                        prompt
+                                                        (list (cons "image/png/base64" image))
+                                                        pwb-max-tokens
+                                                        pwb-model
+                                                        pwb-system-prompt
+                                                        pwb-body-params )))
+          (t (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
+                                              prompt
+                                              pwb-max-tokens
+                                              pwb-model
+                                              pwb-system-prompt
+                                              pwb-body-params)))))
 
 
 ;;;###autoload
@@ -740,7 +740,7 @@ OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  prompt)))
+                                  (list prompt))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)
@@ -791,6 +791,24 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
+(defun pwb-payload-with-prompt-and-image-rewrite (messages prompt data max-tokens model system optional-body-params)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+DATA: a list of base64 image data
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (append data (list prompt)))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
+
 (defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
@@ -815,6 +833,27 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-max-tokens max-tokens)
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
+
+(defun pwb-payload-with-prompt-and-system-rewrite (messages prompt mid-system max-tokens model system optional-body-params)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MID-SYSTEM: string mid conversation system message
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
+(append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (list prompt))
+                                 (pwb-array-message-param
+                                  "system"
+                                  (list mid-system))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
 
 ;;; The Claude API
 (defun pwb-max-tokens (num)
@@ -855,10 +894,11 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
 (defun pwb-array-message-param (role data)
   "Construct a array of message-param.
 ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
-a string or cons. For more information about cons, see
+a list of strings or cons. For more information about cons, see
 `pwb-array-content-block-param'."
   (vector (list (cons 'role role)
-                (cons 'content (pwb-array-content-block-param data)))))
+                (cons 'content
+                      (apply #'vconcat (mapcar #'pwb-array-content-block-param data))))))
 
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.

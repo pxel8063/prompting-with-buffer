@@ -183,24 +183,24 @@ ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
            (let* ((system (read-string "Enter mid-conversation system message.")))
-             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                 prompt
-                                                 system
-                                                 pwb-max-tokens
-                                                 pwb-model
-                                                 pwb-system-prompt
-                                                 pwb-body-params )))
+             (pwb-payload-with-prompt-and-system-rewrite (pwb-messages-turns pwb-messages)
+                                                         prompt
+                                                         system
+                                                         pwb-max-tokens
+                                                         pwb-model
+                                                         pwb-system-prompt
+                                                         pwb-body-params )))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
-             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
-                                                prompt
-                                                image
-                                                pwb-max-tokens
-                                                pwb-model
-                                                pwb-system-prompt
-                                                pwb-body-params )))
+             (pwb-payload-with-prompt-and-image-rewrite (pwb-messages-turns pwb-messages)
+                                                        prompt
+                                                        (list (cons "image/png/base64" image))
+                                                        pwb-max-tokens
+                                                        pwb-model
+                                                        pwb-system-prompt
+                                                        pwb-body-params )))
           (t (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
                                               prompt
                                               pwb-max-tokens

@@ -201,12 +201,12 @@ ARG is the unversal argument."
                                                 pwb-model
                                                 pwb-system-prompt
                                                 pwb-body-params )))
-          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
-                                      prompt
-                                      pwb-max-tokens
-                                      pwb-model
-                                      pwb-system-prompt
-                                      pwb-body-params)))))
+          (t (pwb-payload-with-prompt-rewrite (pwb-messages-turns pwb-messages)
+                                              prompt
+                                              pwb-max-tokens
+                                              pwb-model
+                                              pwb-system-prompt
+                                              pwb-body-params)))))
 
 
 ;;;###autoload

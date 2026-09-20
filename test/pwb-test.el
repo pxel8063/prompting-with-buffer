@@ -421,6 +421,20 @@
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . "Be honest.")
                     (cache_control (type . "ephemeral")))))))
 
+(ert-deftest pwb-build-payload-prompt-and-system-rewrite-test ()
+  (pwb-with-custom
+   (should (equal (pwb-payload-with-prompt-and-system-rewrite (pwb-messages-turns pwb-messages)
+                                                      "Hello."
+                                                      "Mid conversation"
+                                                      pwb-max-tokens
+                                                      pwb-model
+                                                      pwb-system-prompt
+                                                      pwb-body-params)
+                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))
+                                 ((role . "system") (content . [((type . "text") (text . "Mid conversation"))]))])
+                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
+                    (cache_control (type . "ephemeral")))))))
+
 (ert-deftest pwb-build-payload-prompt-only-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)

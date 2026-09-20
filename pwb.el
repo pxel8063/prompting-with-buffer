@@ -834,6 +834,27 @@ OPTIONAL-BODY-PARAMS: alist."
    (pwb-make-body-param-model model)
    (pwb-make-body-param-system system)))
 
+(defun pwb-payload-with-prompt-and-system-rewrite (messages prompt mid-system max-tokens model system optional-body-params)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MID-SYSTEM: string mid conversation system message
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist."
+(append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (list prompt))
+                                 (pwb-array-message-param
+                                  "system"
+                                  (list mid-system))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system system)
+          optional-body-params))
+
 ;;; The Claude API
 (defun pwb-max-tokens (num)
   "Constructor a max_tokens body parameter.

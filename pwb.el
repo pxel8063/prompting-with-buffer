@@ -300,16 +300,13 @@ system message."
 Render response in `pwb-response-buffer'.  If the RESPONSE is error,
 render the error in `pwb-response-buffer' and return nil."
   (if (pwb-response-ok-p response)
-      (let ((response-text (pwb-get-content-text response))
-            (response-thinking (pwb-get-content-thinking response))
-            (response-stop-reason (pwb-get-stop-reason response))
-            (response-usage (pwb-get-usage response)))
-        (when response-thinking
-          (message "thinking: %s" response-thinking))
+      (let ((response-text (pwb-get-content-text response)))
+        (pwb-thinking-message response)
+        (pwb-stop-reason-message response)
+        (pwb-usage-message response)
         (pwb-render-response response-text)
         (display-buffer pwb-response-buffer)
         (message "pwb: response received.")
-        (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
         (pwb-assistant-turn-2 response-text))
     (pwb-render-error-response response)
     (message "pwb: error; %S" response)
@@ -545,6 +542,24 @@ The CONTENT argument must be STRING."
   (alist-get 'thinking (pwb-find-content-block-by-type
                         "thinking"
                         (pwb-get-content response))))
+
+(defun pwb-thinking-message (response)
+  "Emit thinking to *Messages* buffer from RESPONSE."
+  (let ((thinking (pwb-get-content-thinking response)))
+    (when thinking
+      (message "pwb:thinking: %s" thinking))))
+
+(defun pwb-stop-reason-message (response)
+  "Emit stop reason to *Messages* buffer from RESPONSE."
+  (let ((stop-reason (pwb-get-stop-reason response)))
+    (when stop-reason
+      (message "pwb:stop reason: %s" stop-reason))))
+
+(defun pwb-usage-message (response)
+  "Emit usage to *Messages* buffer from RESPONSE."
+  (let ((usage (pwb-get-usage response)))
+    (when usage
+      (message "pwb:usage: %s" usage))))
 
 ;;;
 ;;; The accessor functions for the response parameters

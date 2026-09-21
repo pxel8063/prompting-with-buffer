@@ -324,12 +324,12 @@ has done."
         (coding-system-for-write 'utf-8))
     (with-temp-file tmpfile
       (insert "url " pwb-api-url "\n")
-        (insert "-H " "\"x-api-key: " key "\"\n")
-        (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
-        (insert "-H " "\"content-type: application/json\"\n")
-        (insert "-d " (prin1-to-string (decode-coding-string
-                                        (json-serialize payload)
-                                        'utf-8))))
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"content-type: application/json\"\n")
+      (insert "-d " (prin1-to-string (decode-coding-string
+                                      (json-serialize payload)
+                                      'utf-8))))
     tmpfile))
 
 
@@ -611,24 +611,24 @@ RESPONSE is an alist parsed from the API's JSON error body."
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))
         (mime-type (alist-get 'mime_type response)))
-   (if id
-       (progn
-         (message "pwb: file accepted: %s" id)
-         (cons id mime-type))
-       (progn
-         (message "pwb: not accepted.")
-         nil))))
+    (if id
+        (progn
+          (message "pwb: file accepted: %s" id)
+          (cons id mime-type))
+      (progn
+        (message "pwb: not accepted.")
+        nil))))
 
 (defun pwb-response-to-delete-id (response)
   (let ((id (alist-get 'id response))
         (type (alist-get 'type response)))
-   (if id
-       (progn
-         (message "pwb: %s: %s" type id)
-         id)
-       (progn
-         (message "pwb: not deleted.")
-         nil))))
+    (if id
+        (progn
+          (message "pwb: %s: %s" type id)
+          id)
+      (progn
+        (message "pwb: not deleted.")
+        nil))))
 
 (defun pwb-convert-file-base64 (file)
   "Return the base 64 string of the image FILE."
@@ -657,9 +657,9 @@ The shorthand of text block param."
 (defun pwb-file-block-param (file-id-pair)
   "FileBlockParam with FILE-ID-PAIR."
   (let ((content-block-type (pwb-mime-type->block-type (cdr file-id-pair))))
-   `((type . ,content-block-type)
-     (source (type . "file")
-             (file_id . ,(car file-id-pair))))))
+    `((type . ,content-block-type)
+      (source (type . "file")
+              (file_id . ,(car file-id-pair))))))
 
 (defun pwb-mime-type->block-type (mime-type)
   "Transform MIME-TYPE to the contents block type."
@@ -724,7 +724,7 @@ OPTIONAL-BODY-PARAMS: alist."
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)
-           optional-body-params))
+          optional-body-params))
 
 (defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
@@ -772,7 +772,7 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-(append (pwb-messages (vconcat messages
+  (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
                                   (list prompt))
@@ -894,7 +894,7 @@ FILE-ID is obtained from Files API."
   "Get array message param from RESPONSE.
 Return value is the same shape as that of `pwb-array-message-param'."
   (vector (seq-filter #'(lambda (x) (or (eq 'role (car x))
-                                 (eq 'content (car x))))
+                                        (eq 'content (car x))))
                       response)))
 
 (provide 'pwb)

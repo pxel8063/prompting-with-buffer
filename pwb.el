@@ -226,8 +226,8 @@ system message."
             (pwb-response-to-assistant-turn response)))
       (if assistant-turn                ; If an error is returned, do nothing
           (setf (pwb-messages-turns pwb-messages)
-                (pwb-concat-turns-2 (alist-get 'messages alst)
-                                    assistant-turn))))))
+                (vconcat (alist-get 'messages alst)
+                         (vector assistant-turn)))))))
 ;;;###autoload
 (defun pwb-upload-file (&optional path)
   "Send a file in the PATH to the api host."
@@ -268,8 +268,8 @@ system message."
                 (pwb-response-to-assistant-turn response)))
            (if assistant-turn           ; If an error is returned, do nothing
                (setf (pwb-messages-turns pwb-messages)
-                     (pwb-concat-turns-2 (alist-get 'messages alst)
-                                         assistant-turn)))))
+                     (vconcat (alist-get 'messages alst)
+                              (vector assistant-turn))))))
        key))))
 
 (defun pwb-request-prompt-and-files (prompt system file-ids)
@@ -290,8 +290,8 @@ system message."
             (pwb-response-to-assistant-turn response)))
       (if assistant-turn                ; If an error is returned, do nothing
           (setf (pwb-messages-turns pwb-messages)
-                (pwb-concat-turns-2 (alist-get 'messages alst)
-                                    assistant-turn))))))
+                (vconcat (alist-get 'messages alst)
+                         (vector assistant-turn)))))))
 
 
 

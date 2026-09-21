@@ -309,70 +309,6 @@
 -X \"DELETE\"
 ")))))
 
-(ert-deftest pwb-text-block-param-test ()
-  (should (equal (pwb-text-block-param "*prompt")
-                 '((type . "text")
-                   (text . "*prompt")))))
-
-(ert-deftest pwb-image-block-param-test ()
-  (should (equal (pwb-image-block-param "IMAGE_BASE64")
-                 '((type . "image")
-                   (source (type . "base64")
-                           (media_type . "image/png")
-                           (data . "IMAGE_BASE64"))))))
-
-(ert-deftest pwb-file-block-param-test ()
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
-                 '((type . "document")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "text/plain"))
-                 '((type . "document")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
-                 '((type . "image")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1"))))))
-
-(ert-deftest pwb-make-body-param-max-tokens-test ()
-  (should (equal '(max_tokens . 1024)
-                 (pwb-make-body-param-max-tokens 1024))))
-
-(ert-deftest pwb-make-body-param-model-test ()
-  (should (equal '(model . "claude-haiku-4-5")
-                 (pwb-make-body-param-model "claude-haiku-4-5"))))
-
-(ert-deftest pwb-make-body-param-system-test ()
-  (should (equal '(system . "The system prompt.")
-                 (pwb-make-body-param-system "The system prompt."))))
-
-(ert-deftest pwb-make-message-param-content-with-system-test ()
-  (should (equal (pwb-concat-turns-2
-                  (pwb-concat-turns-2
-                   []
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "Hello.")))))
-                  (pwb-make-message-param
-                    "system"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "system")))))
-                 [((role . "user") (content . [((type . "text") (text . "Hello."))]))
-                  ((role . "system") (content . [((type . "text") (text . "system"))]))])))
-
-(ert-deftest pwb-make-message-param-content-with-image-test ()
-  (should (equal (pwb-make-message-param-content
-                  (list (pwb-image-block-param "IMAGE_BASE64"))
-                  (list (pwb-text-block-param "Hello.")))
-                 '(content . [((type . "image")
-                               (source (type . "base64")
-                                       (media_type . "image/png")
-                                       (data . "IMAGE_BASE64")))
-                              ((type . "text")
-                               (text . "Hello."))]))))
-
 (ert-deftest pwb-build-payload-prompt-and-image-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
@@ -431,39 +367,6 @@
                                                                        (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))])
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
-
-(ert-deftest pwb-concat-turns-2-test ()
-  (pwb-with-custom
-   (should (equal
-            (setf (pwb-messages-turns pwb-messages)
-                  (pwb-concat-turns-2
-                   (pwb-messages-turns pwb-messages)
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "* prompt"))))))
-            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))
-   (should (equal
-            (setf (pwb-messages-turns pwb-messages)
-                  (pwb-concat-turns-2
-                   (pwb-messages-turns pwb-messages)
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "* prompt 2"))))))
-            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))
-             ((role . "user") (content . [((type . "text") (text . "* prompt 2"))]))]))))
-
-(ert-deftest pwb-mime-type->block-type-test ()
-  (should (equal
-           "document"
-           (pwb-mime-type->block-type "application/pdf")))
-  (should (equal
-           "document"
-           (pwb-mime-type->block-type "text/plain")))
-  (should (equal
-           "image"
-           (pwb-mime-type->block-type "image/png"))))
 
 ;;; The Claude API test
 (ert-deftest pwb-api-test ()

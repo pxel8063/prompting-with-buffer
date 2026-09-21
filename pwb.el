@@ -637,77 +637,63 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun pwb-text-block-param-sh (text)
+(defun pwb-text-block-param-sh ()
   "TextBlockParam with TEXT.
 The shorthand of text block param."
-  text)
+  (error "do not use this function."))
 
-(defun pwb-text-block-param (text)
+(defun pwb-text-block-param ()
   "TextBlockParam {TEXT, type, cache_control, citations}."
-  `((type . "text")
-    (text . ,text)))
+  (error "do not use this function."))
 
-(defun pwb-image-block-param (data)
+(defun pwb-image-block-param ()
   "ImageBlockParam with DATA {source, type, cache_control}."
-  `((type . "image")
-    (source (type . "base64")
-            (media_type . "image/png")
-            (data . ,data))))
+  (error "do not use this function."))
 
-(defun pwb-file-block-param (file-id-pair)
+(defun pwb-file-block-param ()
   "FileBlockParam with FILE-ID-PAIR."
-  (let ((content-block-type (pwb-mime-type->block-type (cdr file-id-pair))))
-    `((type . ,content-block-type)
-      (source (type . "file")
-              (file_id . ,(car file-id-pair))))))
+  (error "do not use this function."))
 
-(defun pwb-mime-type->block-type (mime-type)
+(defun pwb-mime-type->block-type ()
   "Transform MIME-TYPE to the contents block type."
-  (pcase mime-type
-    ("application/pdf" "document")
-    ("text/plain" "document")
-    ("image/png" "image")))
+  (error "do not use this function."))
 
-(defun pwb-make-message-param-content (&rest content-block-params)
+(defun pwb-make-message-param-content ()
   "Return the content of MessageParam.
 The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS).
 The arguments are the list of alist."
-  (let ((params (apply #'append content-block-params)))
-    `(content . ,(if (stringp (car content-block-params))
-                     (car content-block-params) ; For the shorthand TextBlockParam
-                   (vconcat params)))))
+  (error "do not use this function."))
 
-(defun pwb-make-message-param (role message-param-content)
+(defun pwb-make-message-param ()
   "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."
-  `((role . ,role)
-    ,message-param-content))
+  (error "do not use this function."))
 
 ;;; The payload top level These are called Body Parameters.
-(defun pwb-make-body-param-max-tokens (int)
+(defun pwb-make-body-param-max-tokens ()
   "Constructor for max_tokens body parameter by INT."
-  `(max_tokens . ,int))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-messages (message-param)
+(defun pwb-make-body-param-messages ()
   "Constructor for messages body parameter(MESSAGE-PARAM)."
-  `(messages . ,message-param))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-model (model)
+(defun pwb-make-body-param-model ()
   "Constructor for model body parameter by MODEL."
-  `(model . ,model))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-system (string)
+(defun pwb-make-body-param-system ()
   "Constructor for system body parameter by STRING."
-  `(system . ,string))
+  (error "do not use this function."))
 
 ;;; The constructor payload
-(defun pwb-make-payload (optional-body-params &rest body-params)
+(defun pwb-make-payload ()
   "Construct payload from OPTIONAL-BODY-PARAMS and BODY-PARAMS."
-  (append body-params optional-body-params))
+  (error "do not use this function."))
 
-(defun pwb-concat-turns-2 (history current)
+(defun pwb-concat-turns-2 ()
   "Concatenate HISTORY of turn, a.k.a Messages and CURRENT MessageParam.
 This function can be used to add conversation."
-  (vconcat history (vector current)))
+  (error "do not use this function."))
 
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.

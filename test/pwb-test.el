@@ -435,8 +435,8 @@
                            (content . [((type . "text")
                                         (text . "Hello, Claude!"))]))])))))
 
-(ert-deftest pwb-get-messages-test ()
-  (should (equal (pwb-get-messages
+(ert-deftest pwb-get-assistant-param-test ()
+  (should (equal (pwb-get-assistant-param
 		  (list (cons 'model "claude-haiku-4-5-20251001")
 			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
 			(cons 'type "message")
@@ -447,6 +447,7 @@
 			(cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard")))))
                  [((role . "assistant")
                    (content . [((type . "text") (text . "Hello! How can I help you today?"))]))])))
+
 
 (provide 'pwb-test)
 

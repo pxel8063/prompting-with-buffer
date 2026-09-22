@@ -894,9 +894,9 @@ FILE-ID is obtained from Files API."
 (defun pwb-get-assistant-param (response)
   "Get array message param from RESPONSE.
 Return value is the same shape as that of `pwb-array-message-param'."
-  (vector (seq-filter #'(lambda (x) (or (eq 'role (car x))
-                                        (eq 'content (car x))))
-                      response)))
+  (seq-filter #'(lambda (x) (or (eq 'role (car x))
+                                (eq 'content (car x))))
+              response))
 
 (provide 'pwb)
 ;;; pwb.el ends here

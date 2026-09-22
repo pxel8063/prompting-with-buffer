@@ -593,8 +593,6 @@ Type are such as \"text\", \"thinking\" etc."
   "Return the content-block whose type is TYPE from an array of CONTENTBLOCKS."
   (seq-find (pwb-content-block-type-predicate type) contentblocks))
 
-
-
 ;;;
 ;;; Render response
 ;;;

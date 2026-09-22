@@ -627,7 +627,7 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (if id
         (progn
           (message "pwb: file accepted: %s" id)
-          (cons id mime-type))
+          (cons mime-type id))
       (progn
         (message "pwb: not accepted.")
         nil))))

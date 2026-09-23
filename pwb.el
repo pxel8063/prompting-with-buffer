@@ -272,7 +272,7 @@ system message."
                               (vector assistant-turn))))))
        key))))
 
-(defun pwb-request-prompt-and-files (prompt system file-ids)
+(defun pwb-request-prompt-and-files (model system prompt file-ids)
   "An Experimental function PROMPT SYSTEM FILE-IDS."
   (make-local-variable 'pwb-messages)
   (let ((key (pwb-credential pwb-api-host)))
@@ -281,7 +281,7 @@ system message."
     (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
                                                              prompt
                                                              pwb-max-tokens
-                                                             pwb-model
+                                                             model
                                                              system
                                                              pwb-body-params
                                                              file-ids))

@@ -738,7 +738,7 @@ content block type and id strings (\"image/png\" . \"file_01\")."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (cons prompt file-ids))))
+                                  (append file-ids (list prompt)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)

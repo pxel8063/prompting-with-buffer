@@ -361,10 +361,10 @@
                                                           pwb-system-prompt
                                                           pwb-body-params
                                                           (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))
-                                                              ((type . "image")
+                  '((messages . [((role . "user") (content . [((type . "image")
                                                                (source (type . "file")
-                                                                       (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))])
+                                                                       (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                                                              ((type . "text") (text . "Hello."))]))])
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
 

@@ -120,6 +120,11 @@
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-system-cache nil
+  "Whether the system prompt is ephemeral or not."
+  :group 'pwb
+  :type 'boolean)
+
 (defcustom pwb-api-url "https://api.anthropic.com/v1/messages"
   "Specifying the Claude message API host."
   :group 'pwb
@@ -810,7 +815,7 @@ TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
   "Construct a system message body parameter.
 STRING is a system prompt string."
   (unless (equal string "")
-    (list (cons 'system (pwb-array-text-block-param string)))))
+    (list (cons 'system (pwb-array-text-block-param string pwb-system-cache)))))
 
 (defun pwb-thinking (display)
   "Construct a thinking message body parameter.
@@ -865,10 +870,14 @@ FILE-ID is obtained from Files API."
         (cons 'type "file")
         (cons 'file_id file-id)))
 
-(defun pwb-array-text-block-param (text)
+(defun pwb-array-text-block-param (text &optional cache)
   "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-  (vector (list (cons 'type "text")
-                (cons 'text text))))
+  (vector (if cache
+              (append (list (cons 'type "text")
+                            (cons 'text text))
+                      (pwb-cache-control "5m"))
+            (list (cons 'type "text")
+                  (cons 'text text)))))
 
 (defun pwb-array-image-block-param-base64 (data)
   "Construct an array of image block param based on base64.

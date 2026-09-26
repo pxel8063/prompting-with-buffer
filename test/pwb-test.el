@@ -30,6 +30,7 @@
   (progn
     (let ((pwb-messages (make-pwb-messages))
           (pwb-system-prompt "Be honest.")
+          (pwb-system-cache nil)
           (pwb-model "claude-haiku-4-5")
           (pwb-max-tokens 256)
           (pwb-body-params '((cache_control (type . "ephemeral"))))
@@ -371,24 +372,30 @@
 ;;; The Claude API test
 (ert-deftest pwb-api-test ()
   "Test primitive functions for the api"
-  (should (equal
-           (pwb-max-tokens 128)
-           '((max_tokens . 128))))
-  (should (equal
-           (pwb-model "claude-sonnet-5")
-           '((model . "claude-sonnet-5"))))
-  (should (equal
-           (pwb-cache-control "5m")
-           '((cache_control (type . "ephemeral") (ttl . "5m")))))
-  (should (equal
-           (pwb-system "The system prompt")
-           '((system . [((type . "text") (text . "The system prompt"))]))))
-  (should (equal
-           (pwb-system "")
-           nil))
-  (should (equal
-           (pwb-thinking "summerized")
-           '((thinking (type . "adaptive") (display . "summerized"))))))
+  (pwb-with-custom
+   (should (equal
+            (pwb-max-tokens 128)
+            '((max_tokens . 128))))
+   (should (equal
+            (pwb-model "claude-sonnet-5")
+            '((model . "claude-sonnet-5"))))
+   (should (equal
+            (pwb-cache-control "5m")
+            '((cache_control (type . "ephemeral") (ttl . "5m")))))
+   (should (equal
+            (pwb-system "The system prompt")
+            '((system . [((type . "text") (text . "The system prompt"))]))))
+   (should (equal
+            (pwb-system "")
+            nil))
+   (should (equal
+            (let ((pwb-system-cache t))
+              (pwb-system "The system prompt"))
+            '((system . [((type . "text") (text . "The system prompt")
+                          (cache_control (type . "ephemeral") (ttl . "5m")))]))))
+   (should (equal
+            (pwb-thinking "summerized")
+            '((thinking (type . "adaptive") (display . "summerized")))))))
 
 (ert-deftest pwb-array-content-block-param-test ()
   "Test block param constructor."

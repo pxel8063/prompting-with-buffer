@@ -113,7 +113,7 @@
 				        (cons 'message "Input does not match the expected shape.")))
 			    (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz")))))
   (should (equal '((role . "assistant")
-                  (content . "Hello! How can I help you today?"))
+                   (content . "Hello! How can I help you today?"))
                  (pwb-response-to-assistant-turn
 		  (list (cons 'model "claude-haiku-4-5-20251001")
 			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
@@ -168,24 +168,23 @@
     (should (equal
              (pwb-find-content-block-by-type "thinking" content-blocks)
              '((type . "thinking") (thinking . "Let me analyze this step by step...")
-               (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
-         ))
-        (should (equal
+               (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))))
+    (should (equal
              (pwb-find-content-block-by-type "text" content-blocks)
              '((type . "text") (text . "Hello! How can I help you today?"))))))
 
 (ert-deftest pwb-get-content-thinking-test ()
   (let ((response (list (cons 'model "claude-haiku-4-5-20251001")
-			  (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
-			  (cons 'type "message")
-			  (cons 'role "assistant")
-			  (cons 'content [((type . "thinking")
-                                           (thinking . "Let me analyze this step by step...")
-                                           (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
-                                          ((type . "text") (text . "Hello! How can I help you today?"))])
-			  (cons 'stop_reason "end_turn")
-			  (cons 'stop_sequence 'null)
-			  (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))
+			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+			(cons 'type "message")
+			(cons 'role "assistant")
+			(cons 'content [((type . "thinking")
+                                         (thinking . "Let me analyze this step by step...")
+                                         (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
+                                        ((type . "text") (text . "Hello! How can I help you today?"))])
+			(cons 'stop_reason "end_turn")
+			(cons 'stop_sequence 'null)
+			(cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))
     (should (equal
              (pwb-get-content-thinking response)
              "Let me analyze this step by step..."))))
@@ -356,12 +355,12 @@
 (ert-deftest pwb-build-payload-prompt-and-uploaded-files-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
-                                                          "Hello."
-                                                          pwb-max-tokens
-                                                          pwb-model
-                                                          pwb-system-prompt
-                                                          pwb-body-params
-                                                          (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                                                              "Hello."
+                                                              pwb-max-tokens
+                                                              pwb-model
+                                                              pwb-system-prompt
+                                                              pwb-body-params
+                                                              (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
                   '((messages . [((role . "user") (content . [((type . "image")
                                                                (source (type . "file")
                                                                        (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))

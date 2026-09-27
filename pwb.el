@@ -605,7 +605,8 @@ Type are such as \"text\", \"thinking\" etc."
   "Create a buffer for displaying the response.
 Then insert STRING and newline in this buffer."
   (pwb-with-response-buffer
-    (insert string)
+    (when string
+      (insert string))
     (insert "\n\n\C-l\n\n")))
 
 (defun pwb-render-error-response (response)
@@ -623,8 +624,15 @@ RESPONSE is an alist parsed from the API's JSON error body."
   "Test whether the RESPONSE is error or not."
   (pcase (alist-get 'type response)
     ("error" nil)
-    ("message" t)
-    (other (message "pwb: unexpected response type: %S" other) nil)))
+    (_ (pcase (alist-get 'stop_reason response)
+             ("end_turn" t)
+             ("max_tokens" t)
+             ("stop_sequence" t)
+             ("tool_use" t)
+             ("pause_turn" t)
+             ("refusal" t)
+             ("model_context_window_exceeded" t)
+             (other nil)))))
 
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))

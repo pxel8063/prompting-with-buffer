@@ -140,6 +140,15 @@
 			  (cons 'content [((type . "text") (text . "Hello! How can I help you today?"))])
 			  (cons 'stop_reason "end_turn")
 			  (cons 'stop_sequence 'null)
+			  (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard")))))))
+  (should (equal t (pwb-response-ok-p
+		    (list (cons 'model "claude-haiku-4-5-20251001")
+			  (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+			  (cons 'type "message")
+			  (cons 'role "assistant")
+			  (cons 'content [((type . "text") (text . "Hello! How can I help you today?"))])
+			  (cons 'stop_reason "max_tokens")
+			  (cons 'stop_sequence 'null)
 			  (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))))
 
 (ert-deftest pwb-get-content-test ()

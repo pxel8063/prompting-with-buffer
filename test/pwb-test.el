@@ -380,7 +380,7 @@
             '((model . "claude-sonnet-5"))))
    (should (equal
             (pwb-cache-control "5m")
-            '((cache_control (type . "ephemeral") (ttl . "5m")))))
+            '((cache_control (type . "ephemeral")))))
    (should (equal
             (pwb-system "The system prompt")
             '((system . [((type . "text") (text . "The system prompt"))]))))
@@ -391,7 +391,7 @@
             (let ((pwb-system-cache t))
               (pwb-system "The system prompt"))
             '((system . [((type . "text") (text . "The system prompt")
-                          (cache_control (type . "ephemeral") (ttl . "5m")))]))))
+                          (cache_control (type . "ephemeral")))]))))
    (should (equal
             (pwb-thinking "summerized")
             '((thinking (type . "adaptive") (display . "summerized")))))))

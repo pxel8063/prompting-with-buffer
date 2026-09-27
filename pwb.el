@@ -837,8 +837,10 @@ a list of strings or cons. For more information about cons, see
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.
 TTL is either \"5m\" or \"1h\"."
-  (list (cons 'type "ephemeral")
-        (cons 'ttl ttl)))
+  (cond ((string= "1h" ttl)(list (cons 'type "ephemeral")
+                                 (cons 'ttl ttl)))
+        ((string= "5m" ttl)(list (cons 'type "ephemeral")))
+        (t (error "pwb: TTL must be either \"5m\" or \"1h\""))))
 
 (defun pwb-array-content-block-param (data)
   "Return an array of content block param based on DATA."

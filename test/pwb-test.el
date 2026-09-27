@@ -30,6 +30,7 @@
   (progn
     (let ((pwb-messages (make-pwb-messages))
           (pwb-system-prompt "Be honest.")
+          (pwb-system-cache nil)
           (pwb-model "claude-haiku-4-5")
           (pwb-max-tokens 256)
           (pwb-body-params '((cache_control (type . "ephemeral"))))
@@ -112,7 +113,7 @@
 				        (cons 'message "Input does not match the expected shape.")))
 			    (cons 'request_id "req_011CWsDcj4HTJuWosWP8djPz")))))
   (should (equal '((role . "assistant")
-                  (content . "Hello! How can I help you today?"))
+                   (content . "Hello! How can I help you today?"))
                  (pwb-response-to-assistant-turn
 		  (list (cons 'model "claude-haiku-4-5-20251001")
 			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
@@ -167,24 +168,23 @@
     (should (equal
              (pwb-find-content-block-by-type "thinking" content-blocks)
              '((type . "thinking") (thinking . "Let me analyze this step by step...")
-               (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
-         ))
-        (should (equal
+               (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))))
+    (should (equal
              (pwb-find-content-block-by-type "text" content-blocks)
              '((type . "text") (text . "Hello! How can I help you today?"))))))
 
 (ert-deftest pwb-get-content-thinking-test ()
   (let ((response (list (cons 'model "claude-haiku-4-5-20251001")
-			  (cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
-			  (cons 'type "message")
-			  (cons 'role "assistant")
-			  (cons 'content [((type . "thinking")
-                                           (thinking . "Let me analyze this step by step...")
-                                           (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
-                                          ((type . "text") (text . "Hello! How can I help you today?"))])
-			  (cons 'stop_reason "end_turn")
-			  (cons 'stop_sequence 'null)
-			  (cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))
+			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
+			(cons 'type "message")
+			(cons 'role "assistant")
+			(cons 'content [((type . "thinking")
+                                         (thinking . "Let me analyze this step by step...")
+                                         (signature . "WaUjzkypQ2mUEVM36O2TxuC06KN8xyfbJwyem2dw3URve/op91XWHOEBLLqIOMfFG/UvLEczmEsUjavL...."))
+                                        ((type . "text") (text . "Hello! How can I help you today?"))])
+			(cons 'stop_reason "end_turn")
+			(cons 'stop_sequence 'null)
+			(cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard"))))))
     (should (equal
              (pwb-get-content-thinking response)
              "Let me analyze this step by step..."))))
@@ -309,70 +309,6 @@
 -X \"DELETE\"
 ")))))
 
-(ert-deftest pwb-text-block-param-test ()
-  (should (equal (pwb-text-block-param "*prompt")
-                 '((type . "text")
-                   (text . "*prompt")))))
-
-(ert-deftest pwb-image-block-param-test ()
-  (should (equal (pwb-image-block-param "IMAGE_BASE64")
-                 '((type . "image")
-                   (source (type . "base64")
-                           (media_type . "image/png")
-                           (data . "IMAGE_BASE64"))))))
-
-(ert-deftest pwb-file-block-param-test ()
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "application/pdf"))
-                 '((type . "document")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "text/plain"))
-                 '((type . "document")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))))
-  (should (equal (pwb-file-block-param '("file_011A1zQEgJqRFP2t2o7MoGr1" . "image/png"))
-                 '((type . "image")
-                   (source (type . "file")
-                           (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1"))))))
-
-(ert-deftest pwb-make-body-param-max-tokens-test ()
-  (should (equal '(max_tokens . 1024)
-                 (pwb-make-body-param-max-tokens 1024))))
-
-(ert-deftest pwb-make-body-param-model-test ()
-  (should (equal '(model . "claude-haiku-4-5")
-                 (pwb-make-body-param-model "claude-haiku-4-5"))))
-
-(ert-deftest pwb-make-body-param-system-test ()
-  (should (equal '(system . "The system prompt.")
-                 (pwb-make-body-param-system "The system prompt."))))
-
-(ert-deftest pwb-make-message-param-content-with-system-test ()
-  (should (equal (pwb-concat-turns-2
-                  (pwb-concat-turns-2
-                   []
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "Hello.")))))
-                  (pwb-make-message-param
-                    "system"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "system")))))
-                 [((role . "user") (content . [((type . "text") (text . "Hello."))]))
-                  ((role . "system") (content . [((type . "text") (text . "system"))]))])))
-
-(ert-deftest pwb-make-message-param-content-with-image-test ()
-  (should (equal (pwb-make-message-param-content
-                  (list (pwb-image-block-param "IMAGE_BASE64"))
-                  (list (pwb-text-block-param "Hello.")))
-                 '(content . [((type . "image")
-                               (source (type . "base64")
-                                       (media_type . "image/png")
-                                       (data . "IMAGE_BASE64")))
-                              ((type . "text")
-                               (text . "Hello."))]))))
-
 (ert-deftest pwb-build-payload-prompt-and-image-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
@@ -419,73 +355,46 @@
 (ert-deftest pwb-build-payload-prompt-and-uploaded-files-test ()
   (pwb-with-custom
    (should (equal (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
-                                                          "Hello."
-                                                          pwb-max-tokens
-                                                          pwb-model
-                                                          pwb-system-prompt
-                                                          pwb-body-params
-                                                          (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))
-                                                              ((type . "image")
+                                                              "Hello."
+                                                              pwb-max-tokens
+                                                              pwb-model
+                                                              pwb-system-prompt
+                                                              pwb-body-params
+                                                              (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                  '((messages . [((role . "user") (content . [((type . "image")
                                                                (source (type . "file")
-                                                                       (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))]))])
+                                                                       (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))
+                                                              ((type . "text") (text . "Hello."))]))])
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
-
-(ert-deftest pwb-concat-turns-2-test ()
-  (pwb-with-custom
-   (should (equal
-            (setf (pwb-messages-turns pwb-messages)
-                  (pwb-concat-turns-2
-                   (pwb-messages-turns pwb-messages)
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "* prompt"))))))
-            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))]))
-   (should (equal
-            (setf (pwb-messages-turns pwb-messages)
-                  (pwb-concat-turns-2
-                   (pwb-messages-turns pwb-messages)
-                   (pwb-make-message-param
-                    "user"
-                    (pwb-make-message-param-content
-                     (list (pwb-text-block-param "* prompt 2"))))))
-            [((role . "user") (content . [((type . "text") (text . "* prompt"))]))
-             ((role . "user") (content . [((type . "text") (text . "* prompt 2"))]))]))))
-
-(ert-deftest pwb-mime-type->block-type-test ()
-  (should (equal
-           "document"
-           (pwb-mime-type->block-type "application/pdf")))
-  (should (equal
-           "document"
-           (pwb-mime-type->block-type "text/plain")))
-  (should (equal
-           "image"
-           (pwb-mime-type->block-type "image/png"))))
 
 ;;; The Claude API test
 (ert-deftest pwb-api-test ()
   "Test primitive functions for the api"
-  (should (equal
-           (pwb-max-tokens 128)
-           '((max_tokens . 128))))
-  (should (equal
-           (pwb-model "claude-sonnet-5")
-           '((model . "claude-sonnet-5"))))
-  (should (equal
-           (pwb-cache-control "5m")
-           '((cache_control (type . "ephemeral") (ttl . "5m")))))
-  (should (equal
-           (pwb-system "The system prompt")
-           '((system . [((type . "text") (text . "The system prompt"))]))))
-  (should (equal
-           (pwb-system "")
-           nil))
-  (should (equal
-           (pwb-thinking "summerized")
-           '((thinking (type . "adaptive") (display . "summerized"))))))
+  (pwb-with-custom
+   (should (equal
+            (pwb-max-tokens 128)
+            '((max_tokens . 128))))
+   (should (equal
+            (pwb-model "claude-sonnet-5")
+            '((model . "claude-sonnet-5"))))
+   (should (equal
+            (pwb-cache-control "5m")
+            '((cache_control (type . "ephemeral")))))
+   (should (equal
+            (pwb-system "The system prompt")
+            '((system . [((type . "text") (text . "The system prompt"))]))))
+   (should (equal
+            (pwb-system "")
+            nil))
+   (should (equal
+            (let ((pwb-system-cache t))
+              (pwb-system "The system prompt"))
+            '((system . [((type . "text") (text . "The system prompt")
+                          (cache_control (type . "ephemeral")))]))))
+   (should (equal
+            (pwb-thinking "summerized")
+            '((thinking (type . "adaptive") (display . "summerized")))))))
 
 (ert-deftest pwb-array-content-block-param-test ()
   "Test block param constructor."
@@ -532,8 +441,8 @@
                            (content . [((type . "text")
                                         (text . "Hello, Claude!"))]))])))))
 
-(ert-deftest pwb-get-messages-test ()
-  (should (equal (pwb-get-messages
+(ert-deftest pwb-get-assistant-param-test ()
+  (should (equal (pwb-get-assistant-param
 		  (list (cons 'model "claude-haiku-4-5-20251001")
 			(cons 'id "msg_01F1rvRpZWutMkCnaUYFjLai")
 			(cons 'type "message")
@@ -542,8 +451,9 @@
 			(cons 'stop_reason "end_turn")
 			(cons 'stop_sequence 'null)
 			(cons 'usage (list (cons 'input_tokens 9) (cons 'cache_creation_input_tokens 0) (cons 'cache_read_input_tokens 0) (cons 'cache_creation (list (cons 'ephemeral_5m_input_tokens 0) (cons 'ephemeral_1h_input_tokens 0))) (cons 'output_tokens 12) (cons 'service_tier "standard")))))
-                 [((role . "assistant")
-                   (content . [((type . "text") (text . "Hello! How can I help you today?"))]))])))
+                 '((role . "assistant")
+                   (content . [((type . "text") (text . "Hello! How can I help you today?"))])))))
+
 
 (provide 'pwb-test)
 

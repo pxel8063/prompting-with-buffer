@@ -120,6 +120,11 @@
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-system-cache nil
+  "Whether the system prompt is ephemeral or not."
+  :group 'pwb
+  :type 'boolean)
+
 (defcustom pwb-api-url "https://api.anthropic.com/v1/messages"
   "Specifying the Claude message API host."
   :group 'pwb
@@ -226,8 +231,8 @@ system message."
             (pwb-response-to-assistant-turn response)))
       (if assistant-turn                ; If an error is returned, do nothing
           (setf (pwb-messages-turns pwb-messages)
-                (pwb-concat-turns-2 (alist-get 'messages alst)
-                                    assistant-turn))))))
+                (vconcat (alist-get 'messages alst)
+                         (vector assistant-turn)))))))
 ;;;###autoload
 (defun pwb-upload-file (&optional path)
   "Send a file in the PATH to the api host."
@@ -268,11 +273,11 @@ system message."
                 (pwb-response-to-assistant-turn response)))
            (if assistant-turn           ; If an error is returned, do nothing
                (setf (pwb-messages-turns pwb-messages)
-                     (pwb-concat-turns-2 (alist-get 'messages alst)
-                                         assistant-turn)))))
+                     (vconcat (alist-get 'messages alst)
+                              (vector assistant-turn))))))
        key))))
 
-(defun pwb-request-prompt-and-files (prompt system file-ids)
+(defun pwb-request-prompt-and-files (model system prompt file-ids)
   "An Experimental function PROMPT SYSTEM FILE-IDS."
   (make-local-variable 'pwb-messages)
   (let ((key (pwb-credential pwb-api-host)))
@@ -281,7 +286,7 @@ system message."
     (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
                                                              prompt
                                                              pwb-max-tokens
-                                                             pwb-model
+                                                             model
                                                              system
                                                              pwb-body-params
                                                              file-ids))
@@ -290,8 +295,8 @@ system message."
             (pwb-response-to-assistant-turn response)))
       (if assistant-turn                ; If an error is returned, do nothing
           (setf (pwb-messages-turns pwb-messages)
-                (pwb-concat-turns-2 (alist-get 'messages alst)
-                                    assistant-turn))))))
+                (vconcat (alist-get 'messages alst)
+                         (vector assistant-turn)))))))
 
 
 
@@ -300,16 +305,13 @@ system message."
 Render response in `pwb-response-buffer'.  If the RESPONSE is error,
 render the error in `pwb-response-buffer' and return nil."
   (if (pwb-response-ok-p response)
-      (let ((response-text (pwb-get-content-text response))
-            (response-thinking (pwb-get-content-thinking response))
-            (response-stop-reason (pwb-get-stop-reason response))
-            (response-usage (pwb-get-usage response)))
-        (when response-thinking
-          (message "thinking: %s" response-thinking))
+      (let ((response-text (pwb-get-content-text response)))
+        (pwb-thinking-message response)
+        (pwb-stop-reason-message response)
+        (pwb-usage-message response)
         (pwb-render-response response-text)
         (display-buffer pwb-response-buffer)
         (message "pwb: response received.")
-        (message "stop reason: %s, usage: %s" response-stop-reason response-usage)
         (pwb-assistant-turn-2 response-text))
     (pwb-render-error-response response)
     (message "pwb: error; %S" response)
@@ -324,12 +326,12 @@ has done."
         (coding-system-for-write 'utf-8))
     (with-temp-file tmpfile
       (insert "url " pwb-api-url "\n")
-        (insert "-H " "\"x-api-key: " key "\"\n")
-        (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
-        (insert "-H " "\"content-type: application/json\"\n")
-        (insert "-d " (prin1-to-string (decode-coding-string
-                                        (json-serialize payload)
-                                        'utf-8))))
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"content-type: application/json\"\n")
+      (insert "-d " (prin1-to-string (decode-coding-string
+                                      (json-serialize payload)
+                                      'utf-8))))
     tmpfile))
 
 
@@ -546,6 +548,24 @@ The CONTENT argument must be STRING."
                         "thinking"
                         (pwb-get-content response))))
 
+(defun pwb-thinking-message (response)
+  "Emit thinking to *Messages* buffer from RESPONSE."
+  (let ((thinking (pwb-get-content-thinking response)))
+    (when thinking
+      (message "pwb:thinking: %s" thinking))))
+
+(defun pwb-stop-reason-message (response)
+  "Emit stop reason to *Messages* buffer from RESPONSE."
+  (let ((stop-reason (pwb-get-stop-reason response)))
+    (when stop-reason
+      (message "pwb:stop reason: %s" stop-reason))))
+
+(defun pwb-usage-message (response)
+  "Emit usage to *Messages* buffer from RESPONSE."
+  (let ((usage (pwb-get-usage response)))
+    (when usage
+      (message "pwb:usage: %s" usage))))
+
 ;;;
 ;;; The accessor functions for the response parameters
 ;;;
@@ -578,8 +598,6 @@ Type are such as \"text\", \"thinking\" etc."
   "Return the content-block whose type is TYPE from an array of CONTENTBLOCKS."
   (seq-find (pwb-content-block-type-predicate type) contentblocks))
 
-
-
 ;;;
 ;;; Render response
 ;;;
@@ -611,24 +629,24 @@ RESPONSE is an alist parsed from the API's JSON error body."
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))
         (mime-type (alist-get 'mime_type response)))
-   (if id
-       (progn
-         (message "pwb: file accepted: %s" id)
-         (cons id mime-type))
-       (progn
-         (message "pwb: not accepted.")
-         nil))))
+    (if id
+        (progn
+          (message "pwb: file accepted: %s" id)
+          (cons mime-type id))
+      (progn
+        (message "pwb: not accepted.")
+        nil))))
 
 (defun pwb-response-to-delete-id (response)
   (let ((id (alist-get 'id response))
         (type (alist-get 'type response)))
-   (if id
-       (progn
-         (message "pwb: %s: %s" type id)
-         id)
-       (progn
-         (message "pwb: not deleted.")
-         nil))))
+    (if id
+        (progn
+          (message "pwb: %s: %s" type id)
+          id)
+      (progn
+        (message "pwb: not deleted.")
+        nil))))
 
 (defun pwb-convert-file-base64 (file)
   "Return the base 64 string of the image FILE."
@@ -637,77 +655,63 @@ RESPONSE is an alist parsed from the API's JSON error body."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun pwb-text-block-param-sh (text)
+(defun pwb-text-block-param-sh ()
   "TextBlockParam with TEXT.
 The shorthand of text block param."
-  text)
+  (error "do not use this function."))
 
-(defun pwb-text-block-param (text)
+(defun pwb-text-block-param ()
   "TextBlockParam {TEXT, type, cache_control, citations}."
-  `((type . "text")
-    (text . ,text)))
+  (error "do not use this function."))
 
-(defun pwb-image-block-param (data)
+(defun pwb-image-block-param ()
   "ImageBlockParam with DATA {source, type, cache_control}."
-  `((type . "image")
-    (source (type . "base64")
-            (media_type . "image/png")
-            (data . ,data))))
+  (error "do not use this function."))
 
-(defun pwb-file-block-param (file-id-pair)
+(defun pwb-file-block-param ()
   "FileBlockParam with FILE-ID-PAIR."
-  (let ((content-block-type (pwb-mime-type->block-type (cdr file-id-pair))))
-   `((type . ,content-block-type)
-     (source (type . "file")
-             (file_id . ,(car file-id-pair))))))
+  (error "do not use this function."))
 
-(defun pwb-mime-type->block-type (mime-type)
+(defun pwb-mime-type->block-type ()
   "Transform MIME-TYPE to the contents block type."
-  (pcase mime-type
-    ("application/pdf" "document")
-    ("text/plain" "document")
-    ("image/png" "image")))
+  (error "do not use this function."))
 
-(defun pwb-make-message-param-content (&rest content-block-params)
+(defun pwb-make-message-param-content ()
   "Return the content of MessageParam.
 The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS).
 The arguments are the list of alist."
-  (let ((params (apply #'append content-block-params)))
-    `(content . ,(if (stringp (car content-block-params))
-                     (car content-block-params) ; For the shorthand TextBlockParam
-                   (vconcat params)))))
+  (error "do not use this function."))
 
-(defun pwb-make-message-param (role message-param-content)
+(defun pwb-make-message-param ()
   "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."
-  `((role . ,role)
-    ,message-param-content))
+  (error "do not use this function."))
 
 ;;; The payload top level These are called Body Parameters.
-(defun pwb-make-body-param-max-tokens (int)
+(defun pwb-make-body-param-max-tokens ()
   "Constructor for max_tokens body parameter by INT."
-  `(max_tokens . ,int))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-messages (message-param)
+(defun pwb-make-body-param-messages ()
   "Constructor for messages body parameter(MESSAGE-PARAM)."
-  `(messages . ,message-param))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-model (model)
+(defun pwb-make-body-param-model ()
   "Constructor for model body parameter by MODEL."
-  `(model . ,model))
+  (error "do not use this function."))
 
-(defun pwb-make-body-param-system (string)
+(defun pwb-make-body-param-system ()
   "Constructor for system body parameter by STRING."
-  `(system . ,string))
+  (error "do not use this function."))
 
 ;;; The constructor payload
-(defun pwb-make-payload (optional-body-params &rest body-params)
+(defun pwb-make-payload ()
   "Construct payload from OPTIONAL-BODY-PARAMS and BODY-PARAMS."
-  (append body-params optional-body-params))
+  (error "do not use this function."))
 
-(defun pwb-concat-turns-2 (history current)
+(defun pwb-concat-turns-2 ()
   "Concatenate HISTORY of turn, a.k.a Messages and CURRENT MessageParam.
 This function can be used to add conversation."
-  (vconcat history (vector current)))
+  (error "do not use this function."))
 
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
@@ -724,7 +728,7 @@ OPTIONAL-BODY-PARAMS: alist."
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)
-           optional-body-params))
+          optional-body-params))
 
 (defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
@@ -739,7 +743,7 @@ content block type and id strings (\"image/png\" . \"file_01\")."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (cons prompt file-ids))))
+                                  (append file-ids (list prompt)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system system)
@@ -772,7 +776,7 @@ MAX-TOKENS: integer
 MODEL: string
 SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist."
-(append (pwb-messages (vconcat messages
+  (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
                                   (list prompt))
@@ -811,7 +815,7 @@ TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
   "Construct a system message body parameter.
 STRING is a system prompt string."
   (unless (equal string "")
-    (list (cons 'system (pwb-array-text-block-param string)))))
+    (list (cons 'system (pwb-array-text-block-param string pwb-system-cache)))))
 
 (defun pwb-thinking (display)
   "Construct a thinking message body parameter.
@@ -833,8 +837,10 @@ a list of strings or cons. For more information about cons, see
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.
 TTL is either \"5m\" or \"1h\"."
-  (list (cons 'type "ephemeral")
-        (cons 'ttl ttl)))
+  (cond ((string= "1h" ttl)(list (cons 'type "ephemeral")
+                                 (cons 'ttl ttl)))
+        ((string= "5m" ttl)(list (cons 'type "ephemeral")))
+        (t (error "pwb: TTL must be either \"5m\" or \"1h\""))))
 
 (defun pwb-array-content-block-param (data)
   "Return an array of content block param based on DATA."
@@ -866,10 +872,14 @@ FILE-ID is obtained from Files API."
         (cons 'type "file")
         (cons 'file_id file-id)))
 
-(defun pwb-array-text-block-param (text)
+(defun pwb-array-text-block-param (text &optional cache)
   "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-  (vector (list (cons 'type "text")
-                (cons 'text text))))
+  (vector (if cache
+              (append (list (cons 'type "text")
+                            (cons 'text text))
+                      (pwb-cache-control "5m"))
+            (list (cons 'type "text")
+                  (cons 'text text)))))
 
 (defun pwb-array-image-block-param-base64 (data)
   "Construct an array of image block param based on base64.
@@ -890,12 +900,12 @@ FILE-ID is obtained from Files API."
                 (pwb-file-source file-id))))
 
 ;;; Response API
-(defun pwb-get-messages (response)
+(defun pwb-get-assistant-param (response)
   "Get array message param from RESPONSE.
 Return value is the same shape as that of `pwb-array-message-param'."
-  (vector (seq-filter #'(lambda (x) (or (eq 'role (car x))
-                                 (eq 'content (car x))))
-                      response)))
+  (seq-filter #'(lambda (x) (or (eq 'role (car x))
+                                (eq 'content (car x))))
+              response))
 
 (provide 'pwb)
 ;;; pwb.el ends here

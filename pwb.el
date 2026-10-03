@@ -735,7 +735,7 @@ OPTIONAL-BODY-PARAMS: alist."
                                   (list prompt))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system system)
+          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
 (defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
@@ -754,7 +754,7 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                   (append file-ids (list prompt)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system system)
+          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
 (defun pwb-payload-with-prompt-and-image (messages prompt data max-tokens model system optional-body-params)
@@ -772,7 +772,7 @@ OPTIONAL-BODY-PARAMS: alist."
                                   (append data (list prompt)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system system)
+          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
 (defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
@@ -793,7 +793,7 @@ OPTIONAL-BODY-PARAMS: alist."
                                   (list mid-system))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system system)
+          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
 ;;; The Claude API
@@ -819,11 +819,11 @@ TTL is either \"5m\" or \"1h\". See `pwb-cache-control-ephemeral'."
   (list (cons 'cache_control
               (pwb-cache-control-ephemeral ttl))))
 
-(defun pwb-system (string)
+(defun pwb-system (body)
   "Construct a system message body parameter.
 STRING is a system prompt string."
-  (unless (equal string "")
-    (list (cons 'system (pwb-array-text-block-param string pwb-system-cache)))))
+  (when body
+    (list (cons 'system body))))
 
 (defun pwb-thinking (display)
   "Construct a thinking message body parameter.
@@ -882,12 +882,13 @@ FILE-ID is obtained from Files API."
 
 (defun pwb-array-text-block-param (text &optional cache)
   "Array of TextBlockParam {TEXT, type, cache_control, citations}."
-  (vector (if cache
-              (append (list (cons 'type "text")
-                            (cons 'text text))
-                      (pwb-cache-control "5m"))
-            (list (cons 'type "text")
-                  (cons 'text text)))))
+  (unless (equal text "")
+    (vector (if cache
+                (append (list (cons 'type "text")
+                              (cons 'text text))
+                        (pwb-cache-control "5m"))
+              (list (cons 'type "text")
+                    (cons 'text text))))))
 
 (defun pwb-array-image-block-param-base64 (data)
   "Construct an array of image block param based on base64.

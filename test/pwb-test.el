@@ -391,14 +391,13 @@
             (pwb-cache-control "5m")
             '((cache_control (type . "ephemeral")))))
    (should (equal
-            (pwb-system "The system prompt")
+            (pwb-system (pwb-array-text-block-param "The system prompt"))
             '((system . [((type . "text") (text . "The system prompt"))]))))
    (should (equal
-            (pwb-system "")
+            (pwb-system (pwb-array-text-block-param ""))
             nil))
    (should (equal
-            (let ((pwb-system-cache t))
-              (pwb-system "The system prompt"))
+            (pwb-system (pwb-array-text-block-param "The system prompt" t))
             '((system . [((type . "text") (text . "The system prompt")
                           (cache_control (type . "ephemeral")))]))))
    (should (equal

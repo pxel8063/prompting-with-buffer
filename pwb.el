@@ -796,6 +796,42 @@ OPTIONAL-BODY-PARAMS: alist."
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
+
+(defun pwb-batch-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
+  "Taking arguments below, Return payload alist.
+MESSAGES: Message Body Param
+PROMPT: string
+MAX-TOKENS: integer
+MODEL: string
+SYSTEM: string
+OPTIONAL-BODY-PARAMS: alist
+FILE-IDS: a list of the cons of
+content block type and id strings (\"image/png\" . \"file_01\")."
+  (append (pwb-requests (vconcat (list (append
+                                          (pwb-custom-id "my-first-request")
+                                          (pwb-params (append
+                                                       (pwb-model "claude-opus-5-5")
+                                                       (pwb-max-tokens 1024)
+                                                       (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
+                                                                            (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                       (pwb-messages (vconcat messages
+                                                                              (pwb-array-message-param
+                                                                               "user"
+                                        ;(append file-ids (list prompt))
+                                                                               (list "Analyze the major themes in Pride and Prejudice."))))))))
+                                 (list (append
+                                          (pwb-custom-id "my-second-request")
+                                          (pwb-params (append
+                                                       (pwb-model "claude-opus-5-5")
+                                                       (pwb-max-tokens 1024)
+                                                       (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
+                                                                           (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                       (pwb-messages (vconcat messages
+                                                                              (pwb-array-message-param
+                                                                               "user"
+                                        ;(append file-ids (list prompt))
+                                                                               (list "Write a summary of Pride and Prejudice."))))))))))))
+
 ;;; The Claude API
 (defun pwb-max-tokens (num)
   "Constructor a max_tokens body parameter.
@@ -832,6 +868,19 @@ DISPLAY should be either \"summerized\" or \"omitted\"."
   (list (cons 'thinking
               (list (cons 'type "adaptive")
                     (cons 'display display)))))
+
+(defun pwb-requests (body)
+  "Return the requests parameter.
+Used on batch requrest"
+  (list (cons 'requests body)))
+
+(defun pwb-custom-id (string)
+  "Return custom-id parameter."
+  (list (cons 'custom_id string)))
+
+(defun pwb-params (body)
+  "Return params parameter."
+  (list (cons 'params body)))
 
 (defun pwb-array-message-param (role data)
   "Construct a array of message-param.

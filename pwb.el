@@ -130,6 +130,11 @@
   :group 'pwb
   :type 'string)
 
+(defcustom pwb-api-batch-url "https://api.anthropic.com/v1/messages/batches"
+  "Specifying the Claude message batch API host."
+  :group 'pwb
+  :type 'string)
+
 (defcustom pwb-api-file-url "https://api.anthropic.com/v1/files"
   "Specifying the Claude File API host."
   :group 'pwb

@@ -322,6 +322,13 @@ system message."
       (pwb-render-error-response response)
       (pwb-get-results-url response))))
 
+(defun pwb-retrieve-message-batch-results (results-url)
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let ((response (pwb-retrieve-message-batch-results-curl-with-config results-url key)))
+      (pwb-render-error-response response))))
+
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
 Render response in `pwb-response-buffer'.  If the RESPONSE is error,
@@ -380,6 +387,18 @@ after it has done."
         (coding-system-for-write 'utf-8))
     (with-temp-file tmpfile
       (insert "url " (concat pwb-api-batch-url "/" id) "\n")
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n"))
+    tmpfile))
+
+(defun pwb-make-retrieve-message-batch-results-curl-config-file (results-url key)
+  "Make a temporary curl config file and return its filename. ID is
+message batch id. The caller is responsible to delete the temporary file
+after it has done."
+  (let ((tmpfile (make-temp-file "pwb-"))
+        (coding-system-for-write 'utf-8))
+    (with-temp-file tmpfile
+      (insert "url " results-url "\n")
       (insert "-H " "\"x-api-key: " key "\"\n")
       (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n"))
     tmpfile))
@@ -454,6 +473,24 @@ process, return the response."
   "Make a curl config file based on PAYLOAD, invoke curl by calling
 process, return the response."
   (let ((config (pwb-make-retrieve-message-batch-curl-config-file id key))
+        (response))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((status (call-process "curl" nil t nil "--silent"
+                                      "--config"
+                                      config)))
+            (unless (zerop status)
+              (error "Curl failed with status %d: %s" status (buffer-string))))
+          (goto-char (point-min))
+          (setq response (json-parse-buffer :object-type 'alist)))
+      (when (file-exists-p config)
+        (delete-file config)))
+    response))
+
+(defun pwb-retrieve-message-batch-results-curl-with-config (results-url key)
+  "Make a curl config file based on PAYLOAD, invoke curl by calling
+process, return the response."
+  (let ((config (pwb-make-retrieve-message-batch-results-curl-config-file results-url key))
         (response))
     (unwind-protect
         (with-temp-buffer

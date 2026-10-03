@@ -303,7 +303,14 @@ system message."
                 (vconcat (alist-get 'messages alst)
                          (vector assistant-turn)))))))
 
-
+(defun pwb-batch-request ()
+  "Batch request"
+  (let ((key (pwb-credential pwb-api-host)))
+    (unless key
+      (error "%s can not be found in `auth-source'" pwb-api-host))
+    (let* ((alst (pwb-test-batch-payload- "my-custom-id-1" pwb-model))
+           (response (pwb-batch-curl-with-config alst key)))
+      (pwb-render-error-response response))))
 
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
@@ -339,8 +346,21 @@ has done."
                                       'utf-8))))
     tmpfile))
 
-
-
+(defun pwb-make-batch-curl-config-file (payload key)
+  "Make a temporary curl config file and return its filename. PAYLOAD is
+alist. The caller is responsible to delete the temporary file after it
+has done."
+  (let ((tmpfile (make-temp-file "pwb-"))
+        (coding-system-for-write 'utf-8))
+    (with-temp-file tmpfile
+      (insert "url " pwb-api-batch-url "\n")
+      (insert "-H " "\"x-api-key: " key "\"\n")
+      (insert "-H " "\"anthropic-version: " pwb-anthropic-version "\"\n")
+      (insert "-H " "\"content-type: application/json\"\n")
+      (insert "-d " (prin1-to-string (decode-coding-string
+                                      (json-serialize payload)
+                                      'utf-8))))
+    tmpfile))
 
 (defun pwb-make-curl-config-file-upload-file (path key)
   "Make a curl config file for file uploading and return its filename.
@@ -376,6 +396,24 @@ Uploading the file with PATH.  The caller is responsible to delete the
   "Make a curl config file based on PAYLOAD, invoke curl by calling
 process, return the response."
   (let ((config (pwb-make-curl-config-file payload key))
+        (response))
+    (unwind-protect
+        (with-temp-buffer
+          (let ((status (call-process "curl" nil t nil "--silent"
+                                      "--config"
+                                      config)))
+            (unless (zerop status)
+              (error "Curl failed with status %d: %s" status (buffer-string))))
+          (goto-char (point-min))
+          (setq response (json-parse-buffer :object-type 'alist)))
+      (when (file-exists-p config)
+        (delete-file config)))
+    response))
+
+(defun pwb-batch-curl-with-config (payload key)
+  "Make a curl config file based on PAYLOAD, invoke curl by calling
+process, return the response."
+  (let ((config (pwb-make-batch-curl-config-file payload key))
         (response))
     (unwind-protect
         (with-temp-buffer
@@ -586,6 +624,41 @@ The CONTENT argument must be STRING."
   "Return an array of ContentBlock from RESPONSE."
   (alist-get 'content response))
 
+(defun pwb-get-id (response)
+  "Return an id in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'id response))
+
+(defun pwb-get-result-url (response)
+  "Return a result url in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'result_url response))
+
+(defun pwb-get-achived-at (response)
+  "Return a achived_at in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'achived_at response))
+
+(defun pwb-get-cancel-initiated-at (response)
+  "Return a cancel_initiated_at in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'cancel_initiated_at response))
+
+(defun pwb-get-created-at (response)
+  "Return a created_at in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'created_at response))
+
+(defun pwb-get-expires-at (response)
+  "Return a expires_at in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'expires_at response))
+
+(defun pwb-get-processing-status (response)
+  "Return a processing_status in the RESPONSE.
+It is included in the batch response"
+  (alist-get 'processing_status response))
+
 ;;;
 ;;; The accessor functions for the CONTENTBLOCK
 ;;;
@@ -638,6 +711,10 @@ RESPONSE is an alist parsed from the API's JSON error body."
          ("refusal" t)
          ("model_context_window_exceeded" t)
          (other nil)))))
+
+(defun pwb-batch-response (response)
+  (pcase (alist-get 'type response)
+    ("message_batch")))
 
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))
@@ -836,6 +913,18 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                                                              "user"
                                         ;(append file-ids (list prompt))
                                                                              (list "Write a summary of Pride and Prejudice."))))))))))))
+
+(defun pwb-test-batch-payload- (first-id model)
+  ""
+  (append (pwb-requests (vconcat (list (append
+                                        (pwb-custom-id first-id)
+                                        (pwb-params (append
+                                                     (pwb-model model)
+                                                     (pwb-max-tokens 1024)
+                                                     (pwb-messages (vconcat (pwb-array-message-param
+                                                                             "user"
+                                        ;(append file-ids (list prompt))
+                                                                             (list "Hello, world"))))))))))))
 
 ;;; The Claude API
 (defun pwb-max-tokens (num)

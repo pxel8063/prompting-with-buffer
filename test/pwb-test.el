@@ -35,6 +35,7 @@
           (pwb-max-tokens 256)
           (pwb-body-params '((cache_control (type . "ephemeral"))))
           (pwb-api-url "https://api.anthropic.com/v1/messages")
+          (pwb-api-batch-url "https://api.anthropic.com/v1/messages/batches")
           (pwb-api-file-url "https://api.anthropic.com/v1/files")
           (pwb-api-host "api.anthropic.com"))
       (funcall body))))
@@ -58,6 +59,15 @@
 # pwb-body-params: '((max_tokens . 2048))
 # End:
 ")
+
+(ert-deftest pwb-check-batch-request ()
+  "Test whether the batch request succeeds."
+  (skip-unless nil)
+  ;;{"custom_id":"my-custom-id-1","result":{"type":"succeeded","message":{"model":"claude-haiku-4-5-20251001","id":"msg_011CfeiEy185S3ns8CtWBEaj","type":"message","role":"assistant","content":[{"type":"text","text":"Hello! 👋 How can I help you today?"}],"container":null,"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":10,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":16,"service_tier":"batch","inference_geo":"not_available"},"diagnostics":null}}}
+  (pwb-with-custom
+   (should (eq t
+               (pwb-batch-request)))))
+
 (ert-deftest pwb-local-variables-test ()
   (let ((enable-local-variables :all))
     (should (eq (with-temp-buffer

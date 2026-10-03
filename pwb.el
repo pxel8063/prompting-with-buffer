@@ -310,7 +310,8 @@ system message."
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let* ((alst (pwb-test-batch-payload- "my-custom-id-1" pwb-model))
            (response (pwb-batch-curl-with-config alst key)))
-      (pwb-render-error-response response))))
+      (pwb-render-error-response response)
+      (pwb-get-id response))))
 
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.

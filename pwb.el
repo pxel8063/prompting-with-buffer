@@ -326,8 +326,9 @@ system message."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let ((response (pwb-retrieve-message-batch-results-curl-with-config results-url key)))
-      (pwb-render-error-response response))))
+    (let ((responses (pwb-retrieve-message-batch-results-curl-with-config results-url key)))
+      (mapc #'pwb-response-to-assistant-turn
+            (mapcar #'pwb-get-result-message responses)))))
 
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
@@ -489,9 +490,9 @@ process, return the response."
 
 (defun pwb-retrieve-message-batch-results-curl-with-config (results-url key)
   "Make a curl config file based on PAYLOAD, invoke curl by calling
-process, return the response."
+process, return the list of responses."
   (let ((config (pwb-make-retrieve-message-batch-results-curl-config-file results-url key))
-        (response))
+        (responses))
     (unwind-protect
         (with-temp-buffer
           (let ((status (call-process "curl" nil t nil "--silent"
@@ -500,10 +501,10 @@ process, return the response."
             (unless (zerop status)
               (error "Curl failed with status %d: %s" status (buffer-string))))
           (goto-char (point-min))
-          (setq response (json-parse-buffer :object-type 'alist)))
+          (setq responses (pwb-jsonl-parse)))
       (when (file-exists-p config)
         (delete-file config)))
-    response))
+    responses))
 
 (defun pwb-curl-with-config-upload-file (path key)
   "Make a curl config file based on PAYLOAD, invoke curl by calling
@@ -668,6 +669,11 @@ The CONTENT argument must be STRING."
                         "thinking"
                         (pwb-get-content response))))
 
+(defun pwb-get-result-message (response)
+  "Get the content of message.
+The shape is the same as Message API."
+  (alist-get 'message (alist-get 'result response)))
+
 (defun pwb-thinking-message (response)
   "Emit thinking to *Messages* buffer from RESPONSE."
   (let ((thinking (pwb-get-content-thinking response)))
@@ -788,6 +794,17 @@ RESPONSE is an alist parsed from the API's JSON error body."
          ("refusal" t)
          ("model_context_window_exceeded" t)
          (other nil)))))
+
+(defun pwb-jsonl-parse ()
+  "Parse json the current buffer.
+Return the list of alist's."
+  (let ((line nil)
+        (accu nil))
+    (condition-case nil
+        (while (setq line (json-parse-buffer :object-type 'alist))
+          (setq accu (cons line accu)))
+      (error nil))
+    accu))
 
 (defun pwb-batch-response (response)
   (pcase (alist-get 'type response)

@@ -464,6 +464,37 @@
                    (content . [((type . "text") (text . "Hello! How can I help you today?"))])))))
 
 
+(ert-deftest pwb-batch-prompt ()
+  (skip-unless nil)
+  (should (equal
+           '((requests
+              . [((custom_id . "my-first-request")
+                  (params
+                   (model . "claude-opus-5-5")
+                   (max_tokens . 1024)
+                   (system . [((type . "text")
+                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.
+"))
+                              ((type . "text")
+                               (text . "<the entire contents of Pride and Prejudice>")
+                               (cache_control (type . "ephemeral")))])
+                   (messages . [((role . "user")
+                                 (content . "Analyze the major themes in Pride and Prejudice."))])))
+                 ((custom_id . "my-second-request")
+                  (params
+                   (model . "claude-opus-5-5")
+                   (max_tokens . 1024)
+                   (system . [((type . "text")
+                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.
+"))
+                              ((type . "text")
+                               (text . "<the entire contents of Pride and Prejudice>")
+                               (cache_control (type
+                                               . "ephemeral")))])
+                   (messages . [((role . "user")
+                                 (content . "Write a summary of Pride and Prejudice."))])))]))
+           nil)))
+
 (provide 'pwb-test)
 
 ;;; pwb-test.el ends here

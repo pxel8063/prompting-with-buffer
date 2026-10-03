@@ -318,7 +318,7 @@ system message."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let ((response (pwb-retrieve-batch-curl-with-config id key)))
+    (let ((response (pwb-retrieve-message-batch-curl-with-config id key)))
       (pwb-render-error-response response)
       (pwb-get-results-url response))))
 
@@ -372,7 +372,7 @@ has done."
                                       'utf-8))))
     tmpfile))
 
-(defun pwb-make-retrieve-batch-curl-config-file (id key)
+(defun pwb-make-retrieve-message-batch-curl-config-file (id key)
   "Make a temporary curl config file and return its filename. ID is
 message batch id. The caller is responsible to delete the temporary file
 after it has done."
@@ -450,10 +450,10 @@ process, return the response."
         (delete-file config)))
     response))
 
-(defun pwb-retrieve-batch-curl-with-config (id key)
+(defun pwb-retrieve-message-batch-curl-with-config (id key)
   "Make a curl config file based on PAYLOAD, invoke curl by calling
 process, return the response."
-  (let ((config (pwb-make-retrieve-batch-curl-config-file id key))
+  (let ((config (pwb-make-retrieve-message-batch-curl-config-file id key))
         (response))
     (unwind-protect
         (with-temp-buffer

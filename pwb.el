@@ -630,14 +630,14 @@ RESPONSE is an alist parsed from the API's JSON error body."
   (pcase (alist-get 'type response)
     ("error" nil)
     (_ (pcase (alist-get 'stop_reason response)
-             ("end_turn" t)
-             ("max_tokens" t)
-             ("stop_sequence" t)
-             ("tool_use" t)
-             ("pause_turn" t)
-             ("refusal" t)
-             ("model_context_window_exceeded" t)
-             (other nil)))))
+         ("end_turn" t)
+         ("max_tokens" t)
+         ("stop_sequence" t)
+         ("tool_use" t)
+         ("pause_turn" t)
+         ("refusal" t)
+         ("model_context_window_exceeded" t)
+         (other nil)))))
 
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))
@@ -813,29 +813,29 @@ OPTIONAL-BODY-PARAMS: alist
 FILE-IDS: a list of the cons of
 content block type and id strings (\"image/png\" . \"file_01\")."
   (append (pwb-requests (vconcat (list (append
-                                          (pwb-custom-id "my-first-request")
-                                          (pwb-params (append
-                                                       (pwb-model "claude-opus-5-5")
-                                                       (pwb-max-tokens 1024)
-                                                       (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                            (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
-                                                       (pwb-messages (vconcat messages
-                                                                              (pwb-array-message-param
-                                                                               "user"
+                                        (pwb-custom-id "my-first-request")
+                                        (pwb-params (append
+                                                     (pwb-model "claude-opus-5-5")
+                                                     (pwb-max-tokens 1024)
+                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
+                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                     (pwb-messages (vconcat messages
+                                                                            (pwb-array-message-param
+                                                                             "user"
                                         ;(append file-ids (list prompt))
-                                                                               (list "Analyze the major themes in Pride and Prejudice."))))))))
+                                                                             (list "Analyze the major themes in Pride and Prejudice."))))))))
                                  (list (append
-                                          (pwb-custom-id "my-second-request")
-                                          (pwb-params (append
-                                                       (pwb-model "claude-opus-5-5")
-                                                       (pwb-max-tokens 1024)
-                                                       (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                           (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
-                                                       (pwb-messages (vconcat messages
-                                                                              (pwb-array-message-param
-                                                                               "user"
+                                        (pwb-custom-id "my-second-request")
+                                        (pwb-params (append
+                                                     (pwb-model "claude-opus-5-5")
+                                                     (pwb-max-tokens 1024)
+                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
+                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                     (pwb-messages (vconcat messages
+                                                                            (pwb-array-message-param
+                                                                             "user"
                                         ;(append file-ids (list prompt))
-                                                                               (list "Write a summary of Pride and Prejudice."))))))))))))
+                                                                             (list "Write a summary of Pride and Prejudice."))))))))))))
 
 ;;; The Claude API
 (defun pwb-max-tokens (num)

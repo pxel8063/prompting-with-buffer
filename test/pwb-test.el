@@ -35,6 +35,7 @@
           (pwb-max-tokens 256)
           (pwb-body-params '((cache_control (type . "ephemeral"))))
           (pwb-api-url "https://api.anthropic.com/v1/messages")
+          (pwb-api-batch-url "https://api.anthropic.com/v1/messages/batches")
           (pwb-api-file-url "https://api.anthropic.com/v1/files")
           (pwb-api-host "api.anthropic.com"))
       (funcall body))))
@@ -58,6 +59,15 @@
 # pwb-body-params: '((max_tokens . 2048))
 # End:
 ")
+
+(ert-deftest pwb-check-batch-request ()
+  "Test whether the batch request succeeds."
+  (skip-unless nil)
+  ;;{"custom_id":"my-custom-id-1","result":{"type":"succeeded","message":{"model":"claude-haiku-4-5-20251001","id":"msg_011CfeiEy185S3ns8CtWBEaj","type":"message","role":"assistant","content":[{"type":"text","text":"Hello! 👋 How can I help you today?"}],"container":null,"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":10,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":16,"service_tier":"batch","inference_geo":"not_available"},"diagnostics":null}}}
+  (pwb-with-custom
+   (should (eq t
+               (pwb-batch-request)))))
+
 (ert-deftest pwb-local-variables-test ()
   (let ((enable-local-variables :all))
     (should (eq (with-temp-buffer
@@ -464,7 +474,7 @@
 
 
 (ert-deftest pwb-batch-prompt ()
-  (skip-unless nil)
+  (skip-unless t)
   (should (equal
            '((requests
               . [((custom_id . "my-first-request")
@@ -472,27 +482,26 @@
                    (model . "claude-opus-5-5")
                    (max_tokens . 1024)
                    (system . [((type . "text")
-                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.
-"))
+                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
                               ((type . "text")
                                (text . "<the entire contents of Pride and Prejudice>")
                                (cache_control (type . "ephemeral")))])
                    (messages . [((role . "user")
-                                 (content . "Analyze the major themes in Pride and Prejudice."))])))
+                                 (content . [((type . "text")
+                                              (text . "Analyze the major themes in Pride and Prejudice."))]))])))
                  ((custom_id . "my-second-request")
                   (params
                    (model . "claude-opus-5-5")
                    (max_tokens . 1024)
                    (system . [((type . "text")
-                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.
-"))
+                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
                               ((type . "text")
                                (text . "<the entire contents of Pride and Prejudice>")
-                               (cache_control (type
-                                               . "ephemeral")))])
+                               (cache_control (type . "ephemeral")))])
                    (messages . [((role . "user")
-                                 (content . "Write a summary of Pride and Prejudice."))])))]))
-           nil)))
+                                 (content . [((type . "text")
+                                              (text . "Write a summary of Pride and Prejudice."))]))])))]))
+           (pwb-batch-payload-with-prompt-and-uploaded-files nil nil nil nil nil nil nil))))
 
 (provide 'pwb-test)
 

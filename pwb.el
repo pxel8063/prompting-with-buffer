@@ -839,64 +839,6 @@ Return the list of alist's."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun pwb-text-block-param-sh ()
-  "TextBlockParam with TEXT.
-The shorthand of text block param."
-  (error "do not use this function."))
-
-(defun pwb-text-block-param ()
-  "TextBlockParam {TEXT, type, cache_control, citations}."
-  (error "do not use this function."))
-
-(defun pwb-image-block-param ()
-  "ImageBlockParam with DATA {source, type, cache_control}."
-  (error "do not use this function."))
-
-(defun pwb-file-block-param ()
-  "FileBlockParam with FILE-ID-PAIR."
-  (error "do not use this function."))
-
-(defun pwb-mime-type->block-type ()
-  "Transform MIME-TYPE to the contents block type."
-  (error "do not use this function."))
-
-(defun pwb-make-message-param-content ()
-  "Return the content of MessageParam.
-The content is array of ContentBlockParam(CONTENT-BLOCK-PARAMS).
-The arguments are the list of alist."
-  (error "do not use this function."))
-
-(defun pwb-make-message-param ()
-  "MessageParam Constructor taking ROLE and MESSAGE-PARAM-CONTENT."
-  (error "do not use this function."))
-
-;;; The payload top level These are called Body Parameters.
-(defun pwb-make-body-param-max-tokens ()
-  "Constructor for max_tokens body parameter by INT."
-  (error "do not use this function."))
-
-(defun pwb-make-body-param-messages ()
-  "Constructor for messages body parameter(MESSAGE-PARAM)."
-  (error "do not use this function."))
-
-(defun pwb-make-body-param-model ()
-  "Constructor for model body parameter by MODEL."
-  (error "do not use this function."))
-
-(defun pwb-make-body-param-system ()
-  "Constructor for system body parameter by STRING."
-  (error "do not use this function."))
-
-;;; The constructor payload
-(defun pwb-make-payload ()
-  "Construct payload from OPTIONAL-BODY-PARAMS and BODY-PARAMS."
-  (error "do not use this function."))
-
-(defun pwb-concat-turns-2 ()
-  "Concatenate HISTORY of turn, a.k.a Messages and CURRENT MessageParam.
-This function can be used to add conversation."
-  (error "do not use this function."))
-
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param

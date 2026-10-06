@@ -419,7 +419,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "document")
                                         (source (type . "file")
@@ -427,7 +427,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -435,7 +435,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -443,7 +443,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png/base64" . "IMAGE_DATA"))))
+                          (pwb-array-content-block-param '("image/png/base64" . "IMAGE_DATA"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "base64")
@@ -454,7 +454,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          (list "Hello, Claude!")))
+                          (pwb-array-content-block-param "Hello, Claude!")))
            '((messages . [((role . "user")
                            (content . [((type . "text")
                                         (text . "Hello, Claude!"))]))])))))

@@ -839,6 +839,15 @@ Return the list of alist's."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
+(cl-defmacro pwb-with-array ((var objs) &body body)
+  (declare (indent defun))
+  (let ((val (gensym))
+        (gob (gensym)))
+    `(let ((,val)
+           (,gob ,objs))
+       (dolist (,var ,gob ,val)
+         (setq ,val (vconcat ,val ,@body))))))
+
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
@@ -850,7 +859,8 @@ OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (list prompt))))
+                                  (pwb-with-array (x (list prompt))
+                                    (pwb-array-content-block-param x)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
@@ -869,7 +879,8 @@ content block type and id strings (\"image/png\" . \"file_01\")."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (append file-ids (list prompt)))))
+                                  (pwb-with-array (x (append file-ids (list prompt)))
+                                    (pwb-array-content-block-param x)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
@@ -887,7 +898,8 @@ OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (append data (list prompt)))))
+                                  (pwb-with-array (x (append data (list prompt)))
+                                    (pwb-array-content-block-param x)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
@@ -905,10 +917,10 @@ OPTIONAL-BODY-PARAMS: alist."
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (list prompt))
+                                  (pwb-array-content-block-param prompt))
                                  (pwb-array-message-param
                                   "system"
-                                  (list mid-system))))
+                                  (pwb-array-content-block-param mid-system))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
@@ -936,7 +948,7 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                                                             (pwb-array-message-param
                                                                              "user"
                                         ;(append file-ids (list prompt))
-                                                                             (list "Analyze the major themes in Pride and Prejudice."))))))))
+                                                                             (pwb-array-content-block-param "Analyze the major themes in Pride and Prejudice."))))))))
                                  (list (append
                                         (pwb-custom-id "my-second-request")
                                         (pwb-params (append
@@ -948,7 +960,7 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                                                             (pwb-array-message-param
                                                                              "user"
                                         ;(append file-ids (list prompt))
-                                                                             (list "Write a summary of Pride and Prejudice."))))))))))))
+                                                                             (pwb-array-content-block-param "Write a summary of Pride and Prejudice."))))))))))))
 
 (defun pwb-test-batch-payload- (first-id model)
   ""
@@ -1012,14 +1024,14 @@ Used on batch requrest"
   "Return params parameter."
   (list (cons 'params body)))
 
-(defun pwb-array-message-param (role data)
+(defun pwb-array-message-param (role content)
   "Construct a array of message-param.
 ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
 a list of strings or cons. For more information about cons, see
 `pwb-array-content-block-param'."
   (vector (list (cons 'role role)
                 (cons 'content
-                      (apply #'vconcat (mapcar #'pwb-array-content-block-param data))))))
+                      content))))
 
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.

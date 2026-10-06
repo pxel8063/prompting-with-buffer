@@ -808,7 +808,7 @@ Return the list of alist's."
 
 (defun pwb-batch-response (response)
   (pcase (alist-get 'type response)
-    ("message_batch")))
+    ("message_batch" t)))
 
 (defun pwb-response-to-file-id (response)
   (let ((id (alist-get 'id response))

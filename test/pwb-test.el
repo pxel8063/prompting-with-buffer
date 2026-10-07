@@ -401,13 +401,13 @@
             (pwb-cache-control "5m")
             '((cache_control (type . "ephemeral")))))
    (should (equal
-            (pwb-system (pwb-array-text-block-param "The system prompt"))
+            (pwb-system (pwb-array-text-block-param "The system prompt" nil))
             '((system . [((type . "text") (text . "The system prompt"))]))))
    (should (equal
-            (pwb-system (pwb-array-text-block-param ""))
+            (pwb-system (pwb-array-text-block-param "" nil))
             nil))
    (should (equal
-            (pwb-system (pwb-array-text-block-param "The system prompt" t))
+            (pwb-system (pwb-array-text-block-param "The system prompt" "5m"))
             '((system . [((type . "text") (text . "The system prompt")
                           (cache_control (type . "ephemeral")))]))))
    (should (equal

@@ -942,8 +942,8 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                         (pwb-params (append
                                                      (pwb-model "claude-opus-5-5")
                                                      (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style." nil)
+                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" "5m")))
                                                      (pwb-messages (vconcat messages
                                                                             (pwb-array-message-param
                                                                              "user"
@@ -954,8 +954,8 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                         (pwb-params (append
                                                      (pwb-model "claude-opus-5-5")
                                                      (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
+                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style." nil)
+                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" "5m")))
                                                      (pwb-messages (vconcat messages
                                                                             (pwb-array-message-param
                                                                              "user"
@@ -1053,7 +1053,9 @@ TTL is either \"5m\" or \"1h\"."
     ;; for base64 png image
     (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
     ;; for text
-    ((and (pred stringp) text) (pwb-array-text-block-param text))
+    (`(,text . "5m") (pwb-array-text-block-param text "5m"))
+    (`(,text . "1h") (pwb-array-text-block-param text "1h"))
+    ((and (pred stringp) text) (pwb-array-text-block-param text nil))
     (code (error "%S: not implemented" code))))
 
 (defun pwb-base64-image-source (data)
@@ -1071,13 +1073,14 @@ FILE-ID is obtained from Files API."
         (cons 'type "file")
         (cons 'file_id file-id)))
 
-(defun pwb-array-text-block-param (text &optional cache)
-  "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+(defun pwb-array-text-block-param (text cache)
+  "Array of TextBlockParam {TEXT, type, cache_control, citations}.
+cache must be one of  \"5m\", \"1h\" and nil."
   (unless (equal text "")
     (vector (if cache
                 (append (list (cons 'type "text")
                               (cons 'text text))
-                        (pwb-cache-control "5m"))
+                        (pwb-cache-control cache))
               (list (cons 'type "text")
                     (cons 'text text))))))
 

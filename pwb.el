@@ -192,31 +192,32 @@ narrowed part."
 ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
-           (let* ((system (read-string "Enter mid-conversation system message.")))
-             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                 prompt
-                                                 system
-                                                 pwb-max-tokens
-                                                 pwb-model
-                                                 pwb-system-prompt
-                                                 pwb-body-params)))
+           (let ((mid-system (read-string "Enter mid-conversation system message: ")))
+             (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list prompt)
+                          (list mid-system)
+                          pwb-max-tokens
+                          pwb-model
+                          pwb-system-prompt
+                          pwb-body-params)))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
-             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
-                                                prompt
-                                                (list (cons "image/png/base64" image))
-                                                pwb-max-tokens
-                                                pwb-model
-                                                pwb-system-prompt
-                                                pwb-body-params )))
-          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
-                                      prompt
-                                      pwb-max-tokens
-                                      pwb-model
-                                      pwb-system-prompt
-                                      pwb-body-params)))))
+             (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list (cons "image/png/base64" image) prompt)
+                          nil
+                          pwb-max-tokens
+                          pwb-model
+                          pwb-system-prompt
+                          pwb-body-params )))
+          (t (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list prompt)
+                          nil
+                          pwb-max-tokens
+                          pwb-model
+                          pwb-system-prompt
+                          pwb-body-params)))))
 
 
 ;;;###autoload
@@ -288,13 +289,13 @@ system message."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
-                                                             prompt
-                                                             pwb-max-tokens
-                                                             model
-                                                             system
-                                                             pwb-body-params
-                                                             file-ids))
+    (let* ((alst (pwb-payload (pwb-messages-turns pwb-messages)
+                              (append file-ids (list prompt))
+                              nil
+                              pwb-max-tokens
+                              model
+                              system
+                              pwb-body-params))
            (response (pwb-curl-with-config alst key))
            (assistant-turn
             (pwb-response-to-assistant-turn response)))

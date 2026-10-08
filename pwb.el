@@ -848,12 +848,17 @@ Return the list of alist's."
        (dolist (,var ,gob ,val)
          (setq ,val (vconcat ,val ,@body))))))
 
-(defun pwb-payload (messages prompts max-tokens model system optional-body-params)
+(defun pwb-payload (messages prompts mid-system-prompts max-tokens model system optional-body-params)
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
                                   (pwb-with-array (x prompts)
-                                    (pwb-array-content-block-param x)))))
+                                    (pwb-array-content-block-param x)))
+                                 (when mid-system-prompts
+                                   (pwb-array-message-param
+                                    "system"
+                                    (pwb-with-array (x mid-system-prompts)
+                                      (pwb-array-content-block-param x))))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))

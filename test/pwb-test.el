@@ -393,6 +393,7 @@
      ;; pwb-payload-with-prompt-test
      (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
                                  prmts
+                                 nil
                                  pwb-max-tokens
                                  pwb-model
                                  pwb-system-prompt
@@ -404,6 +405,7 @@
      ;; pwb-build-payload-prompt-and-image-test
      (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
                                  prmts
+                                 nil
                                  pwb-max-tokens
                                  pwb-model
                                  pwb-system-prompt
@@ -413,6 +415,36 @@
                                                                          (media_type . "image/png")
                                                                          (data . "IMAGE_BASE64")))
                                                                 ((type . "text") (text . "Hello."))]))])
+                      (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))
+   (let ((prmts (list (cons "image/png/base64" "IMAGE_BASE64") "Hello.")))
+     ;; pwb-build-payload-prompt-and-uploaded-files-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 nil
+                                 pwb-max-tokens
+                                 pwb-model
+                                 pwb-system-prompt
+                                 pwb-body-params)
+                    '((messages . [((role . "user") (content . [((type . "image")
+                                                                 (source (type . "base64")
+                                                                         (media_type . "image/png")
+                                                                         (data . "IMAGE_BASE64")))
+                                                                ((type . "text") (text . "Hello."))]))])
+                      (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))
+   (let ((prmts (list "Hello."))
+         (mids  (list "Mid conversation")))
+     ;; pwb-payload-with-prompt-and-system-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 mids
+                                 pwb-max-tokens
+                                 pwb-model
+                                 pwb-system-prompt
+                                 pwb-body-params)
+                    '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))
+                                   ((role . "system") (content . [((type . "text") (text . "Mid conversation"))]))])
                       (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                       (cache_control (type . "ephemeral"))))))))
 

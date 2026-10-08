@@ -848,6 +848,17 @@ Return the list of alist's."
        (dolist (,var ,gob ,val)
          (setq ,val (vconcat ,val ,@body))))))
 
+(defun pwb-payload (messages prompts max-tokens model system optional-body-params)
+  (append (pwb-messages (vconcat messages
+                                 (pwb-array-message-param
+                                  "user"
+                                  (pwb-with-array (x prompts)
+                                    (pwb-array-content-block-param x)))))
+          (pwb-max-tokens max-tokens)
+          (pwb-model model)
+          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
+          optional-body-params))
+
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
@@ -860,7 +871,7 @@ OPTIONAL-BODY-PARAMS: alist."
                                  (pwb-array-message-param
                                   "user"
                                   (pwb-with-array (x (list prompt))
-                                    (pwb-array-content-block-param x)))))
+                                                  (pwb-array-content-block-param x)))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))

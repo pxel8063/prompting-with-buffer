@@ -387,6 +387,20 @@
                     (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
                     (cache_control (type . "ephemeral")))))))
 
+(ert-deftest pwb-payload-test ()
+  (pwb-with-custom
+   (let ((prmts (list "Hello.")))
+     ;; pwb-payload-with-prompt-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 pwb-max-tokens
+                                 pwb-model
+                                 pwb-system-prompt
+                                 pwb-body-params)
+                    '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
+                      (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))))
+
 ;;; The Claude API test
 (ert-deftest pwb-api-test ()
   "Test primitive functions for the api"

@@ -472,6 +472,16 @@
                  '((role . "assistant")
                    (content . [((type . "text") (text . "Hello! How can I help you today?"))])))))
 
+(ert-deftest pwb-with-array-test ()
+  (let ((input '("You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."
+                 ("<the entire contents of Pride and Prejudice>" . "5m"))))
+    (should (equal [((type . "text")
+                     (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
+                    ((type . "text")
+                     (text . "<the entire contents of Pride and Prejudice>")
+                     (cache_control (type . "ephemeral")))]
+                   (pwb-with-array (x input)
+                     (pwb-array-content-block-param x))))))
 
 (ert-deftest pwb-batch-prompt ()
   (skip-unless t)

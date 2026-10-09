@@ -866,7 +866,7 @@ Return the list of alist's."
                         (pwb-array-content-block-param x)))
           optional-body-params))
 
-(defun pwb-batch-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
+(defun pwb-batch-payload-with-prompt-and-uploaded-files ()
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string

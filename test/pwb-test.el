@@ -539,7 +539,7 @@
                               ((type . "text")
                                (text . "<the entire contents of Pride and Prejudice>")
                                (cache_control (type . "ephemeral")))])))]))
-           (pwb-batch-payload-with-prompt-and-uploaded-files nil nil nil nil nil nil nil))))
+           (pwb-batch-payload-with-prompt-and-uploaded-files))))
 
 (provide 'pwb-test)
 

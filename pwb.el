@@ -954,30 +954,36 @@ SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
 FILE-IDS: a list of the cons of
 content block type and id strings (\"image/png\" . \"file_01\")."
-  (append (pwb-requests (vconcat (list (append
-                                        (pwb-custom-id "my-first-request")
-                                        (pwb-params (append
-                                                     (pwb-model "claude-opus-5-5")
-                                                     (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style." nil)
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" "5m")))
-                                                     (pwb-messages (vconcat messages
-                                                                            (pwb-array-message-param
-                                                                             "user"
+  (let ((system-contents '("You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."
+                           ("<the entire contents of Pride and Prejudice>" . "5m")))
+        (user-contents-1 '("Analyze the major themes in Pride and Prejudice."))
+        (user-contents-2 '("Write a summary of Pride and Prejudice.")))
+   (append (pwb-requests (vconcat (list (append
+                                         (pwb-custom-id "my-first-request")
+                                         (pwb-params (append
+                                                      (pwb-model "claude-opus-5-5")
+                                                      (pwb-max-tokens 1024)
+                                                      (pwb-system (pwb-with-array (x system-contents)
+                                                                    (pwb-array-content-block-param x)))
+                                                      (pwb-messages (vconcat messages
+                                                                             (pwb-array-message-param
+                                                                              "user"
                                         ;(append file-ids (list prompt))
-                                                                             (pwb-array-content-block-param "Analyze the major themes in Pride and Prejudice."))))))))
-                                 (list (append
-                                        (pwb-custom-id "my-second-request")
-                                        (pwb-params (append
-                                                     (pwb-model "claude-opus-5-5")
-                                                     (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style." nil)
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" "5m")))
-                                                     (pwb-messages (vconcat messages
-                                                                            (pwb-array-message-param
-                                                                             "user"
+                                                                              (pwb-with-array (x user-contents-1)
+                                                                                (pwb-array-content-block-param x)))))))))
+                                  (list (append
+                                         (pwb-custom-id "my-second-request")
+                                         (pwb-params (append
+                                                      (pwb-model "claude-opus-5-5")
+                                                      (pwb-max-tokens 1024)
+                                                      (pwb-system (pwb-with-array (x system-contents)
+                                                                    (pwb-array-content-block-param x)))
+                                                      (pwb-messages (vconcat messages
+                                                                             (pwb-array-message-param
+                                                                              "user"
                                         ;(append file-ids (list prompt))
-                                                                             (pwb-array-content-block-param "Write a summary of Pride and Prejudice."))))))))))))
+                                                                              (pwb-with-array (x user-contents-2)
+                                                                                (pwb-array-content-block-param x ))))))))))))))
 
 (defun pwb-test-batch-payload- (first-id model)
   ""

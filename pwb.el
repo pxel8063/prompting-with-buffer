@@ -944,7 +944,6 @@ OPTIONAL-BODY-PARAMS: alist."
           (pwb-system (pwb-array-text-block-param system pwb-system-cache))
           optional-body-params))
 
-
 (defun pwb-batch-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
@@ -959,32 +958,24 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                            ("<the entire contents of Pride and Prejudice>" . "5m")))
         (user-contents-1 '("Analyze the major themes in Pride and Prejudice."))
         (user-contents-2 '("Write a summary of Pride and Prejudice.")))
-   (append (pwb-requests (vconcat (list (append
-                                         (pwb-custom-id "my-first-request")
-                                         (pwb-params (append
-                                                      (pwb-model "claude-opus-5-5")
-                                                      (pwb-max-tokens 1024)
-                                                      (pwb-system (pwb-with-array (x system-contents)
-                                                                    (pwb-array-content-block-param x)))
-                                                      (pwb-messages (vconcat messages
-                                                                             (pwb-array-message-param
-                                                                              "user"
-                                        ;(append file-ids (list prompt))
-                                                                              (pwb-with-array (x user-contents-1)
-                                                                                (pwb-array-content-block-param x)))))))))
-                                  (list (append
-                                         (pwb-custom-id "my-second-request")
-                                         (pwb-params (append
-                                                      (pwb-model "claude-opus-5-5")
-                                                      (pwb-max-tokens 1024)
-                                                      (pwb-system (pwb-with-array (x system-contents)
-                                                                    (pwb-array-content-block-param x)))
-                                                      (pwb-messages (vconcat messages
-                                                                             (pwb-array-message-param
-                                                                              "user"
-                                        ;(append file-ids (list prompt))
-                                                                              (pwb-with-array (x user-contents-2)
-                                                                                (pwb-array-content-block-param x ))))))))))))))
+    (append (pwb-requests (vconcat (list (append
+                                          (pwb-custom-id "my-first-request")
+                                          (pwb-params (pwb-payload []
+                                                                   user-contents-1
+                                                                   nil
+                                                                   1024
+                                                                   "claude-opus-5-5"
+                                                                   system-contents
+                                                                   nil))))
+                                   (list (append
+                                          (pwb-custom-id "my-second-request")
+                                          (pwb-params (pwb-payload []
+                                                                   user-contents-2
+                                                                   nil
+                                                                   1024
+                                                                   "claude-opus-5-5"
+                                                                   system-contents
+                                                                   nil)))))))))
 
 (defun pwb-test-batch-payload- (first-id model)
   ""

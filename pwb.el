@@ -198,7 +198,7 @@ ARG is the unversal argument."
                           (list mid-system)
                           pwb-max-tokens
                           pwb-model
-                          pwb-system-prompt
+                          (list pwb-system-prompt)
                           pwb-body-params)))
           ((equal arg '(4))
            (let* ((image-file
@@ -209,14 +209,14 @@ ARG is the unversal argument."
                           nil
                           pwb-max-tokens
                           pwb-model
-                          pwb-system-prompt
+                          (list pwb-system-prompt)
                           pwb-body-params )))
           (t (pwb-payload (pwb-messages-turns pwb-messages)
                           (list prompt)
                           nil
                           pwb-max-tokens
                           pwb-model
-                          pwb-system-prompt
+                          (list pwb-system-prompt)
                           pwb-body-params)))))
 
 
@@ -294,7 +294,7 @@ system message."
                               nil
                               pwb-max-tokens
                               model
-                              system
+                              (list system)
                               pwb-body-params))
            (response (pwb-curl-with-config alst key))
            (assistant-turn
@@ -849,7 +849,7 @@ Return the list of alist's."
        (dolist (,var ,gob ,val)
          (setq ,val (vconcat ,val ,@body))))))
 
-(defun pwb-payload (messages prompts mid-system-prompts max-tokens model system optional-body-params)
+(defun pwb-payload (messages prompts mid-system-prompts max-tokens model systems optional-body-params)
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
@@ -862,7 +862,8 @@ Return the list of alist's."
                                       (pwb-array-content-block-param x))))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
+          (pwb-system (pwb-with-array (x systems)
+                        (pwb-array-content-block-param x)))
           optional-body-params))
 
 (defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)

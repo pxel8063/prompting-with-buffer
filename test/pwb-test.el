@@ -248,7 +248,7 @@
                       nil
                       pwb-max-tokens
                       pwb-model
-                      pwb-system-prompt
+                      (list pwb-system-prompt)
                       pwb-body-params)))
            (setq filename (pwb-make-curl-config-file alst "MYSECRET"))
            (find-file-literally filename)
@@ -397,7 +397,7 @@
                                  nil
                                  pwb-max-tokens
                                  pwb-model
-                                 pwb-system-prompt
+                                 (list pwb-system-prompt)
                                  pwb-body-params)
                     '((messages . [((role . "user")
                                     (content . [((type . "text")
@@ -415,7 +415,7 @@
                                  nil
                                  pwb-max-tokens
                                  pwb-model
-                                 pwb-system-prompt
+                                 (list pwb-system-prompt)
                                  pwb-body-params)
                     '((messages . [((role . "user")
                                     (content . [((type . "image")
@@ -437,7 +437,7 @@
                                  nil
                                  pwb-max-tokens
                                  pwb-model
-                                 pwb-system-prompt
+                                 (list pwb-system-prompt)
                                  pwb-body-params)
                     '((messages . [((role . "user")
                                     (content . [((type . "image")
@@ -460,7 +460,7 @@
                                  mids
                                  pwb-max-tokens
                                  pwb-model
-                                 pwb-system-prompt
+                                 (list pwb-system-prompt)
                                  pwb-body-params)
                     '((messages . [((role . "user")
                                     (content . [((type . "text")

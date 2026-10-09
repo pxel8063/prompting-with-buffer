@@ -242,12 +242,13 @@
   (pwb-with-custom
    (let (filename)
      (unwind-protect
-         (let ((alst (pwb-payload-with-prompt
+         (let ((alst (pwb-payload
                       (pwb-messages-turns pwb-messages)
-                      "Hello."
+                      (list "Hello.")
+                      nil
                       pwb-max-tokens
                       pwb-model
-                      pwb-system-prompt
+                      (list pwb-system-prompt)
                       pwb-body-params)))
            (setq filename (pwb-make-curl-config-file alst "MYSECRET"))
            (find-file-literally filename)
@@ -328,64 +329,91 @@
 -X \"DELETE\"
 ")))))
 
-(ert-deftest pwb-build-payload-prompt-and-image-test ()
+(ert-deftest pwb-payload-test ()
   (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
-                                                     "Hello."
-                                                     (list (cons "image/png/base64" "IMAGE_BASE64"))
-                                                     pwb-max-tokens
-                                                     pwb-model
-                                                     pwb-system-prompt
-                                                     pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "image")
-                                                               (source (type . "base64")
-                                                                       (media_type . "image/png")
-                                                                       (data . "IMAGE_BASE64")))
-                                                              ((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
-                    (cache_control (type . "ephemeral")))))))
+   (let ((prmts (list "Hello.")))
+     ;; pwb-payload-with-prompt-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 nil
+                                 pwb-max-tokens
+                                 pwb-model
+                                 (list pwb-system-prompt)
+                                 pwb-body-params)
+                    '((messages . [((role . "user")
+                                    (content . [((type . "text")
+                                                 (text . "Hello."))]))])
+                      (max_tokens . 256)
+                      (model . "claude-haiku-4-5")
+                      (system . [((type . "text")
+                                  (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))
 
-(ert-deftest pwb-build-payload-prompt-and-system-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                      "Hello."
-                                                      "Mid conversation"
-                                                      pwb-max-tokens
-                                                      pwb-model
-                                                      pwb-system-prompt
-                                                      pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))
-                                 ((role . "system") (content . [((type . "text") (text . "Mid conversation"))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
-                    (cache_control (type . "ephemeral")))))))
+   (let ((prmts (list (cons "image/png/base64" "IMAGE_BASE64") "Hello.")))
+     ;; pwb-build-payload-prompt-and-image-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 nil
+                                 pwb-max-tokens
+                                 pwb-model
+                                 (list pwb-system-prompt)
+                                 pwb-body-params)
+                    '((messages . [((role . "user")
+                                    (content . [((type . "image")
+                                                 (source (type . "base64")
+                                                         (media_type . "image/png")
+                                                         (data . "IMAGE_BASE64")))
+                                                ((type . "text")
+                                                 (text . "Hello."))]))])
+                      (max_tokens . 256)
+                      (model . "claude-haiku-4-5")
+                      (system . [((type . "text")
+                                  (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))
 
-(ert-deftest pwb-payload-with-prompt-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
-                                           "Hello."
-                                           pwb-max-tokens
-                                           pwb-model
-                                           pwb-system-prompt
-                                           pwb-body-params)
-                  '((messages . [((role . "user") (content . [((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
-                    (cache_control (type . "ephemeral")))))))
+   (let ((prmts (list (cons "image/png/base64" "IMAGE_BASE64") "Hello.")))
+     ;; pwb-build-payload-prompt-and-uploaded-files-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 nil
+                                 pwb-max-tokens
+                                 pwb-model
+                                 (list pwb-system-prompt)
+                                 pwb-body-params)
+                    '((messages . [((role . "user")
+                                    (content . [((type . "image")
+                                                 (source (type . "base64")
+                                                         (media_type . "image/png")
+                                                         (data . "IMAGE_BASE64")))
+                                                ((type . "text")
+                                                 (text . "Hello."))]))])
+                      (max_tokens . 256)
+                      (model . "claude-haiku-4-5")
+                      (system . [((type . "text")
+                                  (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))
 
-(ert-deftest pwb-build-payload-prompt-and-uploaded-files-test ()
-  (pwb-with-custom
-   (should (equal (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
-                                                              "Hello."
-                                                              pwb-max-tokens
-                                                              pwb-model
-                                                              pwb-system-prompt
-                                                              pwb-body-params
-                                                              (list (cons "image/png" "file_011A1zQEgJqRFP2t2o7MoGr1")))
-                  '((messages . [((role . "user") (content . [((type . "image")
-                                                               (source (type . "file")
-                                                                       (file_id . "file_011A1zQEgJqRFP2t2o7MoGr1")))
-                                                              ((type . "text") (text . "Hello."))]))])
-                    (max_tokens . 256) (model . "claude-haiku-4-5") (system . [((type . "text") (text . "Be honest."))])
-                    (cache_control (type . "ephemeral")))))))
+   (let ((prmts (list "Hello."))
+         (mids  (list "Mid conversation")))
+     ;; pwb-payload-with-prompt-and-system-test
+     (should (equal (pwb-payload (pwb-messages-turns pwb-messages)
+                                 prmts
+                                 mids
+                                 pwb-max-tokens
+                                 pwb-model
+                                 (list pwb-system-prompt)
+                                 pwb-body-params)
+                    '((messages . [((role . "user")
+                                    (content . [((type . "text")
+                                                 (text . "Hello."))]))
+                                   ((role . "system")
+                                    (content . [((type . "text")
+                                                 (text . "Mid conversation"))]))])
+                      (max_tokens . 256)
+                      (model . "claude-haiku-4-5")
+                      (system . [((type . "text")
+                                  (text . "Be honest."))])
+                      (cache_control (type . "ephemeral"))))))))
 
 ;;; The Claude API test
 (ert-deftest pwb-api-test ()
@@ -401,13 +429,13 @@
             (pwb-cache-control "5m")
             '((cache_control (type . "ephemeral")))))
    (should (equal
-            (pwb-system (pwb-array-text-block-param "The system prompt"))
+            (pwb-system (pwb-array-text-block-param "The system prompt" nil))
             '((system . [((type . "text") (text . "The system prompt"))]))))
    (should (equal
-            (pwb-system (pwb-array-text-block-param ""))
+            (pwb-system (pwb-array-text-block-param "" nil))
             nil))
    (should (equal
-            (pwb-system (pwb-array-text-block-param "The system prompt" t))
+            (pwb-system (pwb-array-text-block-param "The system prompt" "5m"))
             '((system . [((type . "text") (text . "The system prompt")
                           (cache_control (type . "ephemeral")))]))))
    (should (equal
@@ -419,7 +447,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("application/pdf" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "document")
                                         (source (type . "file")
@@ -427,7 +455,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -435,7 +463,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
+                          (pwb-array-content-block-param '("image/png" . "file_011A1zQEgJqRFP2t2o7MoGr1"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "file")
@@ -443,7 +471,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          '(("image/png/base64" . "IMAGE_DATA"))))
+                          (pwb-array-content-block-param '("image/png/base64" . "IMAGE_DATA"))))
            '((messages . [((role . "user")
                            (content . [((type . "image")
                                         (source (type . "base64")
@@ -454,7 +482,7 @@
   (should (equal
            (pwb-messages (pwb-array-message-param
                           "user"
-                          (list "Hello, Claude!")))
+                          (pwb-array-content-block-param "Hello, Claude!")))
            '((messages . [((role . "user")
                            (content . [((type . "text")
                                         (text . "Hello, Claude!"))]))])))))
@@ -472,6 +500,16 @@
                  '((role . "assistant")
                    (content . [((type . "text") (text . "Hello! How can I help you today?"))])))))
 
+(ert-deftest pwb-with-array-test ()
+  (let ((input '("You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."
+                 ("<the entire contents of Pride and Prejudice>" . "5m"))))
+    (should (equal [((type . "text")
+                     (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
+                    ((type . "text")
+                     (text . "<the entire contents of Pride and Prejudice>")
+                     (cache_control (type . "ephemeral")))]
+                   (pwb-with-array (x input)
+                     (pwb-array-content-block-param x))))))
 
 (ert-deftest pwb-batch-prompt ()
   (skip-unless t)
@@ -479,29 +517,29 @@
            '((requests
               . [((custom_id . "my-first-request")
                   (params
-                   (model . "claude-opus-5-5")
+                   (messages . [((role . "user")
+                                 (content . [((type . "text")
+                                              (text . "Analyze the major themes in Pride and Prejudice."))]))])
                    (max_tokens . 1024)
+                   (model . "claude-opus-5-5")
                    (system . [((type . "text")
                                (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
                               ((type . "text")
                                (text . "<the entire contents of Pride and Prejudice>")
-                               (cache_control (type . "ephemeral")))])
-                   (messages . [((role . "user")
-                                 (content . [((type . "text")
-                                              (text . "Analyze the major themes in Pride and Prejudice."))]))])))
+                               (cache_control (type . "ephemeral")))])))
                  ((custom_id . "my-second-request")
                   (params
-                   (model . "claude-opus-5-5")
+                   (messages . [((role . "user")
+                                 (content . [((type . "text")
+                                              (text . "Write a summary of Pride and Prejudice."))]))])
                    (max_tokens . 1024)
+                   (model . "claude-opus-5-5")
                    (system . [((type . "text")
                                (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
                               ((type . "text")
                                (text . "<the entire contents of Pride and Prejudice>")
-                               (cache_control (type . "ephemeral")))])
-                   (messages . [((role . "user")
-                                 (content . [((type . "text")
-                                              (text . "Write a summary of Pride and Prejudice."))]))])))]))
-           (pwb-batch-payload-with-prompt-and-uploaded-files nil nil nil nil nil nil nil))))
+                               (cache_control (type . "ephemeral")))])))]))
+           (pwb-batch-payload-with-prompt-and-uploaded-files))))
 
 (provide 'pwb-test)
 

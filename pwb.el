@@ -192,31 +192,32 @@ narrowed part."
 ARG is the unversal argument."
   (let ((prompt (pwb-buffer-string)))
     (cond ((equal arg '(16))
-           (let* ((system (read-string "Enter mid-conversation system message.")))
-             (pwb-payload-with-prompt-and-system (pwb-messages-turns pwb-messages)
-                                                 prompt
-                                                 system
-                                                 pwb-max-tokens
-                                                 pwb-model
-                                                 pwb-system-prompt
-                                                 pwb-body-params)))
+           (let ((mid-system (read-string "Enter mid-conversation system message: ")))
+             (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list prompt)
+                          (list mid-system)
+                          pwb-max-tokens
+                          pwb-model
+                          (list pwb-system-prompt)
+                          pwb-body-params)))
           ((equal arg '(4))
            (let* ((image-file
                    (read-file-name "Image png file: "))
                   (image (pwb-convert-file-base64 image-file)))
-             (pwb-payload-with-prompt-and-image (pwb-messages-turns pwb-messages)
-                                                prompt
-                                                (list (cons "image/png/base64" image))
-                                                pwb-max-tokens
-                                                pwb-model
-                                                pwb-system-prompt
-                                                pwb-body-params )))
-          (t (pwb-payload-with-prompt (pwb-messages-turns pwb-messages)
-                                      prompt
-                                      pwb-max-tokens
-                                      pwb-model
-                                      pwb-system-prompt
-                                      pwb-body-params)))))
+             (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list (cons "image/png/base64" image) prompt)
+                          nil
+                          pwb-max-tokens
+                          pwb-model
+                          (list pwb-system-prompt)
+                          pwb-body-params )))
+          (t (pwb-payload (pwb-messages-turns pwb-messages)
+                          (list prompt)
+                          nil
+                          pwb-max-tokens
+                          pwb-model
+                          (list pwb-system-prompt)
+                          pwb-body-params)))))
 
 
 ;;;###autoload
@@ -288,13 +289,13 @@ system message."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let* ((alst (pwb-payload-with-prompt-and-uploaded-files (pwb-messages-turns pwb-messages)
-                                                             prompt
-                                                             pwb-max-tokens
-                                                             model
-                                                             system
-                                                             pwb-body-params
-                                                             file-ids))
+    (let* ((alst (pwb-payload (pwb-messages-turns pwb-messages)
+                              (append file-ids (list prompt))
+                              nil
+                              pwb-max-tokens
+                              model
+                              (list system)
+                              pwb-body-params))
            (response (pwb-curl-with-config alst key))
            (assistant-turn
             (pwb-response-to-assistant-turn response)))
@@ -839,24 +840,33 @@ Return the list of alist's."
     (base64-encode-region (point-min) (point-max) t)
     (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun pwb-payload-with-prompt (messages prompt max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
+(cl-defmacro pwb-with-array ((var objs) &body body)
+  (declare (indent defun))
+  (let ((val (gensym))
+        (gob (gensym)))
+    `(let ((,val)
+           (,gob ,objs))
+       (dolist (,var ,gob ,val)
+         (setq ,val (vconcat ,val ,@body))))))
+
+(defun pwb-payload (messages prompts mid-system-prompts max-tokens model systems optional-body-params)
   (append (pwb-messages (vconcat messages
                                  (pwb-array-message-param
                                   "user"
-                                  (list prompt))))
+                                  (pwb-with-array (x prompts)
+                                    (pwb-array-content-block-param x)))
+                                 (when mid-system-prompts
+                                   (pwb-array-message-param
+                                    "system"
+                                    (pwb-with-array (x mid-system-prompts)
+                                      (pwb-array-content-block-param x))))))
           (pwb-max-tokens max-tokens)
           (pwb-model model)
-          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
+          (pwb-system (pwb-with-array (x systems)
+                        (pwb-array-content-block-param x)))
           optional-body-params))
 
-(defun pwb-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
+(defun pwb-batch-payload-with-prompt-and-uploaded-files ()
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
 PROMPT: string
@@ -866,89 +876,28 @@ SYSTEM: string
 OPTIONAL-BODY-PARAMS: alist
 FILE-IDS: a list of the cons of
 content block type and id strings (\"image/png\" . \"file_01\")."
-  (append (pwb-messages (vconcat messages
-                                 (pwb-array-message-param
-                                  "user"
-                                  (append file-ids (list prompt)))))
-          (pwb-max-tokens max-tokens)
-          (pwb-model model)
-          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
-          optional-body-params))
-
-(defun pwb-payload-with-prompt-and-image (messages prompt data max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-DATA: a list of base64 image data
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
-  (append (pwb-messages (vconcat messages
-                                 (pwb-array-message-param
-                                  "user"
-                                  (append data (list prompt)))))
-          (pwb-max-tokens max-tokens)
-          (pwb-model model)
-          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
-          optional-body-params))
-
-(defun pwb-payload-with-prompt-and-system (messages prompt mid-system max-tokens model system optional-body-params)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-MID-SYSTEM: string mid conversation system message
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist."
-  (append (pwb-messages (vconcat messages
-                                 (pwb-array-message-param
-                                  "user"
-                                  (list prompt))
-                                 (pwb-array-message-param
-                                  "system"
-                                  (list mid-system))))
-          (pwb-max-tokens max-tokens)
-          (pwb-model model)
-          (pwb-system (pwb-array-text-block-param system pwb-system-cache))
-          optional-body-params))
-
-
-(defun pwb-batch-payload-with-prompt-and-uploaded-files (messages prompt max-tokens model system optional-body-params file-ids)
-  "Taking arguments below, Return payload alist.
-MESSAGES: Message Body Param
-PROMPT: string
-MAX-TOKENS: integer
-MODEL: string
-SYSTEM: string
-OPTIONAL-BODY-PARAMS: alist
-FILE-IDS: a list of the cons of
-content block type and id strings (\"image/png\" . \"file_01\")."
-  (append (pwb-requests (vconcat (list (append
-                                        (pwb-custom-id "my-first-request")
-                                        (pwb-params (append
-                                                     (pwb-model "claude-opus-5-5")
-                                                     (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
-                                                     (pwb-messages (vconcat messages
-                                                                            (pwb-array-message-param
-                                                                             "user"
-                                        ;(append file-ids (list prompt))
-                                                                             (list "Analyze the major themes in Pride and Prejudice."))))))))
-                                 (list (append
-                                        (pwb-custom-id "my-second-request")
-                                        (pwb-params (append
-                                                     (pwb-model "claude-opus-5-5")
-                                                     (pwb-max-tokens 1024)
-                                                     (pwb-system (vconcat (pwb-array-text-block-param "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.")
-                                                                          (pwb-array-text-block-param "<the entire contents of Pride and Prejudice>" t)))
-                                                     (pwb-messages (vconcat messages
-                                                                            (pwb-array-message-param
-                                                                             "user"
-                                        ;(append file-ids (list prompt))
-                                                                             (list "Write a summary of Pride and Prejudice."))))))))))))
+  (let ((system-contents '("You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."
+                           ("<the entire contents of Pride and Prejudice>" . "5m")))
+        (user-contents-1 '("Analyze the major themes in Pride and Prejudice."))
+        (user-contents-2 '("Write a summary of Pride and Prejudice.")))
+    (append (pwb-requests (vconcat (list (append
+                                          (pwb-custom-id "my-first-request")
+                                          (pwb-params (pwb-payload []
+                                                                   user-contents-1
+                                                                   nil
+                                                                   1024
+                                                                   "claude-opus-5-5"
+                                                                   system-contents
+                                                                   nil))))
+                                   (list (append
+                                          (pwb-custom-id "my-second-request")
+                                          (pwb-params (pwb-payload []
+                                                                   user-contents-2
+                                                                   nil
+                                                                   1024
+                                                                   "claude-opus-5-5"
+                                                                   system-contents
+                                                                   nil)))))))))
 
 (defun pwb-test-batch-payload- (first-id model)
   ""
@@ -1012,14 +961,14 @@ Used on batch requrest"
   "Return params parameter."
   (list (cons 'params body)))
 
-(defun pwb-array-message-param (role data)
+(defun pwb-array-message-param (role content)
   "Construct a array of message-param.
 ROLE should be either \"user\" or \"assistant\" or \"system\".  DATA is
 a list of strings or cons. For more information about cons, see
 `pwb-array-content-block-param'."
   (vector (list (cons 'role role)
                 (cons 'content
-                      (apply #'vconcat (mapcar #'pwb-array-content-block-param data))))))
+                      content))))
 
 (defun pwb-cache-control-ephemeral (ttl)
   "construct a cache control ephemeral.
@@ -1041,7 +990,9 @@ TTL is either \"5m\" or \"1h\"."
     ;; for base64 png image
     (`("image/png/base64" . ,data) (pwb-array-image-block-param-base64 data))
     ;; for text
-    ((and (pred stringp) text) (pwb-array-text-block-param text))
+    (`(,text . "5m") (pwb-array-text-block-param text "5m"))
+    (`(,text . "1h") (pwb-array-text-block-param text "1h"))
+    ((and (pred stringp) text) (pwb-array-text-block-param text nil))
     (code (error "%S: not implemented" code))))
 
 (defun pwb-base64-image-source (data)
@@ -1059,13 +1010,14 @@ FILE-ID is obtained from Files API."
         (cons 'type "file")
         (cons 'file_id file-id)))
 
-(defun pwb-array-text-block-param (text &optional cache)
-  "Array of TextBlockParam {TEXT, type, cache_control, citations}."
+(defun pwb-array-text-block-param (text cache)
+  "Array of TextBlockParam {TEXT, type, cache_control, citations}.
+cache must be one of  \"5m\", \"1h\" and nil."
   (unless (equal text "")
     (vector (if cache
                 (append (list (cons 'type "text")
                               (cons 'text text))
-                        (pwb-cache-control "5m"))
+                        (pwb-cache-control cache))
               (list (cons 'type "text")
                     (cons 'text text))))))
 

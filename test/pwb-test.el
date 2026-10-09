@@ -242,9 +242,10 @@
   (pwb-with-custom
    (let (filename)
      (unwind-protect
-         (let ((alst (pwb-payload-with-prompt
+         (let ((alst (pwb-payload
                       (pwb-messages-turns pwb-messages)
-                      "Hello."
+                      (list "Hello.")
+                      nil
                       pwb-max-tokens
                       pwb-model
                       pwb-system-prompt

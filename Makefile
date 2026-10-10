@@ -17,7 +17,8 @@ compile: $(el:.el=.elc) $(test:.el=.elc)
 
 test/pwb-test.elc: pwb.elc
 
-test: $(el:.el=.elc) $(test:.el=.elc)
+.PHONY: test
+test:
 	@$(BATCH) -l test/pwb-test.elc -f ert-run-tests-batch-and-exit
 
 .PHONY: clean

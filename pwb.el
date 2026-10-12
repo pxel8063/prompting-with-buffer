@@ -423,9 +423,9 @@ Uploading the file with PATH.  The caller is responsible to delete the
 ;;{"type":"file","id":"file_011CeD2P9vhVeHdkaFXqh36v","size_bytes":243515,"created_at":"2026-08-20T00:06:12.902000Z","filename":"33-L.png","mime_type ":"image/png ","downloadable ":false}
 
 (defun pwb-make-curl-config-file-delete-file (file-id key)
-  "Make a curl config file for file uploading and return its filename.
-Uploading the file with PATH.  The caller is responsible to delete the
- temporary file after it has done."
+  "Make a curl config file for deleting uploaded file and return config filename.
+FILE-ID is uploaded file id. KEY is api key.  The caller is responsible
+to delete the temporary file after it has done."
   (let ((tmpfile (make-temp-file "pwb-"))
         (coding-system-for-write 'utf-8)
         (delete-url (concat pwb-api-file-url "/" file-id)))

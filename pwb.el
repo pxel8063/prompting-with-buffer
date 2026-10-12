@@ -309,9 +309,9 @@ system message."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let* ((alst (pwb-test-batch-payload- "my-custom-id-1" pwb-model))
+    (let* ((alst (pwb-test-batch-payload-))
            (response (pwb-batch-curl-with-config alst key)))
-      (pwb-render-error-response response)
+      ;(pwb-render-error-response response)
       (pwb-get-id response))))
 
 (defun pwb-retrieve-batch (id)
@@ -320,7 +320,7 @@ system message."
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let ((response (pwb-retrieve-message-batch-curl-with-config id key)))
-      (pwb-render-error-response response)
+      ;(pwb-render-error-response response)
       (pwb-get-results-url response))))
 
 (defun pwb-retrieve-message-batch-results (results-url)
@@ -329,7 +329,8 @@ system message."
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let ((responses (pwb-retrieve-message-batch-results-curl-with-config results-url key)))
       (mapc #'pwb-response-to-assistant-turn
-            (mapcar #'pwb-get-result-message responses)))))
+            (mapcar #'pwb-get-result-message responses))
+      t)))
 
 (defun pwb-response-to-assistant-turn (response)
   "Return assistant turn from RESPONSE.
@@ -866,6 +867,31 @@ Return the list of alist's."
                         (pwb-array-content-block-param x)))
           optional-body-params))
 
+(defun pwb-mapcar* (function &rest args)
+  "Apply FUNCTION to successive cars of all ARGS.
+Return the list of results."
+  ;; If no list is exhausted,
+  (if (not (memq nil args))
+      ;; apply function to CARs.
+      (cons (apply function (mapcar #'car args))
+            (apply #'pwb-mapcar* function
+                   ;; Recurse for rest of elements.
+                   (mapcar #'cdr args)))))
+
+(defun pwb-batch-gen-request (requests)
+  (append (pwb-requests requests)))
+
+(defun pwb-gen-request (custom user system)
+  (list (append
+         (pwb-custom-id custom)
+         (pwb-params (pwb-payload []
+                                  user
+                                  nil
+                                  pwb-max-tokens
+                                  "claude-opus-5-5"
+                                  system
+                                  nil)))))
+
 (defun pwb-batch-payload-with-prompt-and-uploaded-files ()
   "Taking arguments below, Return payload alist.
 MESSAGES: Message Body Param
@@ -897,19 +923,19 @@ content block type and id strings (\"image/png\" . \"file_01\")."
                                                                    1024
                                                                    "claude-opus-5-5"
                                                                    system-contents
+
                                                                    nil)))))))))
 
-(defun pwb-test-batch-payload- (first-id model)
+(defun pwb-test-batch-payload- ()
   ""
-  (append (pwb-requests (vconcat (list (append
-                                        (pwb-custom-id first-id)
-                                        (pwb-params (append
-                                                     (pwb-model model)
-                                                     (pwb-max-tokens 1024)
-                                                     (pwb-messages (vconcat (pwb-array-message-param
-                                                                             "user"
-                                        ;(append file-ids (list prompt))
-                                                                             (list "Hello, world"))))))))))))
+  (let ((system-contents '(("Be honest. Use emacs org-mode syntax." . "5m") ))
+        (user-contents-1 '("こんにちは。"))
+        (user-contents-2 '("地球の大きさは。")))
+    (pwb-batch-gen-request
+     (apply #'vconcat (pwb-mapcar* #'pwb-gen-request
+                               (list "my-first-request" "my-second-request")
+                               `(,user-contents-1 ,user-contents-2)
+                               `(,system-contents ,system-contents))))))
 
 ;;; The Claude API
 (defun pwb-max-tokens (num)

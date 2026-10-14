@@ -311,7 +311,7 @@ system message."
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let* ((alst (pwb-test-batch-payload-))
            (response (pwb-batch-curl-with-config alst key)))
-      ;(pwb-render-error-response response)
+                                        ;(pwb-render-error-response response)
       (pwb-get-id response))))
 
 (defun pwb-retrieve-batch (id)
@@ -320,7 +320,7 @@ system message."
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
     (let ((response (pwb-retrieve-message-batch-curl-with-config id key)))
-      ;(pwb-render-error-response response)
+                                        ;(pwb-render-error-response response)
       (pwb-get-results-url response))))
 
 (defun pwb-retrieve-message-batch-results (results-url)
@@ -933,9 +933,9 @@ content block type and id strings (\"image/png\" . \"file_01\")."
         (user-contents-2 '("地球の大きさは。")))
     (pwb-batch-gen-request
      (apply #'vconcat (pwb-mapcar* #'pwb-gen-request
-                               (list "my-first-request" "my-second-request")
-                               `(,user-contents-1 ,user-contents-2)
-                               `(,system-contents ,system-contents))))))
+                                   (list "my-first-request" "my-second-request")
+                                   `(,user-contents-1 ,user-contents-2)
+                                   `(,system-contents ,system-contents))))))
 
 ;;; The Claude API
 (defun pwb-max-tokens (num)

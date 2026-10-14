@@ -544,40 +544,42 @@
 (ert-deftest pwb-batch-prompt-two-requests ()
   (skip-unless t)
   (let ((system-contents '("You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."
-                         ("<the entire contents of Pride and Prejudice>" . "5m")))
-      (user-contents-1 '("Analyze the major themes in Pride and Prejudice."))
-      (user-contents-2 '("Write a summary of Pride and Prejudice.")))
+                           ("<the entire contents of Pride and Prejudice>" . "5m")))
+        (user-contents-1 '("Analyze the major themes in Pride and Prejudice."))
+        (user-contents-2 '("Write a summary of Pride and Prejudice."))
+        (pwb-max-tokens 1024)
+        (pwb-model "claude-opus-5-5"))
     (should (equal
-           '((requests
-              . [((custom_id . "my-first-request")
-                  (params
-                   (messages . [((role . "user")
-                                 (content . [((type . "text")
-                                              (text . "Analyze the major themes in Pride and Prejudice."))]))])
-                   (max_tokens . 1024)
-                   (model . "claude-opus-5-5")
-                   (system . [((type . "text")
-                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
-                              ((type . "text")
-                               (text . "<the entire contents of Pride and Prejudice>")
-                               (cache_control (type . "ephemeral")))])))
-                 ((custom_id . "my-second-request")
-                  (params
-                   (messages . [((role . "user")
-                                 (content . [((type . "text")
-                                              (text . "Write a summary of Pride and Prejudice."))]))])
-                   (max_tokens . 1024)
-                   (model . "claude-opus-5-5")
-                   (system . [((type . "text")
-                               (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
-                              ((type . "text")
-                               (text . "<the entire contents of Pride and Prejudice>")
-                               (cache_control (type . "ephemeral")))])))]))
-           (pwb-batch-gen-request
-            (apply #'vconcat (pwb-mapcar* #'pwb-gen-request
-                                      (list "my-first-request" "my-second-request")
-                                      `(,user-contents-1 ,user-contents-2)
-                                      `(,system-contents ,system-contents))))))))
+             '((requests
+                . [((custom_id . "my-first-request")
+                    (params
+                     (messages . [((role . "user")
+                                   (content . [((type . "text")
+                                                (text . "Analyze the major themes in Pride and Prejudice."))]))])
+                     (max_tokens . 1024)
+                     (model . "claude-opus-5-5")
+                     (system . [((type . "text")
+                                 (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
+                                ((type . "text")
+                                 (text . "<the entire contents of Pride and Prejudice>")
+                                 (cache_control (type . "ephemeral")))])))
+                   ((custom_id . "my-second-request")
+                    (params
+                     (messages . [((role . "user")
+                                   (content . [((type . "text")
+                                                (text . "Write a summary of Pride and Prejudice."))]))])
+                     (max_tokens . 1024)
+                     (model . "claude-opus-5-5")
+                     (system . [((type . "text")
+                                 (text . "You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style."))
+                                ((type . "text")
+                                 (text . "<the entire contents of Pride and Prejudice>")
+                                 (cache_control (type . "ephemeral")))])))]))
+             (pwb-batch-gen-request
+              (apply #'vconcat (pwb-mapcar* #'pwb-gen-request
+                                            (list "my-first-request" "my-second-request")
+                                            `(,user-contents-1 ,user-contents-2)
+                                            `(,system-contents ,system-contents))))))))
 
 (provide 'pwb-test)
 

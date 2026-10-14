@@ -665,11 +665,15 @@ The CONTENT argument must be STRING."
   (alist-get (intern type)
              (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
 
+(defun pwb-type-content (type content)
+  "Return the alist of which type is TYPE from content."
+  (seq-find (lambda (x) (equal (alist-get 'type x) type)) content))
+
 (defun pwb-get-content-thinking (response)
   "Get the content of thinking from RESPONSE."
-  (alist-get 'thinking (pwb-find-content-block-by-type
-                        "thinking"
-                        (pwb-get-content response))))
+  (let-alist (pwb-type-content "thinking"
+                               (pwb-get-content response))
+    .thinking))
 
 (defun pwb-get-result-message (response)
   "Get the content of message.

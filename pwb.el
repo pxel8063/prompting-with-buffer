@@ -657,13 +657,9 @@ is run before BODY."
 
 (defun pwb-get-content-text (response)
   "Return content text in the RESPONSE."
-  (pwb-find-type-from-content "text" (alist-get 'content response)))
-
-(defun pwb-find-type-from-content (type content)
-  "Return the text that belongs to TYPE.
-The CONTENT argument must be STRING."
-  (alist-get (intern type)
-             (seq-find (lambda (x) (equal (alist-get 'type x) type)) content)))
+  (let-alist (pwb-type-content "text"
+                               (pwb-get-content response))
+    .text))
 
 (defun pwb-type-content (type content)
   "Return the alist of which type is TYPE from content."
@@ -747,23 +743,6 @@ It is included in the batch response"
   "Return a processing_status in the RESPONSE.
 It is included in the batch response"
   (alist-get 'processing_status response))
-
-;;;
-;;; The accessor functions for the CONTENTBLOCK
-;;;
-(defun pwb-content-block-type (contentblock)
-  "Return the type of the CONTENTBLOCK.
-Type are such as \"text\", \"thinking\" etc."
-  (alist-get 'type contentblock))
-
-(defun pwb-content-block-type-predicate (type)
-  "Return the fucntion to check whether the contentblock is TYPE."
-  (lambda (contentblock)
-    (equal (pwb-content-block-type contentblock) type)))
-
-(defun pwb-find-content-block-by-type (type contentblocks)
-  "Return the content-block whose type is TYPE from an array of CONTENTBLOCKS."
-  (seq-find (pwb-content-block-type-predicate type) contentblocks))
 
 ;;;
 ;;; Render response

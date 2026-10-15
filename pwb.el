@@ -304,13 +304,12 @@ system message."
                 (vconcat (alist-get 'messages alst)
                          (vector assistant-turn)))))))
 
-(defun pwb-batch-request ()
-  "Batch request"
+(defun pwb-batch-request (alst)
+  "Batch request using payload ALIST."
   (let ((key (pwb-credential pwb-api-host)))
     (unless key
       (error "%s can not be found in `auth-source'" pwb-api-host))
-    (let* ((alst (pwb-test-batch-payload-))
-           (response (pwb-batch-curl-with-config alst key)))
+    (let ((response (pwb-batch-curl-with-config alst key)))
                                         ;(pwb-render-error-response response)
       (pwb-get-id response))))
 
